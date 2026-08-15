@@ -1,0 +1,434 @@
+{
+  "schema_version": 1,
+  "units": "SI",
+  "snapshot_date": "2026-08-15",
+  "source": {
+    "validation_repository": "git@github.com:vskates/graspvalidation.git",
+    "validation_commit": "ae3ee118118eea985e46177fafd62ff19b44566e",
+    "validation_config_sha256": "08fdc166ebfa583426371cb6b9989fe206c58b29315691cbc07b4ecddda654a1",
+    "validation_config_was_dirty": true,
+    "asset_repository": "git@github.com:StriderOne/VvAssets.git",
+    "asset_commit": "d1ee6d15d1684063d27ec4f3ada7ef1ec6f5b4f2",
+    "asset_package_version": "0.1.0"
+  },
+  "validation_spawn": {
+    "quaternion_order": "wxyz",
+    "object_scale": null,
+    "object_scale_note": "Validation leaves UsdFileCfg.scale unset, preserving each asset's authored normalization scale.",
+    "object_quaternion_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "object_rotation_note": "This is the value actually passed to Isaac Lab. It is a 180 degree rotation about Z because the validation helper returns XYZW while Isaac Lab consumes WXYZ.",
+    "selected_objects_with_individual_post_rotation": [],
+    "approach_axis_frame": "commanded gripper base/grasp pose",
+    "approach_axis_local": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "pregrasp_offset_direction_local": [
+      0.0,
+      0.0,
+      -1.0
+    ],
+    "effective_base_to_root_quaternion_wxyz": [
+      1.0,
+      -0.0000017881393433,
+      0.0,
+      0.0
+    ],
+    "effective_root_to_base_position_m": [
+      0.0,
+      -3.7252903E-9,
+      3.7252903E-9
+    ]
+  },
+  "pose_seeds": {
+    "directory": "initial_poses/astribot",
+    "filename_pattern": "{object_id}.npz",
+    "format_version": 1,
+    "source": "graspvalidation/grasp_dataset/grasp_data/astribot"
+  },
+  "gripper": {
+    "runtime_usd": "grippers/astribot/gripper_playground.usd",
+    "runtime_usd_sha256": "64b00eb2aa39e1daf6244ee0a7c70a2365260ffdb56bd95d723cf6f49a8b6b7b",
+    "source_urdf": "grippers/astribot/source/gripper.urdf",
+    "source_urdf_sha256": "f346dacecefca747077be50a2036971b8757c4ed846589858a6eebee7d446932",
+    "runtime_asset_used_by_validation": true,
+    "source_urdf_used_by_validation": false,
+    "affine_urdf_preprocessor_compatible": false,
+    "contact_links": [
+      "astribot_gripper_right_Link_L11",
+      "astribot_gripper_right_Link_R11"
+    ],
+    "open_joint_position_rad": {
+      "astribot_gripper_right_joint_L1": 0.0,
+      "astribot_gripper_right_joint_R1": 0.0,
+      "astribot_gripper_right_joint_L11": 0.0,
+      "astribot_gripper_right_joint_R11": 0.0,
+      "astribot_gripper_right_joint_L2": 0.0,
+      "astribot_gripper_right_joint_R2": 0.0
+    },
+    "close_joint_position_rad": {
+      "astribot_gripper_right_joint_L1": 1.0,
+      "astribot_gripper_right_joint_R1": 1.0,
+      "astribot_gripper_right_joint_L11": 1.0,
+      "astribot_gripper_right_joint_R11": -1.0,
+      "astribot_gripper_right_joint_L2": -1.0,
+      "astribot_gripper_right_joint_R2": 1.0
+    }
+  },
+  "objects": [
+    {
+      "id": "voda-mineralnaya-psyzh-1-l-27215",
+      "usd": "objects/voda-mineralnaya-psyzh-1-l-27215/voda-mineralnaya-psyzh-1-l-27215.usdc",
+      "textures": "objects/voda-mineralnaya-psyzh-1-l-27215/textures",
+      "bbox_size_m": [
+        0.09,
+        0.09,
+        0.29
+      ],
+      "mass_kg": 1.139,
+      "sha256": "176e3f3757307764d9c7b8e32a2f7ecbcee388d185faceee496dcbf6cc0ed71c"
+    },
+    {
+      "id": "makaronnye-izdeliya-rozhki-s-grebeshkom-galyani-450-g-77393",
+      "usd": "objects/makaronnye-izdeliya-rozhki-s-grebeshkom-galyani-450-g-77393/makaronnye-izdeliya-rozhki-s-grebeshkom-galyani-450-g-77393.usdc",
+      "textures": "objects/makaronnye-izdeliya-rozhki-s-grebeshkom-galyani-450-g-77393/textures",
+      "bbox_size_m": [
+        0.07,
+        0.13,
+        0.26
+      ],
+      "mass_kg": 0.455,
+      "sha256": "4c165bf099c3e2b33b1f3f164cdba0c9fad19ed9c67c327e12c9cd5b89d05e58"
+    },
+    {
+      "id": "mayonez-moskovskiy-provansal-klassicheskiy-67-600-ml-55602",
+      "usd": "objects/mayonez-moskovskiy-provansal-klassicheskiy-67-600-ml-55602/mayonez-moskovskiy-provansal-klassicheskiy-67-600-ml-55602.usdc",
+      "textures": "objects/mayonez-moskovskiy-provansal-klassicheskiy-67-600-ml-55602/textures",
+      "bbox_size_m": [
+        0.065,
+        0.125,
+        0.255
+      ],
+      "mass_kg": 0.585,
+      "sha256": "5aeffd05a67e9c3c0c8ba40020d45547b4004e868da4a1ab7a7cd46e833a22bb"
+    },
+    {
+      "id": "krupa-grechnevaya-yadritsa-900-g-17699",
+      "usd": "objects/krupa-grechnevaya-yadritsa-900-g-17699/krupa-grechnevaya-yadritsa-900-g-17699.usdc",
+      "textures": "objects/krupa-grechnevaya-yadritsa-900-g-17699/textures",
+      "bbox_size_m": [
+        0.07,
+        0.095,
+        0.2
+      ],
+      "mass_kg": 0.905,
+      "sha256": "75c6a5bdf6d708df920b4e6eab13ca0b5401ff3539013935a6de7ae95641b9a5"
+    },
+    {
+      "id": "voda-pitevaya-prirodnaya-legenda-baykala-750-ml-42674",
+      "usd": "objects/voda-pitevaya-prirodnaya-legenda-baykala-750-ml-42674/voda-pitevaya-prirodnaya-legenda-baykala-750-ml-42674.usdc",
+      "textures": "objects/voda-pitevaya-prirodnaya-legenda-baykala-750-ml-42674/textures",
+      "bbox_size_m": [
+        0.075,
+        0.075,
+        0.235
+      ],
+      "mass_kg": 1.135,
+      "sha256": "7b7c75299d2788f25ecb7b55bfa5f694c6ae4e2deacb3243e24410a5d0c04d27"
+    },
+    {
+      "id": "sous-soevyy-250-ml-58088",
+      "usd": "objects/sous-soevyy-250-ml-58088/sous-soevyy-250-ml-58088.usdc",
+      "textures": "objects/sous-soevyy-250-ml-58088/textures",
+      "bbox_size_m": [
+        0.05,
+        0.05,
+        0.23
+      ],
+      "mass_kg": 0.5,
+      "sha256": "945bc26b9f691e6453b7c2ee0e7c0867b78262243ae8621dd10e00d9207cb922"
+    },
+    {
+      "id": "pechene-sdobnoe-khlebnyy-spas-italyanskoe-s-apelsinovym-vkusom-i-izyumom-230-g-46835",
+      "usd": "objects/pechene-sdobnoe-khlebnyy-spas-italyanskoe-s-apelsinovym-vkusom-i-izyumom-230-g-46835/pechene-sdobnoe-khlebnyy-spas-italyanskoe-s-apelsinovym-vkusom-i-izyumom-230-g-46835.usdc",
+      "textures": "objects/pechene-sdobnoe-khlebnyy-spas-italyanskoe-s-apelsinovym-vkusom-i-izyumom-230-g-46835/textures",
+      "bbox_size_m": [
+        0.085,
+        0.125,
+        0.22
+      ],
+      "mass_kg": 0.24,
+      "sha256": "f49adc3beb7c5b132639892b4c5f8bd8f66625eceb0f204cf9f09a90cce29081"
+    },
+    {
+      "id": "kofe-naturalnyy-rastvorimyy-sublimirovannyy-16125",
+      "usd": "objects/kofe-naturalnyy-rastvorimyy-sublimirovannyy-16125/kofe-naturalnyy-rastvorimyy-sublimirovannyy-16125.usdc",
+      "textures": "objects/kofe-naturalnyy-rastvorimyy-sublimirovannyy-16125/textures",
+      "bbox_size_m": [
+        0.05,
+        0.125,
+        0.21
+      ],
+      "mass_kg": 0.11,
+      "sha256": "d953f75c3f5252bd85dd7c360eac23eaa997f4a084b664e0e2be4d9b08369293"
+    },
+    {
+      "id": "ogurtsy-solenye-400-g-16516",
+      "usd": "objects/ogurtsy-solenye-400-g-16516/ogurtsy-solenye-400-g-16516.usdc",
+      "textures": "objects/ogurtsy-solenye-400-g-16516/textures",
+      "bbox_size_m": [
+        0.04,
+        0.18,
+        0.21
+      ],
+      "mass_kg": 0.465,
+      "sha256": "a674c98ddd756013fd62be158ced4f2da59df4931c4ddf4b015a1be9ffc9fccc"
+    },
+    {
+      "id": "bumaga-tualetnaya-vlazhnaya-s-aloe-30-sht-22675",
+      "usd": "objects/bumaga-tualetnaya-vlazhnaya-s-aloe-30-sht-22675/bumaga-tualetnaya-vlazhnaya-s-aloe-30-sht-22675.usdc",
+      "textures": "objects/bumaga-tualetnaya-vlazhnaya-s-aloe-30-sht-22675/textures",
+      "bbox_size_m": [
+        0.03,
+        0.1,
+        0.2
+      ],
+      "mass_kg": 0.14,
+      "sha256": "b70693f4460b014bb08bdfc2d54f5f5dfa0a93c8b31ee02db689a7af2346832e"
+    },
+    {
+      "id": "moloko-bezlaktoznoe-ultrapasterizovannoe-1-5-970-ml-53831",
+      "usd": "objects/moloko-bezlaktoznoe-ultrapasterizovannoe-1-5-970-ml-53831/moloko-bezlaktoznoe-ultrapasterizovannoe-1-5-970-ml-53831.usdc",
+      "textures": "objects/moloko-bezlaktoznoe-ultrapasterizovannoe-1-5-970-ml-53831/textures",
+      "bbox_size_m": [
+        0.06,
+        0.09,
+        0.195
+      ],
+      "mass_kg": 1.03,
+      "sha256": "e77e7473ebda52eecd3fecfeee90adf050b5ac4262917a4673017c7645c284ac"
+    },
+    {
+      "id": "sous-soevyy-220-ml-78058",
+      "usd": "objects/sous-soevyy-220-ml-78058/sous-soevyy-220-ml-78058.usdc",
+      "textures": "objects/sous-soevyy-220-ml-78058/textures",
+      "bbox_size_m": [
+        0.05,
+        0.05,
+        0.19
+      ],
+      "mass_kg": 0.44,
+      "sha256": "5acfe827a9cbd60fea03cc8c9f5bfdd974928c2a2bcf13b2aef53c6c5e1a2c46"
+    },
+    {
+      "id": "zefir-vanilnyy-80-g-31845",
+      "usd": "objects/zefir-vanilnyy-80-g-31845/zefir-vanilnyy-80-g-31845.usdc",
+      "textures": "objects/zefir-vanilnyy-80-g-31845/textures",
+      "bbox_size_m": [
+        0.04,
+        0.08,
+        0.18
+      ],
+      "mass_kg": 0.095,
+      "sha256": "8adb77515614b4ea2a2958db4d6b6f7101886c59ca4218b7a2bc6905652c0d17"
+    },
+    {
+      "id": "izdelie-kh-b-borodinskiy-bezdrozhzhevoy-narezka-270-g-63310",
+      "usd": "objects/izdelie-kh-b-borodinskiy-bezdrozhzhevoy-narezka-270-g-63310/izdelie-kh-b-borodinskiy-bezdrozhzhevoy-narezka-270-g-63310.usdc",
+      "textures": "objects/izdelie-kh-b-borodinskiy-bezdrozhzhevoy-narezka-270-g-63310/textures",
+      "bbox_size_m": [
+        0.06,
+        0.12,
+        0.16
+      ],
+      "mass_kg": 0.285,
+      "sha256": "ba1e1bad34427e4ad13f41dee7faf8bd3a944239290aa5f6b55f81aad15ae017"
+    },
+    {
+      "id": "gerkules-ovsyanye-khlopya-400-g-1248",
+      "usd": "objects/gerkules-ovsyanye-khlopya-400-g-1248/gerkules-ovsyanye-khlopya-400-g-1248.usdc",
+      "textures": "objects/gerkules-ovsyanye-khlopya-400-g-1248/textures",
+      "bbox_size_m": [
+        0.07,
+        0.115,
+        0.16
+      ],
+      "mass_kg": 0.405,
+      "sha256": "2966cb58fef98be0b195dd7132cf26611217c23f09c50d071829645aa27d4de1"
+    },
+    {
+      "id": "snek-ovoshchnoy-iz-batata-30-g-62734",
+      "usd": "objects/snek-ovoshchnoy-iz-batata-30-g-62734/snek-ovoshchnoy-iz-batata-30-g-62734.usdc",
+      "textures": "objects/snek-ovoshchnoy-iz-batata-30-g-62734/textures",
+      "bbox_size_m": [
+        0.03,
+        0.155,
+        0.145
+      ],
+      "mass_kg": 0.035,
+      "sha256": "d144675fdb8c627da94461758edc49aabf30f56d63d22b1b3c252160fec1e2b5"
+    },
+    {
+      "id": "voda-pitevaya-shishkin-les-negazirovannaya-400-ml-43447",
+      "usd": "objects/voda-pitevaya-shishkin-les-negazirovannaya-400-ml-43447/voda-pitevaya-shishkin-les-negazirovannaya-400-ml-43447.usdc",
+      "textures": "objects/voda-pitevaya-shishkin-les-negazirovannaya-400-ml-43447/textures",
+      "bbox_size_m": [
+        0.055,
+        0.065,
+        0.15
+      ],
+      "mass_kg": 0.45,
+      "sha256": "6866058a48a786de696e6d797adb362c21c78569eb5c8571d8404626e4d34119"
+    },
+    {
+      "id": "kofe-molotyy-v-drip-paketakh-assorti-6-sht-81078",
+      "usd": "objects/kofe-molotyy-v-drip-paketakh-assorti-6-sht-81078/kofe-molotyy-v-drip-paketakh-assorti-6-sht-81078.usdc",
+      "textures": "objects/kofe-molotyy-v-drip-paketakh-assorti-6-sht-81078/textures",
+      "bbox_size_m": [
+        0.05,
+        0.11,
+        0.145
+      ],
+      "mass_kg": 0.1,
+      "sha256": "4965b4c9dbf9bdfe7a3e522d0395d283a288d70b3d1db6edc274c1d7e852d817"
+    },
+    {
+      "id": "limonad-lavanda-320-ml-66395",
+      "usd": "objects/limonad-lavanda-320-ml-66395/limonad-lavanda-320-ml-66395.usdc",
+      "textures": "objects/limonad-lavanda-320-ml-66395/textures",
+      "bbox_size_m": [
+        0.055,
+        0.055,
+        0.145
+      ],
+      "mass_kg": 0.355,
+      "sha256": "9d88248a415680ec4e71631b42d71880931217d204857ba1ae4a15224bfc4e05"
+    },
+    {
+      "id": "ogurtsy-marinovannye-670-g-21054",
+      "usd": "objects/ogurtsy-marinovannye-670-g-21054/ogurtsy-marinovannye-670-g-21054.usdc",
+      "textures": "objects/ogurtsy-marinovannye-670-g-21054/textures",
+      "bbox_size_m": [
+        0.085,
+        0.085,
+        0.135
+      ],
+      "mass_kg": 1.045,
+      "sha256": "96931af9287db76d6fe02ecfd0200a636b383c78208fb37709dce907bcff5859"
+    },
+    {
+      "id": "sok-detskiy-yablochnyy-pryamogo-otzhima-200-ml-20494",
+      "usd": "objects/sok-detskiy-yablochnyy-pryamogo-otzhima-200-ml-20494/sok-detskiy-yablochnyy-pryamogo-otzhima-200-ml-20494.usdc",
+      "textures": "objects/sok-detskiy-yablochnyy-pryamogo-otzhima-200-ml-20494/textures",
+      "bbox_size_m": [
+        0.04,
+        0.05,
+        0.125
+      ],
+      "mass_kg": 0.22,
+      "sha256": "3e35443dc4f7297b4cea26a12740686ab9b4781db032c87edaee533287abce48"
+    },
+    {
+      "id": "slivki-ultrapasterizovannye-10-208-g-76913",
+      "usd": "objects/slivki-ultrapasterizovannye-10-208-g-76913/slivki-ultrapasterizovannye-10-208-g-76913.usdc",
+      "textures": "objects/slivki-ultrapasterizovannye-10-208-g-76913/textures",
+      "bbox_size_m": [
+        0.05,
+        0.05,
+        0.12
+      ],
+      "mass_kg": 0.215,
+      "sha256": "5af998b11594ddfd0fc4b8e4c71c70376f403128c710e297d588845af4b32886"
+    },
+    {
+      "id": "slivki-ultrapasterizovannye-20-490-ml-74057",
+      "usd": "objects/slivki-ultrapasterizovannye-20-490-ml-74057/slivki-ultrapasterizovannye-20-490-ml-74057.usdc",
+      "textures": "objects/slivki-ultrapasterizovannye-20-490-ml-74057/textures",
+      "bbox_size_m": [
+        0.07,
+        0.075,
+        0.105
+      ],
+      "mass_kg": 0.53,
+      "sha256": "32454a97bb484c2d23330a0ee5eb2f227840d01d9a2fcb6d5788641907ae9ef1"
+    },
+    {
+      "id": "masliny-federici-bez-kostochki-300-g-90215",
+      "usd": "objects/masliny-federici-bez-kostochki-300-g-90215/masliny-federici-bez-kostochki-300-g-90215.usdc",
+      "textures": "objects/masliny-federici-bez-kostochki-300-g-90215/textures",
+      "bbox_size_m": [
+        0.065,
+        0.065,
+        0.105
+      ],
+      "mass_kg": 0.33,
+      "sha256": "29f2bc7d04a1c8357c1eb946e528e91ec50720418e0cdb473807a5a7e2a781ff"
+    },
+    {
+      "id": "moloko-sgushchennoe-varenoe-s-sakharom-380-g-20142",
+      "usd": "objects/moloko-sgushchennoe-varenoe-s-sakharom-380-g-20142/moloko-sgushchennoe-varenoe-s-sakharom-380-g-20142.usdc",
+      "textures": "objects/moloko-sgushchennoe-varenoe-s-sakharom-380-g-20142/textures",
+      "bbox_size_m": [
+        0.075,
+        0.075,
+        0.08
+      ],
+      "mass_kg": 0.42,
+      "sha256": "c9b4ea4758f193c8d07d416ffe93971639fb5a288ec93325b184894dc68b94a4"
+    },
+    {
+      "id": "pechene-yubileynoe-molochnoe-v-glazuri-116-g-69284",
+      "usd": "objects/pechene-yubileynoe-molochnoe-v-glazuri-116-g-69284/pechene-yubileynoe-molochnoe-v-glazuri-116-g-69284.usdc",
+      "textures": "objects/pechene-yubileynoe-molochnoe-v-glazuri-116-g-69284/textures",
+      "bbox_size_m": [
+        0.03,
+        0.065,
+        0.18
+      ],
+      "mass_kg": 0.12,
+      "sha256": "a90484a50860d33fc9b9c1e75a2b840727abdd316ce89586bb7a2e9ecdda98fe"
+    },
+    {
+      "id": "pechene-proteinovoe-bombbar-nizkokaloriynoe-shokoladnyy-brauni-40-g-44242",
+      "usd": "objects/pechene-proteinovoe-bombbar-nizkokaloriynoe-shokoladnyy-brauni-40-g-44242/pechene-proteinovoe-bombbar-nizkokaloriynoe-shokoladnyy-brauni-40-g-44242.usdc",
+      "textures": "objects/pechene-proteinovoe-bombbar-nizkokaloriynoe-shokoladnyy-brauni-40-g-44242/textures",
+      "bbox_size_m": [
+        0.025,
+        0.09,
+        0.14
+      ],
+      "mass_kg": 0.04,
+      "sha256": "3f0521acd66e155381b0b812884657769ef2e25a2ba8215e10cbe6f21e074652"
+    },
+    {
+      "id": "korzhik-molochnyy-21096",
+      "usd": "objects/korzhik-molochnyy-21096/korzhik-molochnyy-21096.usdc",
+      "textures": "objects/korzhik-molochnyy-21096/textures",
+      "bbox_size_m": [
+        0.025,
+        0.145,
+        0.115
+      ],
+      "mass_kg": 0.09,
+      "sha256": "5cea79a097d391cbd5144f35fd40ea09cb3fb5d10b090f32378a002271bd6417"
+    },
+    {
+      "id": "voda-pitevaya-senezhskaya-negazirovannaya-pet-1-5-l-43733",
+      "usd": "objects/voda-pitevaya-senezhskaya-negazirovannaya-pet-1-5-l-43733/voda-pitevaya-senezhskaya-negazirovannaya-pet-1-5-l-43733.usdc",
+      "textures": "objects/voda-pitevaya-senezhskaya-negazirovannaya-pet-1-5-l-43733/textures",
+      "bbox_size_m": [
+        0.08,
+        0.08,
+        0.33
+      ],
+      "mass_kg": 1.49,
+      "sha256": "761ac52fb08961e40b0e846b3b4a4ffa5d99c420fc34d174f2e8c1c398abadac"
+    }
+  ]
+}

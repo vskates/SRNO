@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="astribot_gripper">
+
+  
+  
+  <link name="astribot_gripper_right_base_link">
+      <inertial>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <mass value="0.1" />
+          <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+      </inertial>
+      <visual>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="meshes/s1_gripper/astribot_gripper_base_link.STL" />
+          </geometry>
+      </visual>
+      <collision>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="meshes/s1_gripper/astribot_gripper_base_link.STL" />
+          </geometry>
+      </collision>
+  </link>
+
+  
+  <joint name="astribot_gripper_right_joint_L1" type="revolute">
+      <origin rpy="-4.235164736271502e-22 -0.0 0.0" xyz="0.013001 1.972511140497111e-07 0.053699999999637725" />
+      <parent link="astribot_gripper_right_base_link" />
+      <child link="astribot_gripper_right_Link_L1" />
+      <axis xyz="0 -1 0" />
+      <limit lower="0" upper="1.14" effort="1" velocity="1" />
+  </joint>
+  <link name="astribot_gripper_right_Link_L1">
+      <inertial>
+          <origin rpy="0 0 0" xyz="0 0 0.02" />
+          <mass value="0.03" />
+          <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+      </inertial>
+      <visual>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="meshes/s1_gripper/astribot_gripper_L1_Link.STL" />
+          </geometry>
+      </visual>
+  </link>
+
+  
+  <joint name="astribot_gripper_right_joint_L11" type="revolute">
+      <origin rpy="0 -0.03 0" xyz="0.036 0 0.031749" />
+      <parent link="astribot_gripper_right_Link_L1" />
+      <child link="astribot_gripper_right_Link_L11" />
+      <axis xyz="0 1 0" />
+      <limit lower="-3.14" upper="3.14" effort="1" velocity="1" />
+  </joint>
+  <link name="astribot_gripper_right_Link_L11">
+      <inertial>
+          <origin rpy="0 0 0" xyz="0 0 0.02" />
+          <mass value="0.067" />
+          <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+      </inertial>
+      <visual>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="meshes/s1_gripper/astribot_gripper_L11_Link.STL" />
+          </geometry>
+      </visual>
+      <collision>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="meshes/s1_gripper/astribot_gripper_L11_Link.STL" />
+          </geometry>
+      </collision>
+  </link>
+
+  
+  <joint name="astribot_gripper_right_joint_L2" type="revolute">
+      <origin rpy="-4.235164736271502e-22 -0.0 0.0" xyz="0.033 1.972511140497111e-07 0.053699999999637725" />
+      <parent link="astribot_gripper_right_base_link" />
+      <child link="astribot_gripper_right_Link_L2" />
+      <axis xyz="0 1 0" />
+      <limit lower="-3.14" upper="3.14" effort="1" velocity="1" />
+  </joint>
+  <link name="astribot_gripper_right_Link_L2">
+      <inertial>
+          <origin rpy="0 0 0" xyz="0 0 0.02" />
+          <mass value="0.03" />
+          <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+      </inertial>
+      <visual>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="meshes/s1_gripper/astribot_gripper_L2_Link.STL" />
+          </geometry>
+      </visual>
+      <collision>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="meshes/s1_gripper/astribot_gripper_L2_Link.STL" />
+          </geometry>
+      </collision>
+  </link>
+
+  
+  <joint name="astribot_gripper_right_joint_R1" type="revolute">
+      <origin rpy="-4.235164736271502e-22 -0.0 0.0" xyz="-0.013001 1.972511140497111e-07 0.053699999999637725" />
+      <parent link="astribot_gripper_right_base_link" />
+      <child link="astribot_gripper_right_Link_R1" />
+      <axis xyz="0 1 0" />
+      <limit lower="0" upper="1.14" effort="1" velocity="1" />
+  </joint>
+  <link name="astribot_gripper_right_Link_R1">
+      <inertial>
+          <origin rpy="0 0 0" xyz="0 0 0.02" />
+          <mass value="0.03" />
+          <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+      </inertial>
+      <visual>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="meshes/s1_gripper/astribot_gripper_R1_Link.STL" />
+          </geometry>
+      </visual>
+  </link>
+
+  
+  <joint name="astribot_gripper_right_joint_R11" type="revolute">
+      <origin rpy="0 0.03 0" xyz="-0.036 0 0.031749" />
+      <parent link="astribot_gripper_right_Link_R1" />
+      <child link="astribot_gripper_right_Link_R11" />
+      <axis xyz="0 1 0" />
+      <limit lower="-3.14" upper="3.14" effort="1" velocity="1" />
+  </joint>
+  <link name="astribot_gripper_right_Link_R11">
+      <inertial>
+          <origin rpy="0 0 0" xyz="0 0 0.02" />
+          <mass value="0.067" />
+          <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+      </inertial>
+      <visual>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="meshes/s1_gripper/astribot_gripper_R11_Link.STL" />
+          </geometry>
+      </visual>
+      <collision>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="meshes/s1_gripper/astribot_gripper_R11_Link.STL" />
+          </geometry>
+      </collision>
+  </link>
+
+  
+  <joint name="astribot_gripper_right_joint_R2" type="revolute">
+      <origin rpy="-4.235164736271502e-22 -0.0 0.0" xyz="-0.033 1.972511140497111e-07 0.053699999999637725" />
+      <parent link="astribot_gripper_right_base_link" />
+      <child link="astribot_gripper_right_Link_R2" />
+      <axis xyz="0 1 0" />
+      <limit lower="-3.14" upper="3.14" effort="1" velocity="1" />
+  </joint>
+  <link name="astribot_gripper_right_Link_R2">
+      <inertial>
+          <origin rpy="0 0 0" xyz="0 0 0.02" />
+          <mass value="0.03" />
+          <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+      </inertial>
+      <visual>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="meshes/s1_gripper/astribot_gripper_R2_Link.STL" />
+          </geometry>
+      </visual>
+      <collision>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="meshes/s1_gripper/astribot_gripper_R2_Link.STL" />
+          </geometry>
+      </collision>
+  </link>
+
+</robot>
