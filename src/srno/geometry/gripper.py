@@ -13,7 +13,7 @@ from torch import Tensor
 
 @dataclass(frozen=True)
 class GripperAsset:
-    """Affine parallel-jaw surface kinematics ``x(a) = intercept + slope * a``."""
+    """Parallel-jaw surface kinematics, affine or schedule-indexed."""
 
     intercept: Tensor
     slope: Tensor
@@ -301,91 +301,4 @@ def preprocess_urdf(
         float(aperture_max),
         float(length_scale),
         source_hash,
-    )
-
-
-def preprocess_scheduled_urdf(
-    urdf_path: str | Path,
-    *,
-    finger_links: tuple[str, str],
-    close_joint_positions: Mapping[str, float],
-    command_fractions: np.ndarray | None = None,
-    samples_per_link: int = 128,
-    seed: int = 0,
-) -> GripperAsset:
-    """Sample exact gripper geometry along a coupled revolute closure schedule.
-
-    Aperture is the separation of the two finger-link origins projected onto the
-    gripper-local X axis. This is metric and matches the quantity measured by the
-    simulator collector from the same runtime links.
-    """
-
-    from yourdfpy import URDF
-
-    path = Path(urdf_path).resolve()
-    robot = URDF.load(
-        str(path),
-        build_scene_graph=True,
-        build_collision_scene_graph=True,
-        load_meshes=True,
-        load_collision_meshes=True,
-    )
-    missing = [name for name in finger_links if name not in robot.link_map]
-    if missing:
-        raise ValueError(f"finger links not found in URDF: {missing}")
-    if not close_joint_positions:
-        raise ValueError("close_joint_positions must not be empty")
-    fractions = (
-        np.linspace(0.0, 1.0, 33, dtype=np.float64)
-        if command_fractions is None
-        else np.asarray(command_fractions, dtype=np.float64)
-    )
-    if fractions.ndim != 1 or len(fractions) < 2:
-        raise ValueError("command_fractions must be a one-dimensional schedule")
-    if not np.isclose(fractions[0], 0.0) or not np.isclose(fractions[-1], 1.0):
-        raise ValueError("command_fractions must start at zero and end at one")
-    if not np.all(np.diff(fractions) > 0.0):
-        raise ValueError("command_fractions must be strictly increasing")
-
-    local_samples = _sample_collision_links(
-        robot,
-        finger_links,
-        samples_per_link=samples_per_link,
-        seed=seed,
-    )
-    points_by_fraction: list[np.ndarray] = []
-    apertures: list[float] = []
-    for fraction in fractions:
-        robot.update_cfg(
-            {
-                name: float(fraction) * float(target)
-                for name, target in close_joint_positions.items()
-            }
-        )
-        transformed, origins = _transform_link_samples(robot, finger_links, local_samples)
-        points_by_fraction.append(transformed)
-        apertures.append(float(abs(origins[0, 0] - origins[1, 0])))
-
-    aperture_array = np.asarray(apertures, dtype=np.float64)
-    if not np.all(np.diff(aperture_array) < 0.0):
-        raise ValueError("finger-origin aperture is not strictly decreasing along closure")
-    point_array = np.stack(points_by_fraction)
-    # GripperAsset interpolation knots are ascending; closure is open-to-closed.
-    ascending_aperture = aperture_array[::-1].copy()
-    ascending_points = point_array[::-1].copy()
-    slope = (ascending_points[-1] - ascending_points[0]) / (
-        ascending_aperture[-1] - ascending_aperture[0]
-    )
-    intercept = ascending_points[0] - ascending_aperture[0] * slope
-    link_index = np.repeat(np.arange(2, dtype=np.int64), samples_per_link)
-    return GripperAsset(
-        torch.from_numpy(intercept.astype(np.float32)),
-        torch.from_numpy(slope.astype(np.float32)),
-        torch.from_numpy(link_index),
-        float(ascending_aperture[0]),
-        float(ascending_aperture[-1]),
-        float(ascending_aperture[-1]),
-        hashlib.sha256(path.read_bytes()).hexdigest(),
-        torch.from_numpy(ascending_aperture.astype(np.float32)),
-        torch.from_numpy(ascending_points.astype(np.float32)),
     )

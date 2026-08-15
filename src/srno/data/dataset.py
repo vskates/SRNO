@@ -13,7 +13,7 @@ import torch
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset, Sampler
 
-from srno.data.index import ActiveIndex
+from srno.data.index import ActiveIndex, files_sha256
 from srno.data.schema import DatasetManifest
 from srno.geometry.se3 import quaternion_xyzw_to_matrix
 from srno.types import PoseState, SDFBatch
@@ -140,6 +140,9 @@ class H5ObjectDataset(Dataset[ObjectRecord]):
         if self.active_index is not None:
             if self.active_index.manifest_sha256 != self.manifest.sha256():
                 raise ValueError("active index was built for a different manifest")
+            shard_paths = tuple(self.manifest.shard_path(shard) for shard in self.manifest.shards)
+            if self.active_index.shards_sha256 != files_sha256(shard_paths):
+                raise ValueError("active index is stale for the current HDF5 shard contents")
             if not np.isclose(self.active_index.delta_gate_m, self.manifest.delta_gate_m):
                 raise ValueError("active index gate does not match manifest")
         object_ids = list(self.manifest.splits[split])
@@ -178,6 +181,14 @@ class H5ObjectDataset(Dataset[ObjectRecord]):
         stored_id = str(group.attrs["object_id"])
         if stored_id != object_id:
             raise ValueError(f"manifest/HDF5 object mismatch: {object_id!r} != {stored_id!r}")
+        stored_gripper_hash = group.attrs.get("gripper_geometry_sha256")
+        if (
+            stored_gripper_hash is not None
+            and str(stored_gripper_hash) != self.manifest.gripper_sha256
+        ):
+            raise ValueError(
+                f"manifest/HDF5 gripper geometry mismatch for {object_id!r}"
+            )
         diagnostics: dict[str, Tensor] = {}
         if "diagnostics" in group:
             diagnostics = {

@@ -8,7 +8,7 @@ import numpy as np
 import torch
 
 from srno.data.dataset import H5ObjectDataset, ObjectRecord
-from srno.data.index import ActiveIndex
+from srno.data.index import ActiveIndex, files_sha256
 from srno.data.schema import (
     NUM_STATES,
     NUM_STEPS,
@@ -84,6 +84,12 @@ def validate_dataset(
                     total_objects += 1
                     if str(group.attrs.get("object_id", "")) != expected_id:
                         errors.append(f"{prefix}: object_id mismatch")
+                    stored_gripper_hash = group.attrs.get("gripper_geometry_sha256")
+                    if (
+                        stored_gripper_hash is not None
+                        and str(stored_gripper_hash) != manifest.gripper_sha256
+                    ):
+                        errors.append(f"{prefix}: gripper geometry hash mismatch")
                     required = {"sdf", "position", "quaternion_xyzw", "actual_aperture"}
                     if not required.issubset(group.keys()):
                         errors.append(f"{prefix}: missing one of {sorted(required)}")
@@ -237,6 +243,7 @@ def build_active_index(
         offsets.append(offsets[-1] + len(pairs))
     index = ActiveIndex(
         manifest.sha256(),
+        files_sha256(tuple(manifest.shard_path(shard) for shard in manifest.shards)),
         gripper.sha256(),
         manifest.delta_gate_m,
         all_ids,

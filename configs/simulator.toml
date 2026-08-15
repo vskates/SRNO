@@ -8,7 +8,7 @@ trajectories_per_object = 100
 successful_seed_poses_only = true
 seed = 0
 overwrite = false
-memory_limit_gib = 12.0
+memory_limit_gib = 14.0
 memory_check_interval_s = 0.25
 
 # After each aperture command, a state is written only after all live
@@ -41,5 +41,5 @@ chunk_points = 8192
 
 [dataset]
 sdf_scale_m = 0.02
-delta_gate_m = 0.00828416645526886
+delta_gate_m = 0.007934210398234427
 split_seed = 0

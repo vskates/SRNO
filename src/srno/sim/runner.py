@@ -8,21 +8,25 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import signal
 import traceback
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
 import h5py
 import numpy as np
 
 from srno.data.schema import DatasetManifest, ShardSpec, objectwise_split
-from srno.geometry.gripper import GripperAsset, preprocess_scheduled_urdf
+from srno.geometry.gripper import GripperAsset
 from srno.sim.assets import SimulatorAssetCatalog
 from srno.sim.config import SimulatorConfig
 from srno.sim.pose_seeds import PoseSeeds
 from srno.sim.memory_guard import MemoryWatchdog
+
+if TYPE_CHECKING:
+    from srno.sim.usd_geometry import DenseSDF
 
 
 def _candidate_pose_order(
@@ -159,6 +163,7 @@ def _collect_inside_app(
 
     from srno.data.writer import H5DatasetWriter
     from srno.sim.collector import QuasistaticCollector
+    from srno.sim.gripper_geometry import preprocess_runtime_gripper
     from srno.sim.isaac_scene import (
         apply_contact_materials,
         make_scene_cfg,
@@ -178,15 +183,18 @@ def _collect_inside_app(
 
     output = config.output_dir
     output.mkdir(parents=True, exist_ok=True)
-    gripper = preprocess_scheduled_urdf(
-        catalog.gripper.source_urdf,
-        finger_links=tuple(catalog.gripper.contact_links),
-        close_joint_positions=catalog.gripper.close_joint_position_rad,
-        samples_per_link=128,
-        seed=config.seed,
-    )
     gripper_path = output / "gripper.npz"
-    gripper.save(gripper_path)
+    previous_gripper = (
+        GripperAsset.load(gripper_path) if gripper_path.is_file() else None
+    )
+    print("[SRNO] extracting runtime USD gripper geometry and kinematics", flush=True)
+    gripper = preprocess_runtime_gripper(
+        app,
+        config,
+        catalog,
+        samples_per_link=128,
+    )
+    gripper_hash = gripper.sha256()
 
     completed: list[str] = []
     for object_id in object_ids:
@@ -204,8 +212,27 @@ def _collect_inside_app(
                     flush=True,
                 )
             else:
+                sdf = load_or_generate_sdf(
+                    record.usd_path,
+                    output / ".cache" / "sdf" / f"{object_id}.npz",
+                    config.sdf,
+                )
+                changed = _replace_shard_sdf(shard_path, object_id, sdf)
+                gripper_changed = _replace_shard_gripper_geometry(
+                    shard_path,
+                    object_id,
+                    previous_gripper,
+                    gripper,
+                )
                 completed.append(object_id)
-                print(f"[SRNO] {object_id}: existing shard retained")
+                sdf_status = "SDF replaced" if changed else "SDF already current"
+                gripper_status = (
+                    "aperture remapped" if gripper_changed else "gripper already current"
+                )
+                print(
+                    f"[SRNO] {object_id}: existing trajectories retained; "
+                    f"{sdf_status}; {gripper_status}"
+                )
                 continue
 
         object_seed = config.seed + int.from_bytes(
@@ -287,6 +314,9 @@ def _collect_inside_app(
                     sdf=sdf.values,
                     grid_origin=sdf.origin_xyz,
                     voxel_size=sdf.voxel_size_xyz,
+                    sdf_representation=sdf.representation,
+                    sdf_geometry_sha256=sdf.geometry_sha256,
+                    gripper_geometry_sha256=gripper_hash,
                     position=trajectories.position,
                     quaternion_xyzw=trajectories.quaternion_xyzw,
                     actual_aperture=trajectories.actual_aperture,
@@ -311,6 +341,7 @@ def _collect_inside_app(
         print(f"[SRNO] {object_id}: wrote {shard_path}")
         _write_collection_metadata(output, config, catalog, completed)
 
+    _atomic_gripper(gripper_path, gripper)
     if len(completed) < 3:
         _write_collection_metadata(output, config, catalog, completed)
         print("[SRNO] fewer than three object shards: manifest deferred until train/val/test split is possible")
@@ -322,7 +353,7 @@ def _collect_inside_app(
         delta_gate_m=config.dataset.delta_gate_m,
         commanded_aperture_m=[float(value) for value in reversed(gripper.aperture_knots.tolist())],
         gripper_asset="gripper.npz",
-        gripper_sha256=gripper.sha256(),
+        gripper_sha256=gripper_hash,
         shards=[
             ShardSpec(path=f"shards/{object_id}.h5", object_ids=(object_id,))
             for object_id in completed
@@ -342,25 +373,144 @@ def _precompute_sdfs(
 ) -> None:
     from srno.sim.usd_geometry import sdf_cache_is_current
 
+    stale: list[str] = []
     for object_id in object_ids:
         record = catalog.object(object_id)
         cache = config.output_dir / ".cache" / "sdf" / f"{object_id}.npz"
-        if sdf_cache_is_current(record.usd_path, cache, config.sdf):
-            continue
-        print(f"[SRNO] {object_id}: precomputing SDF in isolated process")
-        subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "srno.sim.sdf_worker",
-                "--config",
-                str(config.source_path),
-                "--object",
-                object_id,
-            ],
-            check=True,
-            env=dict(os.environ),
-        )
+        if not sdf_cache_is_current(record.usd_path, cache, config.sdf):
+            stale.append(object_id)
+    if not stale:
+        return
+    print(f"[SRNO] precomputing {len(stale)} PhysX-cooked SDF(s) in an isolated process")
+    command = [
+        sys.executable,
+        "-m",
+        "srno.sim.sdf_worker",
+        "--config",
+        str(config.source_path),
+    ]
+    for object_id in stale:
+        command.extend(("--object", object_id))
+    subprocess.run(command, check=True, env=dict(os.environ))
+
+
+def _replace_shard_sdf(path: Path, object_id: str, sdf: "DenseSDF") -> bool:
+    """Atomically replace only SDF geometry while retaining all trajectories."""
+
+    with h5py.File(path, "r") as source:
+        group = source["objects/000000"]
+        if str(group.attrs.get("object_id", "")) != object_id:
+            raise ValueError(f"existing shard {path} does not contain {object_id!r}")
+        if (
+            str(group.attrs.get("sdf_representation", "")) == sdf.representation
+            and str(group.attrs.get("sdf_geometry_sha256", "")) == sdf.geometry_sha256
+        ):
+            return False
+
+    temporary = path.with_suffix(path.suffix + ".sdf.tmp")
+    temporary.unlink(missing_ok=True)
+    try:
+        shutil.copy2(path, temporary)
+        with h5py.File(temporary, "r+") as target:
+            group = target["objects/000000"]
+            del group["sdf"]
+            values = np.asarray(sdf.values, dtype=np.float16)
+            group.create_dataset(
+                "sdf",
+                data=values,
+                chunks=values.shape,
+                compression="lzf",
+                shuffle=True,
+            )
+            group.attrs["grid_origin"] = np.asarray(sdf.origin_xyz, dtype=np.float32)
+            group.attrs["voxel_size"] = np.asarray(sdf.voxel_size_xyz, dtype=np.float32)
+            group.attrs["sdf_representation"] = sdf.representation
+            group.attrs["sdf_geometry_sha256"] = sdf.geometry_sha256
+            target.flush()
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+    return True
+
+
+def _replace_shard_gripper_geometry(
+    path: Path,
+    object_id: str,
+    source: GripperAsset | None,
+    target: GripperAsset,
+) -> bool:
+    """Atomically remap aperture scalars to the runtime gripper schedule.
+
+    Object poses and diagnostics describe the same simulation and stay intact.
+    The monotone knot-to-knot mapping only changes the metric aperture assigned
+    to each measured joint closure fraction.
+    """
+
+    target_hash = target.sha256()
+    with h5py.File(path, "r") as handle:
+        group = handle["objects/000000"]
+        if str(group.attrs.get("object_id", "")) != object_id:
+            raise ValueError(f"existing shard {path} does not contain {object_id!r}")
+        stored_hash = group.attrs.get("gripper_geometry_sha256")
+        if stored_hash is not None and str(stored_hash) == target_hash:
+            return False
+        if source is None:
+            raise ValueError(
+                f"cannot migrate {path}: the source gripper asset is missing"
+            )
+        source_hash = source.sha256()
+        if stored_hash is not None and str(stored_hash) != source_hash:
+            raise ValueError(
+                f"cannot migrate {path}: its gripper hash matches neither source nor target"
+            )
+        if stored_hash is None and source_hash == target_hash:
+            raise ValueError(
+                f"cannot migrate unversioned aperture values in {path}: "
+                "the previous gripper scale is no longer available"
+            )
+        source_knots = source.aperture_knots
+        target_knots = target.aperture_knots
+        if (
+            source_knots is None
+            or target_knots is None
+            or source_knots.shape != target_knots.shape
+        ):
+            raise ValueError("gripper aperture migration requires matching scheduled assets")
+        old_aperture = np.asarray(group["actual_aperture"][...], dtype=np.float32)
+
+    old_knots = source_knots.detach().cpu().numpy().astype(np.float64)
+    new_knots = target_knots.detach().cpu().numpy().astype(np.float64)
+    tolerance = 1e-6
+    if (
+        old_aperture.min() < old_knots[0] - tolerance
+        or old_aperture.max() > old_knots[-1] + tolerance
+    ):
+        raise ValueError(f"cannot migrate {path}: aperture lies outside source limits")
+    remapped = np.interp(old_aperture, old_knots, new_knots).astype(np.float32)
+
+    temporary = path.with_suffix(path.suffix + ".gripper.tmp")
+    temporary.unlink(missing_ok=True)
+    try:
+        shutil.copy2(path, temporary)
+        with h5py.File(temporary, "r+") as handle:
+            group = handle["objects/000000"]
+            group["actual_aperture"][...] = remapped
+            group.attrs["gripper_geometry_sha256"] = target_hash
+            handle.flush()
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+    return True
+
+
+def _atomic_gripper(path: Path, gripper: GripperAsset) -> None:
+    temporary = path.with_name(f"{path.stem}.tmp{path.suffix}")
+    temporary.unlink(missing_ok=True)
+    try:
+        gripper.save(temporary)
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def _check_existing_shard(

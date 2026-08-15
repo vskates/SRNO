@@ -49,6 +49,9 @@ class H5DatasetWriter:
         sdf: np.ndarray,
         grid_origin: np.ndarray,
         voxel_size: np.ndarray | float,
+        sdf_representation: str | None = None,
+        sdf_geometry_sha256: str | None = None,
+        gripper_geometry_sha256: str | None = None,
         position: np.ndarray,
         quaternion_xyzw: np.ndarray,
         actual_aperture: np.ndarray,
@@ -89,6 +92,12 @@ class H5DatasetWriter:
         group.attrs["object_id"] = object_id
         group.attrs["grid_origin"] = origin
         group.attrs["voxel_size"] = spacing
+        if sdf_representation is not None:
+            group.attrs["sdf_representation"] = str(sdf_representation)
+        if sdf_geometry_sha256 is not None:
+            group.attrs["sdf_geometry_sha256"] = str(sdf_geometry_sha256)
+        if gripper_geometry_sha256 is not None:
+            group.attrs["gripper_geometry_sha256"] = str(gripper_geometry_sha256)
         group.create_dataset(
             "sdf",
             data=sdf.astype(np.float16),

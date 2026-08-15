@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import h5py
 import numpy as np
 import pytest
+import torch
 
 from srno.data.dataset import (
     H5ObjectDataset,
@@ -14,6 +16,9 @@ from srno.data.dataset import (
 from srno.data.index import ActiveIndex
 from srno.data.schema import DatasetManifest, objectwise_split
 from srno.data.tools import build_active_index, calibrate_gate, validate_dataset
+from srno.geometry.gripper import GripperAsset
+from srno.sim.runner import _replace_shard_gripper_geometry, _replace_shard_sdf
+from srno.sim.usd_geometry import DenseSDF
 
 
 def test_manifest_dataset_validation_and_lazy_loading(dataset_bundle: Path) -> None:
@@ -86,6 +91,92 @@ def test_active_index_local_collation_and_gate_calibration(
     calibration = calibrate_gate(dataset_bundle, target_recall=0.995)
     assert calibration["contact_recall"] == 1.0
     assert calibration["recommended_delta_gate_m"] >= 0.02009
+
+
+def test_active_index_rejects_modified_sdf_shard(
+    dataset_bundle: Path, tmp_path: Path
+) -> None:
+    active = build_active_index(dataset_bundle, tmp_path / "active.npz")
+    manifest = DatasetManifest.load(dataset_bundle)
+    shard = manifest.shard_path(manifest.shards[0])
+    with h5py.File(shard, "r+") as handle:
+        handle["objects/000000/sdf"][0, 0, 0] = np.float16(0.125)
+    with pytest.raises(ValueError, match="active index is stale"):
+        H5ObjectDataset(manifest, split="train", active_index=active, active_only=True)
+
+
+def test_sdf_replacement_preserves_trajectory_arrays(dataset_bundle: Path) -> None:
+    manifest = DatasetManifest.load(dataset_bundle)
+    shard = manifest.shard_path(manifest.shards[0])
+    with h5py.File(shard, "r") as handle:
+        group = handle["objects/000000"]
+        before = {
+            name: group[name][...]
+            for name in ("position", "quaternion_xyzw", "actual_aperture")
+        }
+    dense = DenseSDF(
+        np.full((8, 8, 8), 0.0125, dtype=np.float32),
+        np.full(3, -0.025, dtype=np.float32),
+        np.full(3, 0.005, dtype=np.float32),
+        "a" * 64,
+        "physx_cooked_convex_decomposition",
+    )
+    assert _replace_shard_sdf(shard, "object-0", dense)
+    assert not _replace_shard_sdf(shard, "object-0", dense)
+    with h5py.File(shard, "r") as handle:
+        group = handle["objects/000000"]
+        for name, expected in before.items():
+            np.testing.assert_array_equal(group[name][...], expected)
+        np.testing.assert_array_equal(group["sdf"][...], dense.values.astype(np.float16))
+        assert group.attrs["sdf_representation"] == dense.representation
+        assert group.attrs["sdf_geometry_sha256"] == dense.geometry_sha256
+
+
+def test_gripper_migration_remaps_only_aperture(dataset_bundle: Path) -> None:
+    manifest = DatasetManifest.load(dataset_bundle)
+    shard = manifest.shard_path(manifest.shards[0])
+    source_affine = GripperAsset.load(manifest.gripper_path)
+    old_knots = torch.linspace(0.0, 0.08, 33)
+    source_points = source_affine.points(old_knots)
+    source = GripperAsset(
+        source_affine.intercept,
+        source_affine.slope,
+        source_affine.link_index,
+        0.0,
+        0.08,
+        0.08,
+        "old-runtime",
+        old_knots,
+        source_points,
+    )
+    new_knots = torch.linspace(0.01, 0.11, 33)
+    target_points = source_points + torch.tensor([0.002, 0.0, 0.0])
+    target_slope = (target_points[-1] - target_points[0]) / 0.1
+    target = GripperAsset(
+        target_points[0] - 0.01 * target_slope,
+        target_slope,
+        source.link_index,
+        0.01,
+        0.11,
+        0.11,
+        "new-runtime",
+        new_knots,
+        target_points,
+    )
+    with h5py.File(shard, "r") as handle:
+        group = handle["objects/000000"]
+        position = group["position"][...]
+        quaternion = group["quaternion_xyzw"][...]
+
+    assert _replace_shard_gripper_geometry(shard, "object-0", source, target)
+    assert not _replace_shard_gripper_geometry(shard, "object-0", source, target)
+    with h5py.File(shard, "r") as handle:
+        group = handle["objects/000000"]
+        np.testing.assert_array_equal(group["position"][...], position)
+        np.testing.assert_array_equal(group["quaternion_xyzw"][...], quaternion)
+        expected = np.linspace(0.11, 0.01, 33, dtype=np.float32)
+        np.testing.assert_allclose(group["actual_aperture"][0], expected, atol=1e-7)
+        assert group.attrs["gripper_geometry_sha256"] == target.sha256()
 
 
 def test_zero_samples_means_complete_object_coverage(

@@ -75,7 +75,9 @@ class QuasistaticCollector:
         self.close_joint_target = self._ordered_joint_target(
             catalog.gripper.close_joint_position_rad
         )
-        self.open_joint_target = torch.zeros_like(self.close_joint_target)
+        self.open_joint_target = self._ordered_joint_target(
+            catalog.gripper.open_joint_position_rad
+        )
         self._root_position = torch.zeros((self.env_count, 3), device=self.device)
         self._root_quaternion = torch.zeros((self.env_count, 4), device=self.device)
 
@@ -350,18 +352,22 @@ class QuasistaticCollector:
     def _actual_aperture(
         self, joint_position: torch.Tensor | None = None
     ) -> torch.Tensor:
-        # Express the measured six-joint state in the same metric aperture used
-        # by the schedule-indexed surface asset.  Runtime USD and source URDF use
-        # different finger-link origins, so measuring their raw separation would
-        # introduce a centimetre-scale inconsistency between state and geometry.
-        denominator = torch.sum(self.close_joint_target.square()).clamp_min(1e-8)
+        # Project the measured six-joint state onto the same closure fraction
+        # used to sample the runtime USD asset, then interpolate its metric
+        # finger-origin aperture.  This keeps state and surface geometry on one
+        # schedule even when the coupled revolute motion is nonlinear.
+        joint_range = self.close_joint_target - self.open_joint_target
+        denominator = torch.sum(joint_range.square()).clamp_min(1e-8)
         measured_joint_position = (
             self.robot.data.joint_pos
             if joint_position is None
             else joint_position
         )
         closure_fraction = (
-            torch.sum(measured_joint_position * self.close_joint_target, dim=-1)
+            torch.sum(
+                (measured_joint_position - self.open_joint_target) * joint_range,
+                dim=-1,
+            )
             / denominator
         ).clamp(0.0, 1.0)
         schedule_position = closure_fraction * float(len(self.commanded_aperture) - 1)

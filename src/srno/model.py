@@ -124,6 +124,14 @@ class SRNOModel(nn.Module):
         self.register_buffer("surface_intercept", gripper.intercept.float())
         self.register_buffer("surface_slope", gripper.slope.float())
         self.register_buffer("surface_link_index", gripper.link_index.long())
+        self.register_buffer(
+            "surface_aperture_knots",
+            None if gripper.aperture_knots is None else gripper.aperture_knots.float(),
+        )
+        self.register_buffer(
+            "surface_point_knots",
+            None if gripper.point_knots is None else gripper.point_knots.float(),
+        )
         self.contact_cell = ContactIntegralCell(hidden_dim)
         self._pair_feature_cache: dict[tuple[float, str, torch.dtype], Tensor] = {}
 
@@ -139,7 +147,26 @@ class SRNOModel(nn.Module):
         aperture_tensor = torch.as_tensor(
             aperture, dtype=self.surface_intercept.dtype, device=self.surface_intercept.device
         )
-        return self.surface_intercept + aperture_tensor[..., None, None] * self.surface_slope
+        if self.surface_aperture_knots is None or self.surface_point_knots is None:
+            return self.surface_intercept + aperture_tensor[..., None, None] * self.surface_slope
+
+        flat = aperture_tensor.reshape(-1)
+        upper = torch.searchsorted(self.surface_aperture_knots, flat).clamp(
+            1, len(self.surface_aperture_knots) - 1
+        )
+        lower = upper - 1
+        low_aperture = self.surface_aperture_knots.index_select(0, lower)
+        high_aperture = self.surface_aperture_knots.index_select(0, upper)
+        alpha = (flat - low_aperture) / (high_aperture - low_aperture)
+        low_points = self.surface_point_knots.index_select(0, lower)
+        high_points = self.surface_point_knots.index_select(0, upper)
+        interpolated = low_points + alpha[:, None, None] * (high_points - low_points)
+        distance = torch.abs(flat[:, None] - self.surface_aperture_knots[None, :])
+        exact_distance, exact_index = distance.min(dim=-1)
+        exact = exact_distance <= 4.0 * torch.finfo(flat.dtype).eps
+        exact_points = self.surface_point_knots.index_select(0, exact_index)
+        interpolated = torch.where(exact[:, None, None], exact_points, interpolated)
+        return interpolated.reshape(aperture_tensor.shape + (self.point_count, 3))
 
     def _cached_pair_features(self, command: Tensor) -> tuple[Tensor, Tensor]:
         value = float(command.detach().cpu())

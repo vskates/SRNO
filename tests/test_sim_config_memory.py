@@ -18,7 +18,7 @@ def test_simulator_config_is_minimal_and_zero_gravity_mode_has_memory_guard() ->
     assert config.num_envs == 100
     assert config.trajectories_per_object == 100
     assert config.trajectory.command_steps == 32
-    assert config.memory_limit_gib == 12.0
+    assert config.memory_limit_gib == 14.0
     assert config.memory_check_interval_s == 0.25
     assert config.relaxation.object_linear_damping_s_inv > 0.0
     assert config.relaxation.object_angular_damping_s_inv > 0.0

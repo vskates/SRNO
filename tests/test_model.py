@@ -80,6 +80,31 @@ def test_32_step_free_rollout_is_exact(gripper: GripperAsset) -> None:
     assert torch.allclose(rollout.aperture[:, 1:], schedule.expand(2, 32))
 
 
+def test_model_uses_schedule_indexed_gripper_geometry(gripper: GripperAsset) -> None:
+    apertures = torch.tensor([0.0, 0.04, 0.08])
+    points = torch.stack(
+        (
+            gripper.points(0.0),
+            gripper.points(0.04) + torch.tensor([0.0, 0.0, 0.01]),
+            gripper.points(0.08),
+        )
+    )
+    scheduled = GripperAsset(
+        gripper.intercept,
+        gripper.slope,
+        gripper.link_index,
+        0.0,
+        0.08,
+        0.08,
+        "scheduled",
+        apertures,
+        points,
+    )
+    model = SRNOModel(scheduled, sdf_scale=0.02, delta_gate=0.005)
+    assert torch.equal(model.gripper_points(apertures), points)
+    assert torch.allclose(model.gripper_points(0.02), 0.5 * (points[0] + points[1]))
+
+
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA is unavailable")
 def test_cpu_cuda_contact_outputs_agree(gripper: GripperAsset) -> None:
     torch.manual_seed(7)
@@ -92,4 +117,3 @@ def test_cpu_cuda_contact_outputs_agree(gripper: GripperAsset) -> None:
     assert isinstance(cpu_result, PoseState) and isinstance(gpu_result, PoseState)
     assert torch.allclose(cpu_result.position, gpu_result.position.cpu(), atol=2e-5)
     assert torch.allclose(cpu_result.aperture, gpu_result.aperture.cpu(), atol=2e-5)
-

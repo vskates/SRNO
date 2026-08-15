@@ -5,8 +5,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from srno.geometry.gripper import GripperAsset, preprocess_scheduled_urdf, preprocess_urdf
-from srno.sim import SimulatorAssetCatalog
+from srno.geometry.gripper import GripperAsset, preprocess_urdf
 
 
 URDF_TEMPLATE = """<?xml version="1.0"?>
@@ -72,12 +71,24 @@ def test_urdf_preprocessing_rejects_non_affine_motion(tmp_path: Path) -> None:
         )
 
 
-def test_astribot_schedule_asset_preserves_all_33_exact_states(tmp_path: Path) -> None:
-    catalog = SimulatorAssetCatalog.load()
-    asset = preprocess_scheduled_urdf(
-        catalog.gripper.source_urdf,
-        finger_links=tuple(catalog.gripper.contact_links),
-        close_joint_positions=catalog.gripper.close_joint_position_rad,
+def test_schedule_asset_preserves_all_33_exact_states(tmp_path: Path) -> None:
+    apertures = torch.linspace(0.01, 0.11, 33)
+    points = torch.zeros(33, 256, 3)
+    points[:, :128, 0] = 0.5 * apertures[:, None]
+    points[:, 128:, 0] = -0.5 * apertures[:, None]
+    points[:, :, 2] = torch.linspace(0.08, 0.17, 33)[:, None].square()
+    slope = (points[-1] - points[0]) / (apertures[-1] - apertures[0])
+    intercept = points[0] - apertures[0] * slope
+    asset = GripperAsset(
+        intercept,
+        slope,
+        torch.cat((torch.zeros(128), torch.ones(128))).long(),
+        float(apertures[0]),
+        float(apertures[-1]),
+        float(apertures[-1]),
+        "runtime-usd",
+        apertures,
+        points,
     )
     assert asset.point_count == 256
     assert asset.aperture_knots is not None
