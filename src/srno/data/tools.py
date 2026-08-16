@@ -43,6 +43,7 @@ def validate_dataset(
         else DatasetManifest.load(manifest_or_path)
     )
     errors: list[str] = []
+    asset: GripperAsset | None = None
     if not manifest.gripper_path.is_file():
         errors.append(f"gripper asset does not exist: {manifest.gripper_path}")
     else:
@@ -61,7 +62,6 @@ def validate_dataset(
     total_objects = 0
     total_trajectories = 0
     diagnostic_names: set[str] = set()
-    schedule = np.asarray(manifest.commanded_aperture_m, dtype=np.float32)
     for shard in manifest.shards:
         path = manifest.shard_path(shard)
         if not path.is_file():
@@ -91,6 +91,8 @@ def validate_dataset(
                     ):
                         errors.append(f"{prefix}: gripper geometry hash mismatch")
                     required = {"sdf", "position", "quaternion_xyzw", "actual_aperture"}
+                    if asset is not None and asset.supports_joint_fk:
+                        required.add("joint_position")
                     if not required.issubset(group.keys()):
                         errors.append(f"{prefix}: missing one of {sorted(required)}")
                         continue
@@ -127,11 +129,50 @@ def validate_dataset(
                         norm_error = np.max(np.abs(np.linalg.norm(quaternion, axis=-1) - 1))
                         if norm_error > 1e-3:
                             errors.append(f"{prefix}: quaternion norm error {norm_error:.3e}")
-                    if aperture.shape == (trajectories, NUM_STATES):
-                        if np.any(np.diff(aperture, axis=1) > 1e-6):
-                            errors.append(f"{prefix}: actual aperture is not monotone")
-                        if np.any(aperture < schedule[None, :] - 1e-6):
-                            errors.append(f"{prefix}: actual aperture is below commanded aperture")
+                    if aperture.shape == (trajectories, NUM_STATES) and asset is not None:
+                        if np.any(aperture < asset.aperture_min - 1e-6) or np.any(
+                            aperture > asset.aperture_max + 1e-6
+                        ):
+                            errors.append(f"{prefix}: actual aperture is outside gripper limits")
+                    if "joint_position" in group:
+                        joint_position = group["joint_position"]
+                        if joint_position.shape != (trajectories, NUM_STATES, 6):
+                            errors.append(f"{prefix}: invalid joint_position shape")
+                        elif not np.issubdtype(joint_position.dtype, np.floating):
+                            errors.append(f"{prefix}: joint_position must be floating point")
+                        elif not np.isfinite(joint_position[...]).all():
+                            errors.append(f"{prefix}: joint_position contains non-finite values")
+                        raw_joint_names = joint_position.attrs.get("joint_names", ())
+                        joint_names = tuple(
+                            value.decode("utf-8") if isinstance(value, bytes) else str(value)
+                            for value in raw_joint_names
+                        )
+                        if len(joint_names) != 6 or len(set(joint_names)) != 6:
+                            errors.append(
+                                f"{prefix}: joint_position must define six unique joint_names"
+                            )
+                        elif asset is not None and asset.supports_joint_fk:
+                            if joint_names != asset.joint_names:
+                                errors.append(
+                                    f"{prefix}: joint order does not match gripper asset"
+                                )
+                            elif joint_position.shape == (trajectories, NUM_STATES, 6):
+                                derived_aperture = (
+                                    asset.aperture_from_joints(
+                                        torch.from_numpy(joint_position[...]).float()
+                                    )
+                                    .detach()
+                                    .cpu()
+                                    .numpy()
+                                )
+                                maximum_error = float(
+                                    np.max(np.abs(derived_aperture - aperture))
+                                )
+                                if maximum_error > 1e-5:
+                                    errors.append(
+                                        f"{prefix}: actual_aperture is not A(r); "
+                                        f"max error {maximum_error:.3e} m"
+                                    )
                     if "source_pose_index" in group:
                         source_pose_index = group["source_pose_index"][...]
                         if source_pose_index.shape != (trajectories,):
@@ -169,6 +210,7 @@ def _trial_minimum_gaps(
     *,
     device: torch.device,
     outside_value: float,
+    contact_offset_sum: float,
 ) -> np.ndarray:
     position = record.position.to(device=device, dtype=torch.float32)
     rotation = quaternion_xyzw_to_matrix(
@@ -178,12 +220,17 @@ def _trial_minimum_gaps(
     origin = record.origin.to(device=device)
     voxel = record.voxel_size.to(device=device)
     gripper = gripper.to(device)
+    if not gripper.supports_joint_fk:
+        raise ValueError("active-index generation requires a joint-FK gripper asset")
     trajectories = position.shape[0]
     result = torch.empty((trajectories, NUM_STEPS), device=device)
     mapping = torch.zeros(trajectories, dtype=torch.long, device=device)
     with torch.no_grad():
         for step in range(NUM_STEPS):
-            points = gripper.points(schedule[step + 1]).expand(trajectories, -1, -1)
+            trial_joint = gripper.free_joint_configuration(schedule[step + 1])
+            points = gripper.points_from_joints(trial_joint).expand(
+                trajectories, -1, -1
+            )
             relative = points - position[:, step, None, :]
             points_object = torch.einsum(
                 "bij,bmj->bmi", rotation[:, step].transpose(-1, -2), relative
@@ -196,7 +243,7 @@ def _trial_minimum_gaps(
                 sample_to_object=mapping,
                 outside_value=outside_value,
             )
-            result[:, step] = gaps.amin(dim=-1)
+            result[:, step] = gaps.amin(dim=-1) - contact_offset_sum
     return result.cpu().numpy()
 
 
@@ -227,6 +274,7 @@ def build_active_index(
                     schedule,
                     device=torch.device(device),
                     outside_value=manifest.sdf_scale_m,
+                    contact_offset_sum=manifest.contact_offset_sum_m,
                 )
                 pairs_by_id[record.object_id] = np.argwhere(
                     minimum_gap <= manifest.delta_gate_m
@@ -273,10 +321,16 @@ def calibrate_gate(
     contact_gaps: list[np.ndarray] = []
     free_gaps: list[np.ndarray] = []
     maximum_voxel = 0.0
-    for split in ("train", "val"):
+    # Contact statistics are calibrated on train+val only. The geometric
+    # resolution bound must nevertheless cover every deployed split, because
+    # the manifest validator requires voxel_size < delta_gate / 2 globally.
+    for split in ("train", "val", "test"):
         dataset = H5ObjectDataset(manifest, split=split)
         try:
             for record in dataset:
+                maximum_voxel = max(maximum_voxel, float(record.voxel_size.max()))
+                if split == "test":
+                    continue
                 if "contact_count" not in record.diagnostics:
                     raise ValueError("gate calibration requires contact_count diagnostics")
                 gaps = _trial_minimum_gaps(
@@ -285,11 +339,11 @@ def calibrate_gate(
                     schedule,
                     device=torch.device(device),
                     outside_value=manifest.sdf_scale_m,
+                    contact_offset_sum=manifest.contact_offset_sum_m,
                 )
                 contacts = record.diagnostics["contact_count"].numpy() > 0
                 contact_gaps.append(gaps[contacts])
                 free_gaps.append(gaps[~contacts])
-                maximum_voxel = max(maximum_voxel, float(record.voxel_size.max()))
         finally:
             dataset.close()
     contact = np.concatenate(contact_gaps)

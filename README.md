@@ -24,7 +24,7 @@ registers Python 3.12 pytest plugins globally, while the Isaac environment uses 
 
 ## Frozen validation assets
 
-The repository vendors the exact gripper and 29 product assets selected by the active
+The repository vendors the exact gripper and 28 product assets selected by the active
 `graspvalidation` configuration under `assets/`. This removes the runtime dependency on
 `vv_assets`:
 
@@ -95,7 +95,9 @@ with H5DatasetWriter("data/shard-000.h5") as writer:
         voxel_size=voxel_size_xyz,      # [3]
         position=position_m,            # [T, 33, 3]
         quaternion_xyzw=quaternion,     # [T, 33, 4]
-        actual_aperture=aperture_m,     # [T, 33]
+        joint_position=joint_rad,       # [T, 33, 6], actual PhysX joints
+        joint_names=joint_names,        # runtime articulation order
+        actual_aperture=aperture_m,     # [T, 33], derived A(joint_position)
         diagnostics={                   # optional, never used as ML targets
             "contact_count": contact_count,       # [T, 32]
             "actuator_effort": actuator_effort,   # [T, 32]
@@ -113,8 +115,8 @@ is stored once no matter how many initial gripper configurations are simulated.
 
 Construct `DatasetManifest` with `DatasetManifest.create(...)`; shard object IDs and the
 object-wise train/val/test split must match exactly. The validator additionally enforces
-`max(voxel_size) < delta_gate / 2`, normalized quaternions, monotone actual aperture, and
-`actual_aperture >= commanded_aperture`.
+`max(voxel_size) < delta_gate / 2`, normalized quaternions, the six-joint ordering from
+the gripper asset, and consistency of the diagnostic `actual_aperture = A(r)`.
 
 ## Gripper preprocessing
 
@@ -132,9 +134,10 @@ srno gripper preprocess \
 
 Each joint map is `joint_position = OFFSET + MULTIPLIER * aperture`. URDF joint axes carry
 their own signs. Preprocessing samples 128 collision-surface points per finger and rejects
-non-affine finger motion. The vendored Astribot mechanism is intentionally represented by
-33 exact schedule knots instead: `srno sim collect` deterministically builds this compact
-asset from the source URDF, so its linkage is not approximated as affine.
+non-affine finger motion. The vendored Astribot runtime path instead samples its actual
+USD collision hulls and stores a six-joint differentiable FK plus the 33 empty-gripper
+joint configurations. Input gaps, contact gating, and feasibility therefore all use
+`points_from_joints(r)`; scalar aperture is only an evaluation diagnostic.
 
 ## Validation and training
 
@@ -144,11 +147,11 @@ srno dataset calibrate-gate data/manifest.json --device cuda
 srno dataset build-active-index data/manifest.json \
   --output data/active-index.npz --device cuda
 
-srno train --config configs/default.toml --stage local
-srno train --config configs/default.toml --stage rollout \
-  --resume runs/srno-contact-v1-full-coverage/best-local.pt
-srno evaluate --config configs/default.toml \
-  --checkpoint runs/srno-contact-v1-full-coverage/best-rollout.pt --split test
+srno train --config configs/srno-r-joint-diagnostic.toml --stage local
+srno train --config configs/srno-r-joint-diagnostic.toml --stage rollout \
+  --resume runs/srno-r-joint-diagnostic/best-local.pt
+srno evaluate --config configs/srno-r-joint-diagnostic.toml \
+  --checkpoint runs/srno-r-joint-diagnostic/best-rollout.pt --split test
 ```
 
 Gate calibration requires `contact_count` diagnostics and recommends the smallest
@@ -156,6 +159,11 @@ threshold attaining 99.5% simulator-contact recall while also respecting voxel
 resolution. The local stage reads only indexed active transitions. Rollout training is
 autoregressive with horizons 4, 8, 16, and 32; no free-space, stall, force, or grasp-quality
 auxiliary losses are present.
+
+The learned head predicts a spatial object correction and six normalized contact-joint
+residuals. State loss normalizes every joint error by that joint's free travel range.
+The 2.56 mm PhysX contact envelope is subtracted only for contact gating; geometric
+feasibility always queries the raw cooked-collider SDF.
 
 Loader sizes are minibatch chunk sizes, not dataset subsampling limits. In every training
 epoch the complete-coverage sampler visits each active train transition or trajectory

@@ -31,6 +31,8 @@ ALIGNMENT_POSITION = (0.0, 0.0, 0.045)
 class CollectedTrajectories:
     position: np.ndarray
     quaternion_xyzw: np.ndarray
+    joint_position: np.ndarray
+    joint_names: tuple[str, ...]
     actual_aperture: np.ndarray
     diagnostics: dict[str, np.ndarray]
     source_pose_index: np.ndarray
@@ -424,6 +426,7 @@ class QuasistaticCollector:
         states = 33
         accepted_position: list[np.ndarray] = []
         accepted_quaternion: list[np.ndarray] = []
+        accepted_joint_position: list[np.ndarray] = []
         accepted_aperture: list[np.ndarray] = []
         accepted_source_index: list[np.ndarray] = []
         accepted_diagnostics: dict[str, list[np.ndarray]] = {
@@ -457,6 +460,9 @@ class QuasistaticCollector:
             )
             position = np.empty((live, states, 3), dtype=np.float32)
             quaternion = np.empty((live, states, 4), dtype=np.float32)
+            joint_position = np.empty(
+                (live, states, len(self.robot.data.joint_names)), dtype=np.float32
+            )
             aperture = np.empty((live, states), dtype=np.float32)
             diagnostics = {
                 "contact_count": np.empty((live, 32), dtype=np.float32),
@@ -500,9 +506,10 @@ class QuasistaticCollector:
             )
             position[:, 0] = state_position[:live].cpu().numpy()
             quaternion[:, 0] = state_quaternion[:live, (1, 2, 3, 0)].cpu().numpy()
-            aperture[:, 0] = torch.maximum(
-                state_aperture[:live], self.commanded_aperture[0]
-            ).cpu().numpy()
+            joint_position[:, 0] = initial_settling.joint_position[:live].cpu().numpy()
+            # Aperture is a derived diagnostic A(r), never an independently
+            # canonicalized state variable.
+            aperture[:, 0] = state_aperture[:live].cpu().numpy()
             previous_quaternion = state_quaternion
             for command_index in range(1, states):
                 if not bool(torch.any(valid)):
@@ -533,13 +540,8 @@ class QuasistaticCollector:
                 state_index = command_index
                 position[:, state_index] = state_position[:live].cpu().numpy()
                 quaternion[:, state_index] = state_quaternion[:live, (1, 2, 3, 0)].cpu().numpy()
-                lower = self.commanded_aperture[state_index]
-                previous = torch.from_numpy(aperture[:, state_index - 1]).to(self.device)
-                canonical_aperture = torch.maximum(
-                    lower,
-                    torch.minimum(previous, measured_aperture[:live]),
-                )
-                aperture[:, state_index] = canonical_aperture.cpu().numpy()
+                joint_position[:, state_index] = settling.joint_position[:live].cpu().numpy()
+                aperture[:, state_index] = measured_aperture[:live].cpu().numpy()
                 diagnostic_index = command_index - 1
                 diagnostics["contact_count"][:, diagnostic_index] = (
                     settling.contact_count[:live].cpu().numpy()
@@ -572,6 +574,9 @@ class QuasistaticCollector:
             if batch_accepted:
                 accepted_position.append(position[accepted_local].copy())
                 accepted_quaternion.append(quaternion[accepted_local].copy())
+                accepted_joint_position.append(
+                    joint_position[accepted_local].copy()
+                )
                 accepted_aperture.append(aperture[accepted_local].copy())
                 accepted_source_index.append(
                     seeds.source_index[start:stop][accepted_local].copy()
@@ -596,6 +601,8 @@ class QuasistaticCollector:
         return CollectedTrajectories(
             np.concatenate(accepted_position, axis=0),
             np.concatenate(accepted_quaternion, axis=0),
+            np.concatenate(accepted_joint_position, axis=0),
+            tuple(self.robot.data.joint_names),
             np.concatenate(accepted_aperture, axis=0),
             {
                 name: np.concatenate(chunks, axis=0)

@@ -55,6 +55,8 @@ class H5DatasetWriter:
         position: np.ndarray,
         quaternion_xyzw: np.ndarray,
         actual_aperture: np.ndarray,
+        joint_position: np.ndarray | None = None,
+        joint_names: tuple[str, ...] | list[str] | None = None,
         source_pose_index: np.ndarray | None = None,
         diagnostics: Mapping[str, np.ndarray] | None = None,
     ) -> None:
@@ -77,6 +79,19 @@ class H5DatasetWriter:
             raise ValueError("quaternion_xyzw has an invalid shape")
         if actual_aperture.shape != (trajectories, NUM_STATES):
             raise ValueError("actual_aperture has an invalid shape")
+        if (joint_position is None) != (joint_names is None):
+            raise ValueError("joint_position and joint_names must be provided together")
+        if joint_position is not None and joint_names is not None:
+            joint_position = np.asarray(joint_position, dtype=np.float32)
+            names = tuple(map(str, joint_names))
+            if joint_position.shape != (trajectories, NUM_STATES, 6):
+                raise ValueError(
+                    f"joint_position must have shape [trajectories, {NUM_STATES}, 6]"
+                )
+            if len(names) != 6 or len(set(names)) != 6 or any(not name for name in names):
+                raise ValueError("joint_names must contain exactly six unique names")
+            if not np.isfinite(joint_position).all():
+                raise ValueError("joint_position contains non-finite values")
         if source_pose_index is not None:
             source_pose_index = np.asarray(source_pose_index, dtype=np.int64)
             if source_pose_index.shape != (trajectories,) or np.any(source_pose_index < 0):
@@ -127,6 +142,17 @@ class H5DatasetWriter:
             compression="lzf",
             shuffle=True,
         )
+        if joint_position is not None and joint_names is not None:
+            joint_dataset = group.create_dataset(
+                "joint_position",
+                data=joint_position,
+                chunks=(chunk_trajectories, NUM_STATES, 6),
+                compression="lzf",
+                shuffle=True,
+            )
+            joint_dataset.attrs["joint_names"] = np.asarray(
+                tuple(map(str, joint_names)), dtype=h5py.string_dtype("utf-8")
+            )
         if source_pose_index is not None:
             group.create_dataset(
                 "source_pose_index",

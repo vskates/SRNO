@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import math
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -22,8 +23,9 @@ class ModelConfig:
 @dataclass(frozen=True)
 class LossConfig:
     lambda_rotation: float = 1.0
-    lambda_aperture: float = 1.0
+    lambda_joints: float = 1.0
     lambda_feasibility: float = 1.0
+    admissible_gap_m: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -98,6 +100,8 @@ class ExperimentConfig:
     def validate(self) -> None:
         if self.model.hidden_dim <= 0:
             raise ValueError("hidden_dim must be positive")
+        if not math.isfinite(self.loss.admissible_gap_m):
+            raise ValueError("admissible_gap_m must be finite")
         if (
             self.loader.objects_per_batch <= 0
             or self.loader.local_samples_per_object <= 0

@@ -31,6 +31,7 @@ class ObjectRecord:
     active_pairs: Tensor | None
     diagnostics: dict[str, Tensor]
     sample_indices: Tensor | None = None
+    joint_position: Tensor | None = None
 
 
 @dataclass(frozen=True)
@@ -45,6 +46,7 @@ class LocalTransitionBatch:
     current: PoseState
     target: PoseState
     next_command: Tensor
+    target_aperture: Tensor
     object_ids: tuple[str, ...]
     trajectory_index: Tensor
     step_index: Tensor
@@ -55,6 +57,7 @@ class LocalTransitionBatch:
             self.current.to(device=device, non_blocking=non_blocking),
             self.target.to(device=device, non_blocking=non_blocking),
             self.next_command.to(device=device, non_blocking=non_blocking),
+            self.target_aperture.to(device=device, non_blocking=non_blocking),
             self.object_ids,
             self.trajectory_index.to(device=device, non_blocking=non_blocking),
             self.step_index.to(device=device, non_blocking=non_blocking),
@@ -69,6 +72,7 @@ class LocalTransitionBatch:
             _pin_state(self.current),
             _pin_state(self.target),
             self.next_command.pin_memory(),
+            self.target_aperture.pin_memory(),
             self.object_ids,
             self.trajectory_index.pin_memory(),
             self.step_index.pin_memory(),
@@ -80,6 +84,7 @@ class TrajectoryBatch:
     sdf: SDFBatch
     states: PoseState
     command_schedule: Tensor
+    actual_aperture: Tensor
     object_ids: tuple[str, ...]
     trajectory_index: Tensor
 
@@ -88,6 +93,7 @@ class TrajectoryBatch:
             self.sdf.to(device=device, non_blocking=non_blocking),
             self.states.to(device=device, non_blocking=non_blocking),
             self.command_schedule.to(device=device, non_blocking=non_blocking),
+            self.actual_aperture.to(device=device, non_blocking=non_blocking),
             self.object_ids,
             self.trajectory_index.to(device=device, non_blocking=non_blocking),
         )
@@ -97,13 +103,18 @@ class TrajectoryBatch:
             _pin_sdf(self.sdf),
             _pin_state(self.states),
             self.command_schedule.pin_memory(),
+            self.actual_aperture.pin_memory(),
             self.object_ids,
             self.trajectory_index.pin_memory(),
         )
 
 
 def _pin_state(state: PoseState) -> PoseState:
-    return PoseState(state.rotation.pin_memory(), state.position.pin_memory(), state.aperture.pin_memory())
+    return PoseState(
+        state.rotation.pin_memory(),
+        state.position.pin_memory(),
+        state.joint_position.pin_memory(),
+    )
 
 
 def _pin_sdf(sdf: SDFBatch) -> SDFBatch:
@@ -209,6 +220,11 @@ class H5ObjectDataset(Dataset[ObjectRecord]):
             pairs,
             diagnostics,
             sample_indices,
+            (
+                torch.from_numpy(group["joint_position"][...])
+                if "joint_position" in group
+                else None
+            ),
         )
 
     def sample_counts(self, mode: Literal["local", "rollout"]) -> tuple[int, ...]:
@@ -276,10 +292,15 @@ class ObjectBatchCollator:
         positions: list[Tensor] = []
         quaternions: list[Tensor] = []
         apertures: list[Tensor] = []
+        joints: list[Tensor] = []
         mapping: list[int] = []
         trajectory_indices: list[int] = []
         step_indices: list[int] = []
         for object_index, record in enumerate(records):
+            if record.joint_position is None:
+                raise ValueError(
+                    f"SRNO-r requires joint_position for object {record.object_id!r}"
+                )
             if self.mode == "local":
                 if record.active_pairs is None or not len(record.active_pairs):
                     continue
@@ -298,9 +319,11 @@ class ObjectBatchCollator:
                 positions.append(record.position[trajectory, step])
                 quaternions.append(record.quaternion_xyzw[trajectory, step])
                 apertures.append(record.aperture[trajectory, step])
+                joints.append(record.joint_position[trajectory, step])
                 positions.append(record.position[trajectory, step + 1])
                 quaternions.append(record.quaternion_xyzw[trajectory, step + 1])
                 apertures.append(record.aperture[trajectory, step + 1])
+                joints.append(record.joint_position[trajectory, step + 1])
                 mapping.extend([object_index] * len(trajectory))
                 trajectory_indices.extend(trajectory.tolist())
                 step_indices.extend(step.tolist())
@@ -317,6 +340,7 @@ class ObjectBatchCollator:
                 positions.append(record.position.index_select(0, trajectory))
                 quaternions.append(record.quaternion_xyzw.index_select(0, trajectory))
                 apertures.append(record.aperture.index_select(0, trajectory))
+                joints.append(record.joint_position.index_select(0, trajectory))
                 mapping.extend([object_index] * len(trajectory))
                 trajectory_indices.extend(trajectory.tolist())
 
@@ -335,22 +359,24 @@ class ObjectBatchCollator:
             target_positions = torch.cat(positions[1::2], dim=0)
             current_quaternions = torch.cat(quaternions[0::2], dim=0)
             target_quaternions = torch.cat(quaternions[1::2], dim=0)
-            current_apertures = torch.cat(apertures[0::2], dim=0)
             target_apertures = torch.cat(apertures[1::2], dim=0)
+            current_joints = torch.cat(joints[0::2], dim=0)
+            target_joints = torch.cat(joints[1::2], dim=0)
             steps = torch.tensor(step_indices, dtype=torch.long)
             return LocalTransitionBatch(
                 sdf_batch,
                 PoseState(
                     quaternion_xyzw_to_matrix(current_quaternions),
                     current_positions,
-                    current_apertures,
+                    current_joints,
                 ),
                 PoseState(
                     quaternion_xyzw_to_matrix(target_quaternions),
                     target_positions,
-                    target_apertures,
+                    target_joints,
                 ),
                 schedule.index_select(0, steps + 1),
+                target_apertures,
                 tuple(record.object_id for record in records),
                 torch.tensor(trajectory_indices, dtype=torch.long),
                 steps,
@@ -358,14 +384,16 @@ class ObjectBatchCollator:
         all_positions = torch.cat(positions, dim=0)
         all_quaternions = torch.cat(quaternions, dim=0)
         all_apertures = torch.cat(apertures, dim=0)
+        all_joints = torch.cat(joints, dim=0)
         return TrajectoryBatch(
             sdf_batch,
             PoseState(
                 quaternion_xyzw_to_matrix(all_quaternions),
                 all_positions,
-                all_apertures,
+                all_joints,
             ),
             schedule,
+            all_apertures,
             tuple(record.object_id for record in records),
             torch.tensor(trajectory_indices, dtype=torch.long),
         )

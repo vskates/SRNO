@@ -140,7 +140,7 @@ def _runtime_schedule_frames(
     app: object,
     config: SimulatorConfig,
     catalog: SimulatorAssetCatalog,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, tuple[str, ...]]:
     """Return open-to-closed link poses measured from the spawned articulation."""
 
     import omni.usd
@@ -190,6 +190,7 @@ def _runtime_schedule_frames(
 
         schedule_positions: list[np.ndarray] = []
         schedule_quaternions: list[np.ndarray] = []
+        schedule_joint_positions: list[np.ndarray] = []
         for fraction in np.linspace(0.0, 1.0, 33, dtype=np.float64):
             joint_position = open_position + float(fraction) * (
                 close_position - open_position
@@ -220,7 +221,15 @@ def _runtime_schedule_frames(
             schedule_quaternions.append(
                 relative_quaternion[0, body_indices].detach().cpu().numpy()
             )
-        return np.stack(schedule_positions), np.stack(schedule_quaternions)
+            schedule_joint_positions.append(
+                robot.data.joint_pos[0].detach().cpu().numpy()
+            )
+        return (
+            np.stack(schedule_positions),
+            np.stack(schedule_quaternions),
+            np.stack(schedule_joint_positions),
+            tuple(robot.joint_names),
+        )
     finally:
         del robot
         simulation.clear_all_callbacks()
@@ -246,6 +255,51 @@ def _quaternion_wxyz_matrix(quaternion: np.ndarray) -> np.ndarray:
     )
 
 
+def _rotation_about_axis(axis: np.ndarray, angle: np.ndarray) -> np.ndarray:
+    axis = np.asarray(axis, dtype=np.float64)
+    axis = axis / np.linalg.norm(axis)
+    x, y, z = axis
+    skew = np.asarray(((0, -z, y), (z, 0, -x), (-y, x, 0)), dtype=np.float64)
+    identity = np.eye(3, dtype=np.float64)
+    angle = np.asarray(angle, dtype=np.float64)
+    return (
+        identity
+        + np.sin(angle)[..., None, None] * skew
+        + (1.0 - np.cos(angle))[..., None, None] * (skew @ skew)
+    )
+
+
+def _fit_revolute_pivot(
+    positions: np.ndarray,
+    joint_position: np.ndarray,
+    *,
+    axis: np.ndarray,
+    coefficient: float,
+) -> np.ndarray:
+    """Fit the fixed pivot c in p(r)=c+R(axis,c*r)(p(0)-c)."""
+
+    rotations = _rotation_about_axis(axis, coefficient * joint_position)
+    identity = np.eye(3, dtype=np.float64)
+    matrix = np.concatenate([identity - rotation for rotation in rotations], axis=0)
+    right = np.concatenate(
+        [
+            positions[index] - rotation @ positions[0]
+            for index, rotation in enumerate(rotations)
+        ],
+        axis=0,
+    )
+    pivot, *_ = np.linalg.lstsq(matrix, right, rcond=None)
+    predicted = np.einsum(
+        "nij,j->ni", rotations, positions[0] - pivot
+    ) + pivot
+    maximum_error = float(np.linalg.norm(predicted - positions, axis=-1).max())
+    if maximum_error > 1e-6:
+        raise RuntimeError(
+            f"runtime contact-link origin is not fixed-axis revolute: {maximum_error:.3e} m"
+        )
+    return pivot
+
+
 def preprocess_runtime_gripper(
     app: object,
     config: SimulatorConfig,
@@ -264,7 +318,9 @@ def preprocess_runtime_gripper(
         samples_per_link=samples_per_link,
         seed=config.seed,
     )
-    positions, quaternions = _runtime_schedule_frames(app, config, catalog)
+    positions, quaternions, joint_positions, joint_names = _runtime_schedule_frames(
+        app, config, catalog
+    )
 
     points_open_to_closed: list[np.ndarray] = []
     for state in range(33):
@@ -284,10 +340,57 @@ def preprocess_runtime_gripper(
         aperture_knots[-1] - aperture_knots[0]
     )
     intercept = point_knots[0] - aperture_knots[0] * slope
+    joint_index = {name: index for index, name in enumerate(joint_names)}
+    specifications = {
+        "astribot_gripper_right_Link_L11": (
+            "astribot_gripper_right_joint_L1",
+            -1.0,
+            {
+                "astribot_gripper_right_joint_L1": -1.0,
+                "astribot_gripper_right_joint_L11": 1.0,
+            },
+        ),
+        "astribot_gripper_right_Link_R11": (
+            "astribot_gripper_right_joint_R1",
+            1.0,
+            {
+                "astribot_gripper_right_joint_R1": 1.0,
+                "astribot_gripper_right_joint_R11": 1.0,
+            },
+        ),
+    }
+    missing_specs = set(contact_links) - set(specifications)
+    if missing_specs:
+        raise RuntimeError(f"runtime FK specification is missing links: {missing_specs}")
+    link_axes = np.tile(np.asarray((0.0, 1.0, 0.0)), (len(contact_links), 1))
+    position_coefficients = np.zeros((len(contact_links), len(joint_names)))
+    rotation_coefficients = np.zeros_like(position_coefficients)
+    pivots = []
+    for link_offset, link_name in enumerate(contact_links):
+        driver_name, driver_coefficient, rotation_mapping = specifications[link_name]
+        if driver_name not in joint_index or any(
+            name not in joint_index for name in rotation_mapping
+        ):
+            raise RuntimeError("runtime articulation joint order does not match FK specification")
+        driver_index = joint_index[driver_name]
+        position_coefficients[link_offset, driver_index] = driver_coefficient
+        for name, coefficient in rotation_mapping.items():
+            rotation_coefficients[link_offset, joint_index[name]] = coefficient
+        pivots.append(
+            _fit_revolute_pivot(
+                positions[:, link_offset],
+                joint_positions[:, driver_index],
+                axis=link_axes[link_offset],
+                coefficient=driver_coefficient,
+            )
+        )
+    open_rotations = np.stack(
+        [_quaternion_wxyz_matrix(value) for value in quaternions[0]], axis=0
+    )
     digest = hashlib.sha256(catalog.gripper.runtime_usd.read_bytes()).hexdigest()
     if digest != catalog.gripper.runtime_usd_sha256:
         raise RuntimeError("runtime gripper USD hash does not match the frozen catalog")
-    return GripperAsset(
+    asset = GripperAsset(
         torch.from_numpy(intercept.astype(np.float32)),
         torch.from_numpy(slope.astype(np.float32)),
         torch.from_numpy(
@@ -299,4 +402,24 @@ def preprocess_runtime_gripper(
         digest,
         torch.from_numpy(aperture_knots.astype(np.float32)),
         torch.from_numpy(point_knots.astype(np.float32)),
+        joint_names,
+        torch.from_numpy(joint_positions[::-1].copy().astype(np.float32)),
+        torch.from_numpy(np.concatenate(local_samples).astype(np.float32)),
+        torch.from_numpy(np.stack(pivots).astype(np.float32)),
+        torch.from_numpy(positions[0].astype(np.float32)),
+        torch.from_numpy(open_rotations.astype(np.float32)),
+        torch.from_numpy(link_axes.astype(np.float32)),
+        torch.from_numpy(position_coefficients.astype(np.float32)),
+        torch.from_numpy(rotation_coefficients.astype(np.float32)),
     )
+    reconstructed = asset.points_from_joints(asset.free_joint_knots)
+    maximum_fk_error = float(
+        torch.linalg.vector_norm(reconstructed - asset.point_knots, dim=-1)
+        .max()
+        .item()
+    )
+    if maximum_fk_error > 2e-6:
+        raise RuntimeError(
+            f"differentiable runtime FK disagrees with PhysX: {maximum_fk_error:.3e} m"
+        )
+    return asset

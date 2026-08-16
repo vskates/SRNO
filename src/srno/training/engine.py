@@ -52,6 +52,7 @@ def _build_model(config: ExperimentConfig, manifest: DatasetManifest, device: to
         gripper,
         sdf_scale=manifest.sdf_scale_m,
         delta_gate=manifest.delta_gate_m,
+        contact_offset_sum=manifest.contact_offset_sum_m,
         hidden_dim=config.model.hidden_dim,
     ).to(device)
 
@@ -66,7 +67,7 @@ def _optimizer(model: SRNOModel, config: ExperimentConfig, total_steps: int):
         model.parameters(),
         lr=config.optimizer.learning_rate,
         weight_decay=config.optimizer.weight_decay,
-        fused=model.surface_intercept.is_cuda,
+        fused=model.surface_local_points.is_cuda,
     )
     warmup_steps = int(total_steps * config.optimizer.warmup_fraction)
 
@@ -80,7 +81,11 @@ def _optimizer(model: SRNOModel, config: ExperimentConfig, total_steps: int):
 
 
 def _state_at(states: PoseState, step: int) -> PoseState:
-    return PoseState(states.rotation[:, step], states.position[:, step], states.aperture[:, step])
+    return PoseState(
+        states.rotation[:, step],
+        states.position[:, step],
+        states.joint_position[:, step],
+    )
 
 
 def _local_iteration(
@@ -90,16 +95,19 @@ def _local_iteration(
 ) -> tuple[Tensor, dict[str, float]]:
     prediction = model.forward_step(batch.current, batch.next_command, batch.sdf)
     assert isinstance(prediction, PoseState)
-    gap = model.query_gap(prediction, batch.sdf)
+    # Feasibility is tied to rest_offset=0, not to the wider contact envelope.
+    gap = model.query_geometric_gap(prediction, batch.sdf)
     terms = combined_loss(
         prediction,
         batch.target,
         gap,
         length_scale=model.length_scale,
+        joint_scale=model.joint_travel_range,
         sdf_scale=model.sdf_scale,
         lambda_rotation=config.loss.lambda_rotation,
-        lambda_aperture=config.loss.lambda_aperture,
+        lambda_joints=config.loss.lambda_joints,
         lambda_feasibility=config.loss.lambda_feasibility,
+        admissible_gap=config.loss.admissible_gap_m,
     )
     values = {
         "loss": float(terms.total.detach()),
@@ -107,14 +115,24 @@ def _local_iteration(
         "feasibility": float(terms.feasibility.detach()),
         "translation": float(terms.translation.detach()),
         "rotation": float(terms.rotation.detach()),
-        "aperture": float(terms.aperture.detach()),
+        "joints": float(terms.joints.detach()),
+        "aperture_m": float(
+            (
+                model.aperture_from_joints(prediction.joint_position)
+                - batch.target_aperture
+            )
+            .abs()
+            .mean()
+            .detach()
+        ),
         "dx": float(
             state_error(
                 prediction,
                 batch.target,
                 length_scale=model.length_scale,
+                joint_scale=model.joint_travel_range,
                 lambda_rotation=config.loss.lambda_rotation,
-                lambda_aperture=config.loss.lambda_aperture,
+                lambda_joints=config.loss.lambda_joints,
             )[0]
             .sqrt()
             .mean()
@@ -133,40 +151,72 @@ def _rollout_iteration(
     initial = _state_at(batch.states, 0)
     prediction = model.rollout(initial, batch.command_schedule[1 : horizon + 1], batch.sdf)
     total = prediction.position.new_zeros(())
-    sums = {name: 0.0 for name in ("flow", "feasibility", "translation", "rotation", "aperture")}
+    sums = {
+        name: 0.0
+        for name in ("flow", "feasibility", "translation", "rotation", "joints")
+    }
+    aperture_error = 0.0
     gaps: list[Tensor] = []
     for step in range(1, horizon + 1):
         predicted_step = _state_at(prediction, step)
         target_step = _state_at(batch.states, step)
-        gap = model.query_gap(predicted_step, batch.sdf)
+        gap = model.query_geometric_gap(predicted_step, batch.sdf)
         gaps.append(gap)
         terms = combined_loss(
             predicted_step,
             target_step,
             gap,
             length_scale=model.length_scale,
+            joint_scale=model.joint_travel_range,
             sdf_scale=model.sdf_scale,
             lambda_rotation=config.loss.lambda_rotation,
-            lambda_aperture=config.loss.lambda_aperture,
+            lambda_joints=config.loss.lambda_joints,
             lambda_feasibility=config.loss.lambda_feasibility,
+            admissible_gap=config.loss.admissible_gap_m,
         )
         total = total + terms.total / horizon
         for name in sums:
             sums[name] += float(getattr(terms, name).detach()) / horizon
+        aperture_error += float(
+            (
+                model.aperture_from_joints(predicted_step.joint_position)
+                - batch.actual_aperture[:, step]
+            )
+            .abs()
+            .mean()
+            .detach()
+        ) / horizon
     terminal_dx = (
         state_error(
             _state_at(prediction, horizon),
             _state_at(batch.states, horizon),
             length_scale=model.length_scale,
+            joint_scale=model.joint_travel_range,
             lambda_rotation=config.loss.lambda_rotation,
-            lambda_aperture=config.loss.lambda_aperture,
+            lambda_joints=config.loss.lambda_joints,
         )[0]
         .sqrt()
         .mean()
     )
     return (
         total,
-        {"loss": float(total.detach()), "terminal_dx": float(terminal_dx.detach()), **sums},
+        {
+            "loss": float(total.detach()),
+            "terminal_dx": float(terminal_dx.detach()),
+            "aperture_m": aperture_error,
+            "terminal_aperture_m": float(
+                (
+                    model.aperture_from_joints(
+                        _state_at(prediction, horizon).joint_position
+                    )
+                    - batch.actual_aperture[:, horizon]
+                )
+                .abs()
+                .mean()
+                .detach()
+            ),
+            **sums,
+        },
         prediction,
         torch.stack(gaps, dim=1),
     )
@@ -212,11 +262,17 @@ def _run_epoch(
                     assert isinstance(batch, TrajectoryBatch)
                     loss, metrics, _, _ = _rollout_iteration(model, batch, config, horizon)
             if training:
-                loss.backward()
-                gradient_norm = torch.nn.utils.clip_grad_norm_(
-                    model.parameters(), config.optimizer.gradient_clip
-                )
-                optimizer.step()
+                if loss.requires_grad:
+                    loss.backward()
+                    gradient_norm = torch.nn.utils.clip_grad_norm_(
+                        model.parameters(), config.optimizer.gradient_clip
+                    )
+                    optimizer.step()
+                else:
+                    # Exact free bypass can make a complete batch independent of
+                    # the neural cell. Do not manufacture zero gradients here:
+                    # AdamW would otherwise still apply decoupled weight decay.
+                    gradient_norm = loss.new_zeros(())
                 assert scheduler is not None
                 scheduler.step()
                 metrics["gradient_norm"] = float(gradient_norm.detach())
@@ -531,7 +587,10 @@ def evaluate_checkpoint(
                         _state_at(batch.states, 0), batch.command_schedule[1:], batch.sdf
                     )
                 gaps = torch.stack(
-                    [model.query_gap(_state_at(prediction, step), batch.sdf) for step in range(33)],
+                    [
+                        model.query_geometric_gap(_state_at(prediction, step), batch.sdf)
+                        for step in range(33)
+                    ],
                     dim=1,
                 )
                 accumulate_trajectory_metrics(
@@ -539,8 +598,11 @@ def evaluate_checkpoint(
                     prediction,
                     batch.states,
                     batch.command_schedule,
+                    model.aperture_from_joints(prediction.joint_position),
+                    batch.actual_aperture,
                     gaps,
                     length_scale=model.length_scale,
+                    joint_scale=model.joint_travel_range,
                     lag_threshold=manifest.delta_gate_m,
                 )
         metrics = accumulator.compute()

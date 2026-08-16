@@ -16,7 +16,7 @@ class LossTerms:
     feasibility: Tensor
     translation: Tensor
     rotation: Tensor
-    aperture: Tensor
+    joints: Tensor
 
 
 def state_error(
@@ -24,18 +24,28 @@ def state_error(
     target: PoseState,
     *,
     length_scale: float,
+    joint_scale: Tensor,
     lambda_rotation: float = 1.0,
-    lambda_aperture: float = 1.0,
+    lambda_joints: float = 1.0,
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     translation = ((prediction.position - target.position) / length_scale).square().sum(-1)
     rotation = rotation_geodesic_angle(prediction.rotation, target.rotation).square()
-    aperture = ((prediction.aperture - target.aperture) / length_scale).square()
-    total = translation + lambda_rotation * rotation + lambda_aperture * aperture
-    return total, translation, rotation, aperture
+    joints = (
+        (prediction.joint_position - target.joint_position) / joint_scale
+    ).square().mean(dim=-1)
+    total = translation + lambda_rotation * rotation + lambda_joints * joints
+    return total, translation, rotation, joints
 
 
-def feasibility_loss(gap: Tensor, *, sdf_scale: float) -> Tensor:
-    return torch.relu(-gap / sdf_scale).square().mean()
+def feasibility_loss(
+    gap: Tensor,
+    *,
+    sdf_scale: float,
+    admissible_gap: float = 0.0,
+) -> Tensor:
+    """Penalize gaps below the configured simulator-consistent boundary."""
+
+    return torch.relu((admissible_gap - gap) / sdf_scale).square().mean()
 
 
 def combined_loss(
@@ -44,25 +54,32 @@ def combined_loss(
     predicted_gap: Tensor,
     *,
     length_scale: float,
+    joint_scale: Tensor,
     sdf_scale: float,
     lambda_rotation: float = 1.0,
-    lambda_aperture: float = 1.0,
+    lambda_joints: float = 1.0,
     lambda_feasibility: float = 1.0,
+    admissible_gap: float = 0.0,
 ) -> LossTerms:
-    state, translation, rotation, aperture = state_error(
+    state, translation, rotation, joints = state_error(
         prediction,
         target,
         length_scale=length_scale,
+        joint_scale=joint_scale,
         lambda_rotation=lambda_rotation,
-        lambda_aperture=lambda_aperture,
+        lambda_joints=lambda_joints,
     )
     flow = state.mean()
-    feasibility = feasibility_loss(predicted_gap, sdf_scale=sdf_scale)
+    feasibility = feasibility_loss(
+        predicted_gap,
+        sdf_scale=sdf_scale,
+        admissible_gap=admissible_gap,
+    )
     return LossTerms(
         total=flow + lambda_feasibility * feasibility,
         flow=flow,
         feasibility=feasibility,
         translation=translation.mean(),
         rotation=rotation.mean(),
-        aperture=aperture.mean(),
+        joints=joints.mean(),
     )

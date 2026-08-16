@@ -8,15 +8,15 @@ from torch import Tensor
 
 @dataclass(frozen=True)
 class PoseState:
-    """Object-to-gripper pose and actual gripper aperture.
+    """Object-to-gripper pose and actual six-joint gripper configuration.
 
     All tensors share the same leading dimensions. ``rotation`` ends in (3, 3),
-    ``position`` ends in (3,), and ``aperture`` has only the leading dimensions.
+    ``position`` ends in (3,), and ``joint_position`` ends in (6,).
     """
 
     rotation: Tensor
     position: Tensor
-    aperture: Tensor
+    joint_position: Tensor
 
     def __post_init__(self) -> None:
         if self.rotation.shape[-2:] != (3, 3):
@@ -25,12 +25,14 @@ class PoseState:
             raise ValueError("position must end in (3,)")
         if self.rotation.shape[:-2] != self.position.shape[:-1]:
             raise ValueError("rotation and position leading shapes differ")
-        if self.rotation.shape[:-2] != self.aperture.shape:
-            raise ValueError("rotation and aperture leading shapes differ")
+        if self.joint_position.shape[-1:] != (6,):
+            raise ValueError("joint_position must end in (6,)")
+        if self.rotation.shape[:-2] != self.joint_position.shape[:-1]:
+            raise ValueError("rotation and joint_position leading shapes differ")
 
     @property
     def shape(self) -> torch.Size:
-        return self.aperture.shape
+        return self.joint_position.shape[:-1]
 
     @property
     def device(self) -> torch.device:
@@ -40,19 +42,21 @@ class PoseState:
         return PoseState(
             self.rotation.to(*args, **kwargs),
             self.position.to(*args, **kwargs),
-            self.aperture.to(*args, **kwargs),
+            self.joint_position.to(*args, **kwargs),
         )
 
     def detach(self) -> "PoseState":
         return PoseState(
-            self.rotation.detach(), self.position.detach(), self.aperture.detach()
+            self.rotation.detach(),
+            self.position.detach(),
+            self.joint_position.detach(),
         )
 
     def index_select(self, dim: int, index: Tensor) -> "PoseState":
         return PoseState(
             self.rotation.index_select(dim, index),
             self.position.index_select(dim, index),
-            self.aperture.index_select(dim, index),
+            self.joint_position.index_select(dim, index),
         )
 
     @staticmethod
@@ -60,7 +64,7 @@ class PoseState:
         return PoseState(
             torch.stack([s.rotation for s in states], dim=dim),
             torch.stack([s.position for s in states], dim=dim),
-            torch.stack([s.aperture for s in states], dim=dim),
+            torch.stack([s.joint_position for s in states], dim=dim),
         )
 
 

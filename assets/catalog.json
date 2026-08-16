@@ -311,18 +311,6 @@
       "sha256": "9d88248a415680ec4e71631b42d71880931217d204857ba1ae4a15224bfc4e05"
     },
     {
-      "id": "ogurtsy-marinovannye-670-g-21054",
-      "usd": "objects/ogurtsy-marinovannye-670-g-21054/ogurtsy-marinovannye-670-g-21054.usdc",
-      "textures": "objects/ogurtsy-marinovannye-670-g-21054/textures",
-      "bbox_size_m": [
-        0.085,
-        0.085,
-        0.135
-      ],
-      "mass_kg": 1.045,
-      "sha256": "96931af9287db76d6fe02ecfd0200a636b383c78208fb37709dce907bcff5859"
-    },
-    {
       "id": "sok-detskiy-yablochnyy-pryamogo-otzhima-200-ml-20494",
       "usd": "objects/sok-detskiy-yablochnyy-pryamogo-otzhima-200-ml-20494/sok-detskiy-yablochnyy-pryamogo-otzhima-200-ml-20494.usdc",
       "textures": "objects/sok-detskiy-yablochnyy-pryamogo-otzhima-200-ml-20494/textures",

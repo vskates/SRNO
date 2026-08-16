@@ -51,6 +51,9 @@ class SDFGenerationConfig:
 class DatasetExportConfig:
     sdf_scale_m: float = 0.02
     delta_gate_m: float = 0.01
+    # Effective pair envelope measured from the live PhysX views:
+    # 2.00 mm object + 0.56 mm contact finger.
+    contact_offset_sum_m: float = 0.00256
     split_seed: int = 0
 
 
@@ -153,6 +156,11 @@ class SimulatorConfig:
         )
         if not all(math.isfinite(value) and value > 0.0 for value in positive):
             raise ValueError("all physical thresholds and scales must be positive and finite")
+        if (
+            not math.isfinite(self.dataset.contact_offset_sum_m)
+            or self.dataset.contact_offset_sum_m < 0.0
+        ):
+            raise ValueError("dataset.contact_offset_sum_m must be finite and non-negative")
         if self.sdf.chunk_points <= 0:
             raise ValueError("sdf.chunk_points must be positive")
 

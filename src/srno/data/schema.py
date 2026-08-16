@@ -36,6 +36,7 @@ class DatasetManifest:
     length_scale_m: float
     sdf_scale_m: float
     delta_gate_m: float
+    contact_offset_sum_m: float
     commanded_aperture_m: tuple[float, ...]
     gripper_asset: str
     gripper_sha256: str
@@ -56,6 +57,7 @@ class DatasetManifest:
             length_scale_m=float(raw["length_scale_m"]),
             sdf_scale_m=float(raw["sdf_scale_m"]),
             delta_gate_m=float(raw["delta_gate_m"]),
+            contact_offset_sum_m=float(raw.get("contact_offset_sum_m", 0.0)),
             commanded_aperture_m=tuple(map(float, raw["commanded_aperture_m"])),
             gripper_asset=str(raw["gripper_asset"]),
             gripper_sha256=str(raw["gripper_sha256"]),
@@ -74,6 +76,7 @@ class DatasetManifest:
         length_scale_m: float,
         sdf_scale_m: float,
         delta_gate_m: float,
+        contact_offset_sum_m: float,
         commanded_aperture_m: list[float] | tuple[float, ...],
         gripper_asset: str,
         gripper_sha256: str,
@@ -89,6 +92,7 @@ class DatasetManifest:
             length_scale_m=float(length_scale_m),
             sdf_scale_m=float(sdf_scale_m),
             delta_gate_m=float(delta_gate_m),
+            contact_offset_sum_m=float(contact_offset_sum_m),
             commanded_aperture_m=tuple(map(float, commanded_aperture_m)),
             gripper_asset=gripper_asset,
             gripper_sha256=gripper_sha256,
@@ -110,6 +114,8 @@ class DatasetManifest:
             raise ValueError(f"dataset conventions must be {expected}, got {actual}")
         if self.length_scale_m <= 0 or self.sdf_scale_m <= 0 or self.delta_gate_m <= 0:
             raise ValueError("length, SDF scale, and gate threshold must be positive")
+        if not np.isfinite(self.contact_offset_sum_m) or self.contact_offset_sum_m < 0:
+            raise ValueError("contact offset sum must be finite and non-negative")
         if len(self.commanded_aperture_m) != NUM_STATES:
             raise ValueError(f"commanded aperture schedule must have {NUM_STATES} states")
         schedule = np.asarray(self.commanded_aperture_m)
@@ -156,6 +162,7 @@ class DatasetManifest:
             "length_scale_m": self.length_scale_m,
             "sdf_scale_m": self.sdf_scale_m,
             "delta_gate_m": self.delta_gate_m,
+            "contact_offset_sum_m": self.contact_offset_sum_m,
             "commanded_aperture_m": list(self.commanded_aperture_m),
             "gripper_asset": self.gripper_asset,
             "gripper_sha256": self.gripper_sha256,
@@ -186,7 +193,8 @@ def objectwise_split(
     shuffled = np.asarray(sorted(object_ids), dtype=object)
     np.random.default_rng(seed).shuffle(shuffled)
     count = len(shuffled)
-    train_end = max(1, int(np.floor(count * fractions[0])))
+    # Keep every split non-empty even for the three-object diagnostic subset.
+    train_end = min(max(1, int(np.floor(count * fractions[0]))), count - 2)
     val_end = max(train_end + 1, int(np.floor(count * (fractions[0] + fractions[1]))))
     val_end = min(val_end, count - 1)
     return {
@@ -194,4 +202,3 @@ def objectwise_split(
         "val": tuple(map(str, shuffled[train_end:val_end])),
         "test": tuple(map(str, shuffled[val_end:])),
     }
-

@@ -10,10 +10,12 @@ import numpy as np
 import torch
 from torch import Tensor
 
+from srno.geometry.se3 import so3_exp
+
 
 @dataclass(frozen=True)
 class GripperAsset:
-    """Parallel-jaw surface kinematics, affine or schedule-indexed."""
+    """Collision samples, free schedule, and optional differentiable joint FK."""
 
     intercept: Tensor
     slope: Tensor
@@ -24,6 +26,15 @@ class GripperAsset:
     source_sha256: str = ""
     aperture_knots: Tensor | None = None
     point_knots: Tensor | None = None
+    joint_names: tuple[str, ...] = ()
+    free_joint_knots: Tensor | None = None
+    local_points: Tensor | None = None
+    link_pivots: Tensor | None = None
+    link_open_positions: Tensor | None = None
+    link_open_rotations: Tensor | None = None
+    link_axes: Tensor | None = None
+    link_position_joint_coefficients: Tensor | None = None
+    link_rotation_joint_coefficients: Tensor | None = None
 
     def __post_init__(self) -> None:
         if self.intercept.ndim != 2 or self.intercept.shape[-1] != 3:
@@ -36,12 +47,16 @@ class GripperAsset:
             raise ValueError("aperture_min must be less than aperture_max")
         if self.length_scale <= 0:
             raise ValueError("length_scale must be positive")
-        if (self.aperture_knots is None) != (self.point_knots is None):
-            raise ValueError("aperture_knots and point_knots must be provided together")
-        if self.aperture_knots is not None and self.point_knots is not None:
+        if self.point_knots is not None and self.aperture_knots is None:
+            raise ValueError("point_knots require aperture_knots")
+        if self.aperture_knots is not None:
             if self.aperture_knots.ndim != 1 or len(self.aperture_knots) < 2:
                 raise ValueError("aperture_knots must have shape [states] with at least two states")
-            if self.point_knots.shape != (len(self.aperture_knots), self.point_count, 3):
+            if self.point_knots is not None and self.point_knots.shape != (
+                len(self.aperture_knots),
+                self.point_count,
+                3,
+            ):
                 raise ValueError("point_knots must have shape [states, points, 3]")
             if not torch.all(self.aperture_knots[1:] > self.aperture_knots[:-1]):
                 raise ValueError("aperture_knots must be strictly increasing")
@@ -57,10 +72,81 @@ class GripperAsset:
                 rtol=0.0,
             ):
                 raise ValueError("aperture knots must span the declared gripper limits")
+        joint_fields = (
+            self.free_joint_knots,
+            self.local_points,
+            self.link_pivots,
+            self.link_open_positions,
+            self.link_open_rotations,
+            self.link_axes,
+            self.link_position_joint_coefficients,
+            self.link_rotation_joint_coefficients,
+        )
+        has_joint_fk = any(value is not None for value in joint_fields) or bool(
+            self.joint_names
+        )
+        if has_joint_fk and not all(value is not None for value in joint_fields):
+            raise ValueError("joint FK fields must be provided together")
+        if has_joint_fk:
+            assert self.free_joint_knots is not None
+            assert self.local_points is not None
+            assert self.link_pivots is not None
+            assert self.link_open_positions is not None
+            assert self.link_open_rotations is not None
+            assert self.link_axes is not None
+            assert self.link_position_joint_coefficients is not None
+            assert self.link_rotation_joint_coefficients is not None
+            if self.aperture_knots is None:
+                raise ValueError("joint FK requires aperture_knots")
+            joints = len(self.joint_names)
+            links = int(self.link_pivots.shape[0])
+            if joints != 6 or len(set(self.joint_names)) != 6:
+                raise ValueError("SRNO-r requires six unique joint names")
+            if self.free_joint_knots.shape != (len(self.aperture_knots), joints):
+                raise ValueError("free_joint_knots must have shape [states, joints]")
+            if self.local_points.shape != self.intercept.shape:
+                raise ValueError("local_points must have shape [points, 3]")
+            if self.link_pivots.shape != (links, 3):
+                raise ValueError("link_pivots must have shape [links, 3]")
+            if self.link_open_positions.shape != (links, 3):
+                raise ValueError("link_open_positions must have shape [links, 3]")
+            if self.link_open_rotations.shape != (links, 3, 3):
+                raise ValueError("link_open_rotations must have shape [links, 3, 3]")
+            if self.link_axes.shape != (links, 3):
+                raise ValueError("link_axes must have shape [links, 3]")
+            if self.link_position_joint_coefficients.shape != (links, joints):
+                raise ValueError(
+                    "link_position_joint_coefficients must have shape [links, joints]"
+                )
+            if self.link_rotation_joint_coefficients.shape != (links, joints):
+                raise ValueError(
+                    "link_rotation_joint_coefficients must have shape [links, joints]"
+                )
+            if self.link_index.numel() and (
+                int(self.link_index.min()) < 0 or int(self.link_index.max()) >= links
+            ):
+                raise ValueError("link_index refers to an unknown FK link")
+            axis_norm = torch.linalg.vector_norm(self.link_axes, dim=-1)
+            if not torch.allclose(axis_norm, torch.ones_like(axis_norm), atol=1e-6):
+                raise ValueError("link_axes must be unit vectors")
 
     @property
     def point_count(self) -> int:
         return self.intercept.shape[0]
+
+    @property
+    def supports_joint_fk(self) -> bool:
+        return self.free_joint_knots is not None
+
+    @property
+    def joint_count(self) -> int:
+        return len(self.joint_names)
+
+    @property
+    def joint_travel_range(self) -> Tensor:
+        if self.free_joint_knots is None:
+            raise ValueError("gripper asset has no joint FK")
+        return torch.abs(self.free_joint_knots[0] - self.free_joint_knots[-1])
 
     def to(self, device: torch.device | str, dtype: torch.dtype = torch.float32) -> "GripperAsset":
         return GripperAsset(
@@ -77,9 +163,38 @@ class GripperAsset:
             None
             if self.point_knots is None
             else self.point_knots.to(device=device, dtype=dtype),
+            self.joint_names,
+            None
+            if self.free_joint_knots is None
+            else self.free_joint_knots.to(device=device, dtype=dtype),
+            None
+            if self.local_points is None
+            else self.local_points.to(device=device, dtype=dtype),
+            None
+            if self.link_pivots is None
+            else self.link_pivots.to(device=device, dtype=dtype),
+            None
+            if self.link_open_positions is None
+            else self.link_open_positions.to(device=device, dtype=dtype),
+            None
+            if self.link_open_rotations is None
+            else self.link_open_rotations.to(device=device, dtype=dtype),
+            None
+            if self.link_axes is None
+            else self.link_axes.to(device=device, dtype=dtype),
+            None
+            if self.link_position_joint_coefficients is None
+            else self.link_position_joint_coefficients.to(device=device, dtype=dtype),
+            None
+            if self.link_rotation_joint_coefficients is None
+            else self.link_rotation_joint_coefficients.to(device=device, dtype=dtype),
         )
 
-    def points(self, aperture: Tensor | float) -> Tensor:
+    def _interpolate_aperture_values(
+        self, aperture: Tensor | float, values: Tensor
+    ) -> Tensor:
+        if self.aperture_knots is None:
+            raise ValueError("gripper asset has no aperture schedule")
         aperture_tensor = torch.as_tensor(
             aperture, dtype=self.intercept.dtype, device=self.intercept.device
         )
@@ -87,28 +202,120 @@ class GripperAsset:
             aperture_tensor > self.aperture_max + 1e-7
         ):
             raise ValueError("aperture is outside gripper limits")
-        if self.aperture_knots is None or self.point_knots is None:
-            return self.intercept + aperture_tensor[..., None, None] * self.slope
-
         knots = self.aperture_knots.to(device=aperture_tensor.device, dtype=aperture_tensor.dtype)
-        points = self.point_knots.to(device=aperture_tensor.device, dtype=aperture_tensor.dtype)
-        flat = aperture_tensor.reshape(-1)
+        scheduled = values.to(device=aperture_tensor.device, dtype=aperture_tensor.dtype)
+        flat = aperture_tensor.reshape(-1).contiguous()
         upper = torch.searchsorted(knots, flat).clamp(1, len(knots) - 1)
         lower = upper - 1
         low_aperture = knots.index_select(0, lower)
         high_aperture = knots.index_select(0, upper)
         alpha = (flat - low_aperture) / (high_aperture - low_aperture)
-        low_points = points.index_select(0, lower)
-        high_points = points.index_select(0, upper)
-        interpolated = low_points + alpha[:, None, None] * (high_points - low_points)
-        # Command schedules query the authored knots exactly.  Select their stored
-        # geometry verbatim instead of introducing a rounding error through lerp.
+        low_values = scheduled.index_select(0, lower)
+        high_values = scheduled.index_select(0, upper)
+        value_rank = scheduled.ndim - 1
+        alpha_shape = (len(flat),) + (1,) * value_rank
+        interpolated = low_values + alpha.reshape(alpha_shape) * (
+            high_values - low_values
+        )
         knot_distance = torch.abs(flat[:, None] - knots[None, :])
         exact_distance, exact_index = knot_distance.min(dim=-1)
         exact = exact_distance <= 4.0 * torch.finfo(flat.dtype).eps
-        exact_points = points.index_select(0, exact_index)
-        interpolated = torch.where(exact[:, None, None], exact_points, interpolated)
-        return interpolated.reshape(aperture_tensor.shape + (self.point_count, 3))
+        exact_values = scheduled.index_select(0, exact_index)
+        exact_shape = (len(flat),) + (1,) * value_rank
+        interpolated = torch.where(
+            exact.reshape(exact_shape), exact_values, interpolated
+        )
+        return interpolated.reshape(aperture_tensor.shape + scheduled.shape[1:])
+
+    def free_joint_configuration(self, aperture: Tensor | float) -> Tensor:
+        """Lookup/interpolate the deterministic empty-gripper joint schedule."""
+
+        if self.free_joint_knots is None:
+            raise ValueError("gripper asset has no free joint schedule")
+        return self._interpolate_aperture_values(aperture, self.free_joint_knots)
+
+    def aperture_from_joints(self, joint_position: Tensor) -> Tensor:
+        """Return the scalar aperture diagnostic A(r) used by the collector."""
+
+        if self.free_joint_knots is None or self.aperture_knots is None:
+            raise ValueError("gripper asset has no joint FK")
+        joints = torch.as_tensor(
+            joint_position, dtype=self.intercept.dtype, device=self.intercept.device
+        )
+        if joints.shape[-1:] != (self.joint_count,):
+            raise ValueError("joint_position has the wrong final dimension")
+        open_joint = self.free_joint_knots[-1]
+        close_joint = self.free_joint_knots[0]
+        joint_range = close_joint - open_joint
+        denominator = joint_range.square().sum().clamp_min(1e-8)
+        closure = (
+            ((joints - open_joint) * joint_range).sum(dim=-1) / denominator
+        ).clamp(0.0, 1.0)
+        schedule_position = closure * float(len(self.aperture_knots) - 1)
+        lower = torch.floor(schedule_position).long()
+        upper = (lower + 1).clamp(max=len(self.aperture_knots) - 1)
+        alpha = schedule_position - lower.to(schedule_position.dtype)
+        open_to_closed = torch.flip(self.aperture_knots, dims=(0,))
+        return (
+            open_to_closed.index_select(0, lower.reshape(-1)).reshape(lower.shape)
+            * (1.0 - alpha)
+            + open_to_closed.index_select(0, upper.reshape(-1)).reshape(upper.shape)
+            * alpha
+        )
+
+    def points_from_joints(self, joint_position: Tensor) -> Tensor:
+        """Transform each local collision sample through differentiable FK."""
+
+        if not self.supports_joint_fk:
+            raise ValueError("gripper asset has no joint FK")
+        assert self.local_points is not None
+        assert self.link_pivots is not None
+        assert self.link_open_positions is not None
+        assert self.link_open_rotations is not None
+        assert self.link_axes is not None
+        assert self.link_position_joint_coefficients is not None
+        assert self.link_rotation_joint_coefficients is not None
+        joints = torch.as_tensor(
+            joint_position, dtype=self.intercept.dtype, device=self.intercept.device
+        )
+        if joints.shape[-1:] != (self.joint_count,):
+            raise ValueError("joint_position has the wrong final dimension")
+        position_angle = torch.einsum(
+            "...j,lj->...l", joints, self.link_position_joint_coefficients
+        )
+        rotation_angle = torch.einsum(
+            "...j,lj->...l", joints, self.link_rotation_joint_coefficients
+        )
+        position_rotation = so3_exp(
+            position_angle[..., None] * self.link_axes
+        )
+        link_rotation = (
+            so3_exp(rotation_angle[..., None] * self.link_axes)
+            @ self.link_open_rotations
+        )
+        open_offset = self.link_open_positions - self.link_pivots
+        link_position = (
+            torch.einsum("...lij,lj->...li", position_rotation, open_offset)
+            + self.link_pivots
+        )
+        point_rotation = link_rotation[..., self.link_index, :, :]
+        point_position = link_position[..., self.link_index, :]
+        return (
+            torch.einsum("...mij,mj->...mi", point_rotation, self.local_points)
+            + point_position
+        )
+
+    def points(self, aperture: Tensor | float) -> Tensor:
+        """Return empty-gripper points; runtime SRNO-r uses joint FK internally."""
+
+        if self.supports_joint_fk:
+            return self.points_from_joints(self.free_joint_configuration(aperture))
+        aperture_tensor = torch.as_tensor(
+            aperture, dtype=self.intercept.dtype, device=self.intercept.device
+        )
+        if self.aperture_knots is None or self.point_knots is None:
+            return self.intercept + aperture_tensor[..., None, None] * self.slope
+        return self._interpolate_aperture_values(aperture_tensor, self.point_knots)
 
     def pair_features(self, aperture: Tensor | float) -> Tensor:
         points = self.points(aperture) / self.length_scale
@@ -118,12 +325,16 @@ class GripperAsset:
 
     def save(self, path: str | Path) -> None:
         destination = Path(path)
+        format_version = (
+            3 if self.supports_joint_fk else 2 if self.aperture_knots is not None else 1
+        )
         metadata = {
-            "format_version": 2 if self.aperture_knots is not None else 1,
+            "format_version": format_version,
             "aperture_min": self.aperture_min,
             "aperture_max": self.aperture_max,
             "length_scale": self.length_scale,
             "source_sha256": self.source_sha256,
+            "joint_names": list(self.joint_names),
         }
         arrays: dict[str, np.ndarray] = {
             "intercept": self.intercept.detach().cpu().numpy().astype(np.float32),
@@ -131,20 +342,37 @@ class GripperAsset:
             "link_index": self.link_index.detach().cpu().numpy().astype(np.int16),
             "metadata": np.asarray(json.dumps(metadata)),
         }
-        if self.aperture_knots is not None and self.point_knots is not None:
+        if self.aperture_knots is not None:
             arrays["aperture_knots"] = (
                 self.aperture_knots.detach().cpu().numpy().astype(np.float32)
             )
+        if self.point_knots is not None:
             arrays["point_knots"] = self.point_knots.detach().cpu().numpy().astype(np.float32)
+        if self.supports_joint_fk:
+            joint_arrays = {
+                "free_joint_knots": self.free_joint_knots,
+                "local_points": self.local_points,
+                "link_pivots": self.link_pivots,
+                "link_open_positions": self.link_open_positions,
+                "link_open_rotations": self.link_open_rotations,
+                "link_axes": self.link_axes,
+                "link_position_joint_coefficients": self.link_position_joint_coefficients,
+                "link_rotation_joint_coefficients": self.link_rotation_joint_coefficients,
+            }
+            for name, tensor in joint_arrays.items():
+                assert tensor is not None
+                arrays[name] = tensor.detach().cpu().numpy().astype(np.float32)
         np.savez_compressed(destination, **arrays)
 
     @classmethod
     def load(cls, path: str | Path) -> "GripperAsset":
         with np.load(Path(path), allow_pickle=False) as archive:
             metadata = json.loads(str(archive["metadata"].item()))
-            if metadata.get("format_version") not in (1, 2):
+            version = int(metadata.get("format_version", 0))
+            if version not in (1, 2, 3):
                 raise ValueError("unsupported gripper asset version")
-            scheduled = metadata["format_version"] == 2
+            scheduled = version >= 2
+            joint_fk = version == 3
             return cls(
                 torch.from_numpy(archive["intercept"].copy()),
                 torch.from_numpy(archive["slope"].copy()),
@@ -154,16 +382,56 @@ class GripperAsset:
                 float(metadata["length_scale"]),
                 str(metadata.get("source_sha256", "")),
                 torch.from_numpy(archive["aperture_knots"].copy()) if scheduled else None,
-                torch.from_numpy(archive["point_knots"].copy()) if scheduled else None,
+                (
+                    torch.from_numpy(archive["point_knots"].copy())
+                    if "point_knots" in archive
+                    else None
+                ),
+                tuple(map(str, metadata.get("joint_names", ()))) if joint_fk else (),
+                torch.from_numpy(archive["free_joint_knots"].copy()) if joint_fk else None,
+                torch.from_numpy(archive["local_points"].copy()) if joint_fk else None,
+                torch.from_numpy(archive["link_pivots"].copy()) if joint_fk else None,
+                torch.from_numpy(archive["link_open_positions"].copy()) if joint_fk else None,
+                torch.from_numpy(archive["link_open_rotations"].copy()) if joint_fk else None,
+                torch.from_numpy(archive["link_axes"].copy()) if joint_fk else None,
+                (
+                    torch.from_numpy(
+                        archive["link_position_joint_coefficients"].copy()
+                    )
+                    if joint_fk
+                    else None
+                ),
+                (
+                    torch.from_numpy(
+                        archive["link_rotation_joint_coefficients"].copy()
+                    )
+                    if joint_fk
+                    else None
+                ),
             )
 
     def sha256(self) -> str:
         digest = hashlib.sha256()
         for tensor in (self.intercept, self.slope, self.link_index):
             digest.update(tensor.detach().cpu().numpy().tobytes())
-        if self.aperture_knots is not None and self.point_knots is not None:
+        if self.aperture_knots is not None:
             digest.update(self.aperture_knots.detach().cpu().numpy().tobytes())
+        if self.point_knots is not None:
             digest.update(self.point_knots.detach().cpu().numpy().tobytes())
+        if self.supports_joint_fk:
+            digest.update("\0".join(self.joint_names).encode("utf-8"))
+            for tensor in (
+                self.free_joint_knots,
+                self.local_points,
+                self.link_pivots,
+                self.link_open_positions,
+                self.link_open_rotations,
+                self.link_axes,
+                self.link_position_joint_coefficients,
+                self.link_rotation_joint_coefficients,
+            ):
+                assert tensor is not None
+                digest.update(tensor.detach().cpu().numpy().tobytes())
         digest.update(
             f"{self.aperture_min}:{self.aperture_max}:{self.length_scale}:{self.source_sha256}".encode()
         )

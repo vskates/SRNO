@@ -1,6 +1,6 @@
 schema_version = 1
 catalog = "../assets/catalog.json"
-output_dir = "../data/simulator-v1"
+output_dir = "../data/simulator-r-v1"
 headless = true
 device = "cuda:0"
 num_envs = 100
@@ -11,8 +11,6 @@ overwrite = false
 memory_limit_gib = 14.0
 memory_check_interval_s = 0.25
 
-# After each aperture command, a state is written only after all live
-# environments satisfy these bounds for consecutive_steps.
 [settling]
 min_steps = 20
 max_steps = 2400
@@ -22,9 +20,6 @@ linear_velocity_m_s = 0.01
 angular_velocity_rad_s = 0.1
 joint_velocity_rad_s = 0.01
 
-# With no gravity, shelf, or coordinate locks, physical damping is what lets a
-# freely moving object actually converge after contact.  The finger speed is
-# deliberately much lower than validation's lift-oriented actuator limit.
 [relaxation]
 object_linear_damping_s_inv = 5.0
 object_angular_damping_s_inv = 5.0

@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Sequence
 
 import h5py
 import numpy as np
+import torch
 
 from srno.data.schema import DatasetManifest, ShardSpec, objectwise_split
 from srno.geometry.gripper import GripperAsset
@@ -319,6 +320,8 @@ def _collect_inside_app(
                     gripper_geometry_sha256=gripper_hash,
                     position=trajectories.position,
                     quaternion_xyzw=trajectories.quaternion_xyzw,
+                    joint_position=trajectories.joint_position,
+                    joint_names=trajectories.joint_names,
                     actual_aperture=trajectories.actual_aperture,
                     source_pose_index=trajectories.source_pose_index,
                     diagnostics=trajectories.diagnostics,
@@ -351,6 +354,7 @@ def _collect_inside_app(
         length_scale_m=gripper.length_scale,
         sdf_scale_m=config.dataset.sdf_scale_m,
         delta_gate_m=config.dataset.delta_gate_m,
+        contact_offset_sum_m=config.dataset.contact_offset_sum_m,
         commanded_aperture_m=[float(value) for value in reversed(gripper.aperture_knots.tolist())],
         gripper_asset="gripper.npz",
         gripper_sha256=gripper_hash,
@@ -439,11 +443,11 @@ def _replace_shard_gripper_geometry(
     source: GripperAsset | None,
     target: GripperAsset,
 ) -> bool:
-    """Atomically remap aperture scalars to the runtime gripper schedule.
+    """Atomically update derived aperture values for the runtime gripper.
 
     Object poses and diagnostics describe the same simulation and stay intact.
-    The monotone knot-to-knot mapping only changes the metric aperture assigned
-    to each measured joint closure fraction.
+    A format-v3 target derives every value directly from the stored six-joint
+    state. Legacy assets retain the monotone knot-to-knot migration path.
     """
 
     target_hash = target.sha256()
@@ -477,16 +481,43 @@ def _replace_shard_gripper_geometry(
         ):
             raise ValueError("gripper aperture migration requires matching scheduled assets")
         old_aperture = np.asarray(group["actual_aperture"][...], dtype=np.float32)
+        if target.supports_joint_fk:
+            if "joint_position" not in group:
+                raise ValueError(
+                    f"cannot migrate {path}: target gripper requires joint_position"
+                )
+            joint_dataset = group["joint_position"]
+            raw_names = joint_dataset.attrs.get("joint_names", ())
+            joint_names = tuple(
+                value.decode("utf-8") if isinstance(value, bytes) else str(value)
+                for value in raw_names
+            )
+            if joint_names != target.joint_names:
+                raise ValueError(
+                    f"cannot migrate {path}: joint order does not match target gripper"
+                )
+            remapped = (
+                target.aperture_from_joints(
+                    torch.from_numpy(joint_dataset[...]).float()
+                )
+                .detach()
+                .cpu()
+                .numpy()
+                .astype(np.float32)
+            )
+        else:
+            remapped = None
 
-    old_knots = source_knots.detach().cpu().numpy().astype(np.float64)
-    new_knots = target_knots.detach().cpu().numpy().astype(np.float64)
-    tolerance = 1e-6
-    if (
-        old_aperture.min() < old_knots[0] - tolerance
-        or old_aperture.max() > old_knots[-1] + tolerance
-    ):
-        raise ValueError(f"cannot migrate {path}: aperture lies outside source limits")
-    remapped = np.interp(old_aperture, old_knots, new_knots).astype(np.float32)
+    if remapped is None:
+        old_knots = source_knots.detach().cpu().numpy().astype(np.float64)
+        new_knots = target_knots.detach().cpu().numpy().astype(np.float64)
+        tolerance = 1e-6
+        if (
+            old_aperture.min() < old_knots[0] - tolerance
+            or old_aperture.max() > old_knots[-1] + tolerance
+        ):
+            raise ValueError(f"cannot migrate {path}: aperture lies outside source limits")
+        remapped = np.interp(old_aperture, old_knots, new_knots).astype(np.float32)
 
     temporary = path.with_suffix(path.suffix + ".gripper.tmp")
     temporary.unlink(missing_ok=True)
