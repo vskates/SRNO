@@ -23,6 +23,10 @@ from srno.sim.usd_geometry import DenseSDF
 
 def test_manifest_dataset_validation_and_lazy_loading(dataset_bundle: Path) -> None:
     manifest = DatasetManifest.load(dataset_bundle)
+    assert manifest.contact_offset_sum_m == pytest.approx(0.00256)
+    assert manifest.physics.static_friction == pytest.approx(2.4)
+    assert manifest.physics.dynamic_friction == pytest.approx(2.0)
+    assert manifest.physics.friction_combine_mode == "min"
     report = validate_dataset(manifest, strict_resolution=False)
     assert report.objects == 3
     assert report.trajectories == 9
@@ -33,6 +37,8 @@ def test_manifest_dataset_validation_and_lazy_loading(dataset_bundle: Path) -> N
         record = dataset[0]
         assert record.sdf.shape == (8, 8, 8)
         assert record.position.shape == (3, 33, 3)
+        assert record.joint_position is not None
+        assert record.joint_position.shape == (3, 33, 6)
         assert dataset._handles
     finally:
         dataset.close()
@@ -91,6 +97,9 @@ def test_active_index_local_collation_and_gate_calibration(
     calibration = calibrate_gate(dataset_bundle, target_recall=0.995)
     assert calibration["contact_recall"] == 1.0
     assert calibration["recommended_delta_gate_m"] >= 0.02009
+    assert calibration["recommended_admissible_gap_m"] == pytest.approx(-1e-3, abs=1e-6)
+    assert calibration["settled_penetration_q99_5_m"] == pytest.approx(1e-3, abs=1e-6)
+    assert calibration["contact_offset_sum_m"] == pytest.approx(0.00256)
 
 
 def test_active_index_rejects_modified_sdf_shard(
@@ -282,6 +291,13 @@ def test_objectwise_split_is_disjoint_and_reproducible() -> None:
     assert set(first["train"]).isdisjoint(first["test"])
     assert set().union(*map(set, first.values())) == set(object_ids)
 
+    diagnostic = objectwise_split(object_ids[:3], seed=8)
+    assert {name: len(values) for name, values in diagnostic.items()} == {
+        "train": 1,
+        "val": 1,
+        "test": 1,
+    }
+
 
 def test_manifest_rejects_overlapping_split(dataset_bundle: Path) -> None:
     manifest = DatasetManifest.load(dataset_bundle)
@@ -293,3 +309,18 @@ def test_manifest_rejects_overlapping_split(dataset_bundle: Path) -> None:
     path.write_text(json.dumps(raw), encoding="utf-8")
     with pytest.raises(ValueError, match="overlap"):
         DatasetManifest.load(path)
+
+
+def test_dataset_rejects_physics_fingerprint_mismatch(dataset_bundle: Path) -> None:
+    manifest = DatasetManifest.load(dataset_bundle)
+    shard = manifest.shard_path(manifest.shards[0])
+    with h5py.File(shard, "r+") as handle:
+        handle.attrs["physics_metadata_json"] = "{}"
+    with pytest.raises(ValueError, match="physics metadata mismatch"):
+        validate_dataset(manifest, strict_resolution=False)
+    dataset = H5ObjectDataset(manifest, split="train")
+    try:
+        with pytest.raises(ValueError, match="physics mismatch"):
+            _ = dataset[0]
+    finally:
+        dataset.close()

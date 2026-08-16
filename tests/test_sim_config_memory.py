@@ -10,6 +10,7 @@ from srno.sim.config import SimulatorConfig
 from srno.sim.memory_guard import MemorySnapshot, MemoryWatchdog, read_system_used_bytes
 from srno.cli import build_parser
 from srno.sim.runner import _check_existing_shard
+from srno.sim.physx_material import PhysxMaterialAudit, expected_physics_metadata
 
 
 def test_simulator_config_is_minimal_and_zero_gravity_mode_has_memory_guard() -> None:
@@ -23,7 +24,25 @@ def test_simulator_config_is_minimal_and_zero_gravity_mode_has_memory_guard() ->
     assert config.relaxation.object_linear_damping_s_inv > 0.0
     assert config.relaxation.object_angular_damping_s_inv > 0.0
     assert config.relaxation.gripper_velocity_limit_rad_s == 0.1
+    assert config.material.static_friction == 2.4
+    assert config.material.dynamic_friction == 2.0
+    assert config.material.friction_combine_mode == "min"
+    assert config.material.strong_friction_enabled is True
     assert config.catalog.name == "catalog.json"
+
+
+def test_material_audit_rejects_a_live_coefficient_mismatch() -> None:
+    physics = expected_physics_metadata(SimulatorConfig.load("configs/simulator.toml"))
+    actual = {
+        "static_friction": 0.5,
+        "dynamic_friction": physics.dynamic_friction,
+        "friction_combine_mode": physics.friction_combine_mode,
+        "restitution": physics.restitution,
+        "contact_damping": physics.contact_damping,
+        "strong_friction_enabled": physics.strong_friction_enabled,
+    }
+    with pytest.raises(RuntimeError, match="static_friction"):
+        PhysxMaterialAudit(physics)._assert_expected(actual)
 
 
 def test_memory_watchdog_triggers_on_system_or_process_tree_limit() -> None:
@@ -48,15 +67,17 @@ def test_linux_memory_reader_uses_memavailable(tmp_path: Path) -> None:
 
 
 def test_resume_rejects_smoke_shard_with_wrong_trajectory_count(tmp_path: Path) -> None:
+    physics = expected_physics_metadata(SimulatorConfig.load("configs/simulator.toml"))
     shard = tmp_path / "smoke.h5"
     with h5py.File(shard, "w") as handle:
+        handle.attrs["physics_metadata_json"] = physics.canonical_json()
         group = handle.create_group("objects/000000")
         group.attrs["object_id"] = "object-a"
         group.create_dataset("position", data=np.zeros((1, 33, 3), dtype=np.float32))
 
-    _check_existing_shard(shard, "object-a", 1)
+    _check_existing_shard(shard, "object-a", 1, physics=physics)
     with pytest.raises(ValueError, match="pass --overwrite"):
-        _check_existing_shard(shard, "object-a", 2_000)
+        _check_existing_shard(shard, "object-a", 2_000, physics=physics)
 
 
 def test_collect_cli_supports_explicit_resume_mode() -> None:

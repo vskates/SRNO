@@ -85,9 +85,19 @@ A bundle consists of one `manifest.json`, one immutable gripper `.npz`, and obje
 HDF5 shards. A minimal exporter uses:
 
 ```python
-from srno.data import H5DatasetWriter
+from srno.data import H5DatasetWriter, PhysicsMetadata
 
-with H5DatasetWriter("data/shard-000.h5") as writer:
+physics = PhysicsMetadata(
+    static_friction=2.4, dynamic_friction=2.0,
+    friction_combine_mode="min", restitution=0.0,
+    restitution_combine_mode="min", strong_friction_enabled=True,
+    contact_model="rigid", contact_stiffness=0.0, contact_damping=0.0,
+    friction_model="patch", contact_generation="PCM", solver_type="TGS",
+    solver_position_iterations=64, solver_velocity_iterations=16,
+    simulator="Isaac Sim / PhysX", simulator_version="5.1.0.0",
+)
+
+with H5DatasetWriter("data/shard-000.h5", physics=physics) as writer:
     writer.add_object(
         "object-0001",
         sdf=sdf_zyx,                    # [96, 96, 96]
@@ -117,6 +127,8 @@ Construct `DatasetManifest` with `DatasetManifest.create(...)`; shard object IDs
 object-wise train/val/test split must match exactly. The validator additionally enforces
 `max(voxel_size) < delta_gate / 2`, normalized quaternions, the six-joint ordering from
 the gripper asset, and consistency of the diagnostic `actual_aperture = A(r)`.
+Schema v2 also requires the manifest and every shard to contain exactly the same physics
+fingerprint; datasets without a verified friction/contact/solver contract are rejected.
 
 ## Gripper preprocessing
 
@@ -154,9 +166,12 @@ srno evaluate --config configs/srno-r-joint-diagnostic.toml \
   --checkpoint runs/srno-r-joint-diagnostic/best-rollout.pt --split test
 ```
 
-Gate calibration requires `contact_count` diagnostics and recommends the smallest
+Calibration requires `contact_count` diagnostics. It recommends the smallest gate
 threshold attaining 99.5% simulator-contact recall while also respecting voxel
-resolution. The local stage reads only indexed active transitions. Rollout training is
+resolution, and reports the 99.5%-coverage geometric `admissible_gap_m` from settled
+states and actual joints. Regenerate trajectories and rerun this command after every
+material change; the existing cooked-SDF caches and gripper FK do not need rebuilding.
+The local stage reads only indexed active transitions. Rollout training is
 autoregressive with horizons 4, 8, 16, and 32; no free-space, stall, force, or grasp-quality
 auxiliary losses are present.
 

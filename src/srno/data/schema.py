@@ -9,7 +9,7 @@ from typing import Any
 import numpy as np
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 NUM_STEPS = 32
 NUM_STATES = NUM_STEPS + 1
 NUM_SURFACE_SAMPLES = 256
@@ -27,6 +27,91 @@ class ShardSpec:
 
 
 @dataclass(frozen=True)
+class PhysicsMetadata:
+    """Physics law and solver fingerprint for every trajectory in a dataset."""
+
+    static_friction: float
+    dynamic_friction: float
+    friction_combine_mode: str
+    restitution: float
+    restitution_combine_mode: str
+    strong_friction_enabled: bool
+    contact_model: str
+    contact_stiffness: float
+    contact_damping: float
+    friction_model: str
+    contact_generation: str
+    solver_type: str
+    solver_position_iterations: int
+    solver_velocity_iterations: int
+    simulator: str
+    simulator_version: str
+
+    @classmethod
+    def from_dict(cls, raw: dict[str, Any]) -> "PhysicsMetadata":
+        return cls(
+            static_friction=float(raw["static_friction"]),
+            dynamic_friction=float(raw["dynamic_friction"]),
+            friction_combine_mode=str(raw["friction_combine_mode"]),
+            restitution=float(raw["restitution"]),
+            restitution_combine_mode=str(raw["restitution_combine_mode"]),
+            strong_friction_enabled=bool(raw["strong_friction_enabled"]),
+            contact_model=str(raw["contact_model"]),
+            contact_stiffness=float(raw["contact_stiffness"]),
+            contact_damping=float(raw["contact_damping"]),
+            friction_model=str(raw["friction_model"]),
+            contact_generation=str(raw["contact_generation"]),
+            solver_type=str(raw["solver_type"]),
+            solver_position_iterations=int(raw["solver_position_iterations"]),
+            solver_velocity_iterations=int(raw["solver_velocity_iterations"]),
+            simulator=str(raw["simulator"]),
+            simulator_version=str(raw["simulator_version"]),
+        )
+
+    def validate(self) -> None:
+        coefficients = (
+            self.static_friction,
+            self.dynamic_friction,
+            self.contact_stiffness,
+            self.contact_damping,
+        )
+        if not all(np.isfinite(value) and value >= 0.0 for value in coefficients):
+            raise ValueError("physics coefficients must be finite and non-negative")
+        if self.friction_combine_mode not in {"average", "min", "multiply", "max"}:
+            raise ValueError("unsupported friction combine mode")
+        if self.restitution_combine_mode not in {"average", "min", "multiply", "max"}:
+            raise ValueError("unsupported restitution combine mode")
+        if not isinstance(self.strong_friction_enabled, bool):
+            raise ValueError("strong_friction_enabled must be boolean")
+        if self.contact_model not in {"rigid", "compliant"}:
+            raise ValueError("contact_model must be rigid or compliant")
+        if not np.isfinite(self.restitution):
+            raise ValueError("restitution must be finite")
+        if self.contact_model == "rigid" and self.restitution < 0.0:
+            raise ValueError("rigid contact restitution must be non-negative")
+        if self.contact_model == "rigid" and (
+            self.contact_stiffness != 0.0 or self.contact_damping != 0.0
+        ):
+            raise ValueError("rigid contact must have zero stiffness and damping metadata")
+        if self.friction_model not in {"patch", "oneDirectional", "twoDirectional"}:
+            raise ValueError("unsupported PhysX friction model")
+        if self.contact_generation not in {"PCM", "SAT"}:
+            raise ValueError("contact_generation must be PCM or SAT")
+        if self.solver_type not in {"PGS", "TGS"}:
+            raise ValueError("solver_type must be PGS or TGS")
+        if self.solver_position_iterations <= 0 or self.solver_velocity_iterations < 0:
+            raise ValueError("invalid solver iteration counts")
+        if not self.simulator or not self.simulator_version:
+            raise ValueError("simulator identity must be non-empty")
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    def canonical_json(self) -> str:
+        return json.dumps(self.to_dict(), sort_keys=True, separators=(",", ":"))
+
+
+@dataclass(frozen=True)
 class DatasetManifest:
     schema_version: int
     units: str
@@ -40,6 +125,7 @@ class DatasetManifest:
     commanded_aperture_m: tuple[float, ...]
     gripper_asset: str
     gripper_sha256: str
+    physics: PhysicsMetadata
     shards: tuple[ShardSpec, ...]
     splits: dict[str, tuple[str, ...]]
     root: Path
@@ -48,8 +134,13 @@ class DatasetManifest:
     def load(cls, path: str | Path) -> "DatasetManifest":
         manifest_path = Path(path).resolve()
         raw = json.loads(manifest_path.read_text(encoding="utf-8"))
+        schema_version = int(raw.get("schema_version", -1))
+        if schema_version != SCHEMA_VERSION:
+            raise ValueError(
+                f"unsupported dataset schema {schema_version}, expected {SCHEMA_VERSION}"
+            )
         manifest = cls(
-            schema_version=int(raw["schema_version"]),
+            schema_version=schema_version,
             units=str(raw["units"]),
             pose_convention=str(raw["pose_convention"]),
             quaternion_order=str(raw["quaternion_order"]),
@@ -61,6 +152,7 @@ class DatasetManifest:
             commanded_aperture_m=tuple(map(float, raw["commanded_aperture_m"])),
             gripper_asset=str(raw["gripper_asset"]),
             gripper_sha256=str(raw["gripper_sha256"]),
+            physics=PhysicsMetadata.from_dict(raw["physics"]),
             shards=tuple(ShardSpec.from_dict(item) for item in raw["shards"]),
             splits={key: tuple(map(str, value)) for key, value in raw["splits"].items()},
             root=manifest_path.parent,
@@ -80,6 +172,7 @@ class DatasetManifest:
         commanded_aperture_m: list[float] | tuple[float, ...],
         gripper_asset: str,
         gripper_sha256: str,
+        physics: PhysicsMetadata,
         shards: list[ShardSpec] | tuple[ShardSpec, ...],
         splits: dict[str, list[str] | tuple[str, ...]],
     ) -> "DatasetManifest":
@@ -96,6 +189,7 @@ class DatasetManifest:
             commanded_aperture_m=tuple(map(float, commanded_aperture_m)),
             gripper_asset=gripper_asset,
             gripper_sha256=gripper_sha256,
+            physics=physics,
             shards=tuple(shards),
             splits={key: tuple(map(str, value)) for key, value in splits.items()},
             root=Path(root).resolve(),
@@ -112,6 +206,7 @@ class DatasetManifest:
         actual = (self.units, self.pose_convention, self.quaternion_order, self.sdf_sign)
         if actual != expected:
             raise ValueError(f"dataset conventions must be {expected}, got {actual}")
+        self.physics.validate()
         if self.length_scale_m <= 0 or self.sdf_scale_m <= 0 or self.delta_gate_m <= 0:
             raise ValueError("length, SDF scale, and gate threshold must be positive")
         if not np.isfinite(self.contact_offset_sum_m) or self.contact_offset_sum_m < 0:
@@ -166,6 +261,7 @@ class DatasetManifest:
             "commanded_aperture_m": list(self.commanded_aperture_m),
             "gripper_asset": self.gripper_asset,
             "gripper_sha256": self.gripper_sha256,
+            "physics": self.physics.to_dict(),
             "shards": [
                 {"path": shard.path, "object_ids": list(shard.object_ids)}
                 for shard in self.shards

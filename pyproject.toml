@@ -26,6 +26,9 @@ srno = "srno.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"srno.sim" = ["native/*.so"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"

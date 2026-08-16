@@ -7,7 +7,7 @@ from typing import Mapping
 import h5py
 import numpy as np
 
-from srno.data.schema import NUM_STATES, NUM_STEPS, SCHEMA_VERSION
+from srno.data.schema import NUM_STATES, NUM_STEPS, SCHEMA_VERSION, PhysicsMetadata
 
 
 DIAGNOSTIC_SPECS: dict[str, tuple[int, ...]] = {
@@ -23,8 +23,10 @@ DIAGNOSTIC_SPECS: dict[str, tuple[int, ...]] = {
 class H5DatasetWriter:
     """Atomic, simulator-agnostic writer for one object-centric HDF5 shard."""
 
-    def __init__(self, path: str | Path) -> None:
+    def __init__(self, path: str | Path, *, physics: PhysicsMetadata) -> None:
         self.path = Path(path).resolve()
+        physics.validate()
+        self.physics = physics
         self.temporary_path = self.path.with_suffix(self.path.suffix + ".tmp")
         self._file: h5py.File | None = None
         self.object_ids: list[str] = []
@@ -39,6 +41,7 @@ class H5DatasetWriter:
         self._file.attrs["pose_convention"] = "object_to_gripper"
         self._file.attrs["quaternion_order"] = "xyzw"
         self._file.attrs["sdf_sign"] = "positive_outside"
+        self._file.attrs["physics_metadata_json"] = self.physics.canonical_json()
         self._file.create_group("objects")
         return self
 

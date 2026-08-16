@@ -19,12 +19,13 @@ import h5py
 import numpy as np
 import torch
 
-from srno.data.schema import DatasetManifest, ShardSpec, objectwise_split
+from srno.data.schema import DatasetManifest, PhysicsMetadata, ShardSpec, objectwise_split
 from srno.geometry.gripper import GripperAsset
 from srno.sim.assets import SimulatorAssetCatalog
 from srno.sim.config import SimulatorConfig
 from srno.sim.pose_seeds import PoseSeeds
 from srno.sim.memory_guard import MemoryWatchdog
+from srno.sim.physx_material import expected_physics_metadata
 
 if TYPE_CHECKING:
     from srno.sim.usd_geometry import DenseSDF
@@ -170,6 +171,7 @@ def _collect_inside_app(
         make_scene_cfg,
         make_simulation_cfg,
     )
+    from srno.sim.physx_material import PhysxMaterialAudit
     from srno.sim.usd_geometry import load_or_generate_sdf
 
     settings = carb.settings.get_settings()
@@ -196,6 +198,7 @@ def _collect_inside_app(
         samples_per_link=128,
     )
     gripper_hash = gripper.sha256()
+    physics = expected_physics_metadata(config)
 
     completed: list[str] = []
     for object_id in object_ids:
@@ -203,7 +206,9 @@ def _collect_inside_app(
         shard_path = output / "shards" / f"{object_id}.h5"
         if shard_path.exists() and not overwrite:
             try:
-                _check_existing_shard(shard_path, object_id, trajectory_count)
+                _check_existing_shard(
+                    shard_path, object_id, trajectory_count, physics=physics
+                )
             except ValueError:
                 if not resume:
                     raise
@@ -274,10 +279,14 @@ def _collect_inside_app(
         for _ in range(10):
             app.update()
         print(f"[SRNO] {object_id}: creating SimulationContext", flush=True)
-        simulation = SimulationContext(make_simulation_cfg(config.device))
+        simulation = SimulationContext(
+            make_simulation_cfg(config.device, config.material)
+        )
         scene = None
         collector = None
+        material_audit = PhysxMaterialAudit(physics)
         try:
+            material_audit.start()
             print(f"[SRNO] {object_id}: spawning scene", flush=True)
             scene = InteractiveScene(
                 make_scene_cfg(
@@ -288,9 +297,11 @@ def _collect_inside_app(
                 )
             )
             print(f"[SRNO] {object_id}: binding contact material", flush=True)
-            apply_contact_materials(scene)
+            apply_contact_materials(scene, config.material)
+            material_audit.force_load()
             print(f"[SRNO] {object_id}: initializing physics", flush=True)
             simulation.reset()
+            verified_physics = material_audit.verify(app)
             if not config.headless:
                 # The first environment is centered at the world origin.  Keep
                 # both a grocery-sized object and the nearby gripper in frame.
@@ -309,7 +320,7 @@ def _collect_inside_app(
             )
             print(f"[SRNO] {object_id}: stepping trajectories", flush=True)
             trajectories = collector.collect(seeds, desired_count=trajectory_count)
-            with H5DatasetWriter(shard_path) as writer:
+            with H5DatasetWriter(shard_path, physics=verified_physics) as writer:
                 writer.add_object(
                     object_id,
                     sdf=sdf.values,
@@ -327,6 +338,7 @@ def _collect_inside_app(
                     diagnostics=trajectories.diagnostics,
                 )
         finally:
+            material_audit.close()
             del collector
             del scene
             # ``SimulationContext.stop()`` enters a Kit render callback and can
@@ -358,6 +370,7 @@ def _collect_inside_app(
         commanded_aperture_m=[float(value) for value in reversed(gripper.aperture_knots.tolist())],
         gripper_asset="gripper.npz",
         gripper_sha256=gripper_hash,
+        physics=physics,
         shards=[
             ShardSpec(path=f"shards/{object_id}.h5", object_ids=(object_id,))
             for object_id in completed
@@ -545,9 +558,18 @@ def _atomic_gripper(path: Path, gripper: GripperAsset) -> None:
 
 
 def _check_existing_shard(
-    path: Path, expected_object_id: str, expected_trajectory_count: int
+    path: Path,
+    expected_object_id: str,
+    expected_trajectory_count: int,
+    *,
+    physics: PhysicsMetadata,
 ) -> None:
     with h5py.File(path, "r") as handle:
+        stored_physics = str(handle.attrs.get("physics_metadata_json", ""))
+        if stored_physics != physics.canonical_json():
+            raise ValueError(
+                f"existing shard {path} has a different or missing physics fingerprint"
+            )
         groups = handle.get("objects")
         if groups is None or len(groups) != 1:
             raise ValueError(f"existing shard is not a one-object SRNO shard: {path}")
@@ -571,11 +593,12 @@ def _write_collection_metadata(
     completed: list[str],
 ) -> None:
     payload = {
-        "format_version": 1,
+        "format_version": 2,
         "config_sha256": config.sha256(),
         "catalog_sha256": hashlib.sha256(catalog.catalog_path.read_bytes()).hexdigest(),
         "validation_commit": catalog.payload["source"]["validation_commit"],
         "completed_object_ids": completed,
+        "physics": expected_physics_metadata(config).to_dict(),
     }
     _atomic_json(output / "collection.json", payload)
 

@@ -178,6 +178,10 @@ class H5ObjectDataset(Dataset[ObjectRecord]):
         handle = self._handles.get(path)
         if handle is None:
             handle = h5py.File(path, "r", swmr=True, rdcc_nbytes=self.hdf5_cache_bytes)
+            stored_physics = str(handle.attrs.get("physics_metadata_json", ""))
+            if stored_physics != self.manifest.physics.canonical_json():
+                handle.close()
+                raise ValueError(f"manifest/HDF5 physics mismatch for {path}")
             self._handles[path] = handle
         return handle
 

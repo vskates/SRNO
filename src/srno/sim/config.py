@@ -48,6 +48,20 @@ class SDFGenerationConfig:
 
 
 @dataclass(frozen=True)
+class ContactMaterialConfig:
+    """Intended rigid Coulomb material shared by object and finger pads."""
+
+    static_friction: float = 2.4
+    dynamic_friction: float = 2.0
+    restitution: float = 0.0
+    friction_combine_mode: str = "min"
+    restitution_combine_mode: str = "min"
+    contact_stiffness: float = 0.0
+    contact_damping: float = 0.0
+    strong_friction_enabled: bool = True
+
+
+@dataclass(frozen=True)
 class DatasetExportConfig:
     sdf_scale_m: float = 0.02
     delta_gate_m: float = 0.01
@@ -73,6 +87,7 @@ class SimulatorConfig:
     memory_check_interval_s: float
     settling: SettlingConfig
     relaxation: RelaxationConfig
+    material: ContactMaterialConfig
     trajectory: TrajectoryConfig
     sdf: SDFGenerationConfig
     dataset: DatasetExportConfig
@@ -86,7 +101,7 @@ class SimulatorConfig:
             "schema_version", "catalog", "output_dir", "headless", "device", "num_envs",
             "trajectories_per_object", "successful_seed_poses_only", "seed", "overwrite",
             "memory_limit_gib", "memory_check_interval_s",
-            "settling", "relaxation", "trajectory", "sdf", "dataset",
+            "settling", "relaxation", "material", "trajectory", "sdf", "dataset",
         }
         unknown = set(raw) - allowed
         if unknown:
@@ -114,6 +129,7 @@ class SimulatorConfig:
             memory_check_interval_s=float(raw.get("memory_check_interval_s", 0.25)),
             settling=_section(SettlingConfig, raw.get("settling"), "settling"),
             relaxation=_section(RelaxationConfig, raw.get("relaxation"), "relaxation"),
+            material=_section(ContactMaterialConfig, raw.get("material"), "material"),
             trajectory=_section(TrajectoryConfig, raw.get("trajectory"), "trajectory"),
             sdf=_section(SDFGenerationConfig, raw.get("sdf"), "sdf"),
             dataset=_section(DatasetExportConfig, raw.get("dataset"), "dataset"),
@@ -163,6 +179,26 @@ class SimulatorConfig:
             raise ValueError("dataset.contact_offset_sum_m must be finite and non-negative")
         if self.sdf.chunk_points <= 0:
             raise ValueError("sdf.chunk_points must be positive")
+        material_values = (
+            self.material.static_friction,
+            self.material.dynamic_friction,
+            self.material.restitution,
+            self.material.contact_stiffness,
+            self.material.contact_damping,
+        )
+        if not all(math.isfinite(value) and value >= 0.0 for value in material_values):
+            raise ValueError("material coefficients must be finite and non-negative")
+        combine_modes = {"average", "min", "multiply", "max"}
+        if self.material.friction_combine_mode not in combine_modes:
+            raise ValueError("invalid material friction_combine_mode")
+        if self.material.restitution_combine_mode not in combine_modes:
+            raise ValueError("invalid material restitution_combine_mode")
+        if self.material.contact_stiffness != 0.0 or self.material.contact_damping != 0.0:
+            raise ValueError("SRNO v1 requires rigid contact (zero stiffness and damping)")
+        if not isinstance(self.material.strong_friction_enabled, bool):
+            raise ValueError("material.strong_friction_enabled must be boolean")
+        if not self.material.strong_friction_enabled:
+            raise ValueError("SRNO v1 collection requires strong friction enabled")
 
     def sha256(self) -> str:
         payload = asdict(self)

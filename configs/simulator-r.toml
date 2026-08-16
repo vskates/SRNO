@@ -26,6 +26,16 @@ object_angular_damping_s_inv = 5.0
 gripper_velocity_limit_rad_s = 0.1
 gripper_damping = 0.35
 
+[material]
+static_friction = 2.4
+dynamic_friction = 2.0
+restitution = 0.0
+friction_combine_mode = "min"
+restitution_combine_mode = "min"
+contact_stiffness = 0.0
+contact_damping = 0.0
+strong_friction_enabled = true
+
 [trajectory]
 command_steps = 32
 

@@ -12,7 +12,7 @@ from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sensors import ContactSensorCfg
 
 from srno.sim.assets import ObjectAssetRecord, SimulatorAssetCatalog
-from srno.sim.config import RelaxationConfig
+from srno.sim.config import ContactMaterialConfig, RelaxationConfig
 
 
 SIM_DT = 1.0 / 120.0
@@ -23,12 +23,28 @@ CONTACT_LINKS = (
 )
 
 
-def make_simulation_cfg(device: str) -> sim_utils.SimulationCfg:
+def _rigid_material_cfg(material: ContactMaterialConfig) -> sim_utils.RigidBodyMaterialCfg:
+    return sim_utils.RigidBodyMaterialCfg(
+        static_friction=material.static_friction,
+        dynamic_friction=material.dynamic_friction,
+        restitution=material.restitution,
+        friction_combine_mode=material.friction_combine_mode,
+        restitution_combine_mode=material.restitution_combine_mode,
+        compliant_contact_stiffness=material.contact_stiffness,
+        compliant_contact_damping=material.contact_damping,
+    )
+
+
+def make_simulation_cfg(
+    device: str, material: ContactMaterialConfig | None = None
+) -> sim_utils.SimulationCfg:
+    material = ContactMaterialConfig() if material is None else material
     cfg = sim_utils.SimulationCfg(
         dt=SIM_DT,
         render_interval=CONTROL_DECIMATION,
         gravity=(0.0, 0.0, 0.0),
         device=device,
+        physics_material=_rigid_material_cfg(material),
     )
     cfg.physx.bounce_threshold_velocity = 0.01
     cfg.physx.gpu_found_lost_aggregate_pairs_capacity = 4 * 1024 * 1024
@@ -158,25 +174,35 @@ def make_scene_cfg(
     return cfg
 
 
-def apply_contact_materials(scene: object) -> None:
+def apply_contact_materials(
+    scene: object, material: ContactMaterialConfig | None = None
+) -> None:
     """Bind validation's high-friction material to object and contact pads."""
 
     import omni.usd
     from pxr import Sdf, Usd, UsdPhysics
 
+    material = ContactMaterialConfig() if material is None else material
     stage = omni.usd.get_context().get_stage()
     material_path = "/World/SRNOContactMaterial"
-    material_prim = stage.DefinePrim(material_path, "PhysicsMaterial")
-    material_prim.CreateAttribute("physics:staticFriction", Sdf.ValueTypeNames.Float).Set(2.4)
-    material_prim.CreateAttribute("physics:dynamicFriction", Sdf.ValueTypeNames.Float).Set(2.0)
-    material_prim.CreateAttribute("physics:restitution", Sdf.ValueTypeNames.Float).Set(0.0)
-    material_prim.CreateAttribute(
-        "physxMaterial:frictionCombineMode", Sdf.ValueTypeNames.Token
-    ).Set("min")
-    material_prim.CreateAttribute(
-        "physxMaterial:restitutionCombineMode", Sdf.ValueTypeNames.Token
-    ).Set("min")
+    runtime_cfg = _rigid_material_cfg(material)
+    runtime_cfg.func(material_path, runtime_cfg)
 
+    def bind_and_verify(prim: object) -> None:
+        """Author and verify a direct physics-purpose material binding."""
+
+        sim_utils.bind_physics_material(
+            prim.GetPath(), material_path, stage=stage, stronger_than_descendants=True
+        )
+        relationship = prim.GetRelationship("material:binding:physics")
+        targets = relationship.GetTargets() if relationship.IsValid() else []
+        if targets != [Sdf.Path(material_path)]:
+            raise RuntimeError(
+                f"failed to bind {material_path} to collision prim {prim.GetPath()}; "
+                f"authored targets={list(map(str, targets))}"
+            )
+
+    bound_paths: list[str] = []
     for environment_path in scene.env_prim_paths:
         object_prim = stage.GetPrimAtPath(f"{environment_path}/Object")
         if not object_prim.IsValid():
@@ -184,10 +210,8 @@ def apply_contact_materials(scene: object) -> None:
         for prim in Usd.PrimRange(object_prim):
             if not prim.HasAPI(UsdPhysics.CollisionAPI):
                 continue
-            relationship = prim.GetRelationship("physics:material")
-            if not relationship:
-                relationship = prim.CreateRelationship("physics:material")
-            relationship.SetTargets([Sdf.Path(material_path)])
+            bind_and_verify(prim)
+            bound_paths.append(str(prim.GetPath()))
         for link_name in CONTACT_LINKS:
             link = stage.GetPrimAtPath(
                 f"{environment_path}/Robot/astribot_gripper/{link_name}"
@@ -195,9 +219,9 @@ def apply_contact_materials(scene: object) -> None:
             if not link.IsValid():
                 raise RuntimeError(f"contact link not found in runtime gripper: {link.GetPath()}")
             for prim in Usd.PrimRange(link):
-                if prim.GetTypeName() != "Mesh" and not prim.HasAPI(UsdPhysics.CollisionAPI):
+                if not prim.HasAPI(UsdPhysics.CollisionAPI):
                     continue
-                relationship = prim.GetRelationship("physics:material")
-                if not relationship:
-                    relationship = prim.CreateRelationship("physics:material")
-                relationship.SetTargets([Sdf.Path(material_path)])
+                bind_and_verify(prim)
+                bound_paths.append(str(prim.GetPath()))
+    if not bound_paths:
+        raise RuntimeError("no collision prims received the SRNO contact material")

@@ -5,11 +5,12 @@ from srno.data.dataset import (
     TrajectoryBatch,
     make_dataloader,
 )
-from srno.data.schema import DatasetManifest
+from srno.data.schema import DatasetManifest, PhysicsMetadata
 from srno.data.writer import H5DatasetWriter
 
 __all__ = [
     "DatasetManifest",
+    "PhysicsMetadata",
     "H5DatasetWriter",
     "H5ObjectDataset",
     "LocalTransitionBatch",
@@ -17,4 +18,3 @@ __all__ = [
     "TrajectoryBatch",
     "make_dataloader",
 ]
-

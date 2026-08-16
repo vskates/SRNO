@@ -71,6 +71,9 @@ def validate_dataset(
             with h5py.File(path, "r") as handle:
                 if int(handle.attrs.get("schema_version", -1)) != manifest.schema_version:
                     errors.append(f"{path}: schema version mismatch")
+                stored_physics = str(handle.attrs.get("physics_metadata_json", ""))
+                if stored_physics != manifest.physics.canonical_json():
+                    errors.append(f"{path}: physics metadata mismatch")
                 groups = handle.get("objects")
                 if groups is None or len(groups) != len(shard.object_ids):
                     errors.append(f"{path}: manifest object count does not match shard")
@@ -247,6 +250,57 @@ def _trial_minimum_gaps(
     return result.cpu().numpy()
 
 
+def _settled_minimum_geometric_gaps(
+    record: ObjectRecord,
+    gripper: GripperAsset,
+    *,
+    device: torch.device,
+    outside_value: float,
+) -> np.ndarray:
+    """Evaluate raw SDF feasibility at settled poses and actual joints.
+
+    The PhysX contact envelope is deliberately not subtracted here.  It belongs
+    to the contact signal/gate, whereas feasibility is defined on the cooked
+    collision surface itself.
+    """
+
+    if record.joint_position is None:
+        raise ValueError("admissible-gap calibration requires actual joint_position")
+    if not gripper.supports_joint_fk:
+        raise ValueError("admissible-gap calibration requires a joint-FK gripper asset")
+    position = record.position.to(device=device, dtype=torch.float32)
+    rotation = quaternion_xyzw_to_matrix(
+        record.quaternion_xyzw.to(device=device, dtype=torch.float32)
+    )
+    joints = record.joint_position.to(device=device, dtype=torch.float32)
+    sdf = record.sdf.to(device=device)
+    origin = record.origin.to(device=device)
+    voxel = record.voxel_size.to(device=device)
+    trajectories = position.shape[0]
+    result = torch.empty((trajectories, NUM_STEPS), device=device)
+    mapping = torch.zeros(trajectories, dtype=torch.long, device=device)
+    gripper = gripper.to(device)
+    with torch.no_grad():
+        for step in range(NUM_STEPS):
+            points = gripper.points_from_joints(joints[:, step + 1])
+            relative = points - position[:, step + 1, None, :]
+            points_object = torch.einsum(
+                "bij,bmj->bmi",
+                rotation[:, step + 1].transpose(-1, -2),
+                relative,
+            )
+            gaps = sample_sdf(
+                sdf[None],
+                origin[None],
+                voxel[None],
+                points_object,
+                sample_to_object=mapping,
+                outside_value=outside_value,
+            )
+            result[:, step] = gaps.amin(dim=-1)
+    return result.cpu().numpy()
+
+
 def build_active_index(
     manifest_or_path: DatasetManifest | str | Path,
     output_path: str | Path,
@@ -320,6 +374,7 @@ def calibrate_gate(
     schedule = torch.tensor(manifest.commanded_aperture_m, device=device)
     contact_gaps: list[np.ndarray] = []
     free_gaps: list[np.ndarray] = []
+    settled_gaps: list[np.ndarray] = []
     maximum_voxel = 0.0
     # Contact statistics are calibrated on train+val only. The geometric
     # resolution bound must nevertheless cover every deployed split, because
@@ -344,21 +399,36 @@ def calibrate_gate(
                 contacts = record.diagnostics["contact_count"].numpy() > 0
                 contact_gaps.append(gaps[contacts])
                 free_gaps.append(gaps[~contacts])
+                settled_gaps.append(
+                    _settled_minimum_geometric_gaps(
+                        record,
+                        gripper,
+                        device=torch.device(device),
+                        outside_value=manifest.sdf_scale_m,
+                    ).reshape(-1)
+                )
         finally:
             dataset.close()
     contact = np.concatenate(contact_gaps)
     free = np.concatenate(free_gaps)
+    settled = np.concatenate(settled_gaps)
     if not len(contact):
         raise ValueError("calibration data contains no simulator contacts")
     quantile = float(np.quantile(contact, target_recall, method="higher"))
     threshold = max(quantile, 2.01 * maximum_voxel, np.finfo(np.float32).eps)
     true_positive_rate = float(np.mean(contact <= threshold))
     false_positive_rate = float(np.mean(free <= threshold)) if len(free) else 0.0
+    penetration = np.maximum(-settled, 0.0)
+    geometric_residual = float(np.quantile(penetration, 0.995, method="higher"))
     return {
         "recommended_delta_gate_m": threshold,
+        "recommended_admissible_gap_m": -geometric_residual,
         "contact_recall": true_positive_rate,
         "free_false_positive_rate": false_positive_rate,
         "contact_transitions": int(len(contact)),
         "free_transitions": int(len(free)),
+        "settled_transitions": int(len(settled)),
+        "settled_penetration_q99_5_m": geometric_residual,
+        "contact_offset_sum_m": manifest.contact_offset_sum_m,
         "maximum_voxel_size_m": maximum_voxel,
     }
