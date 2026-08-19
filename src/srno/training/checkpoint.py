@@ -22,9 +22,12 @@ def capture_rng_state() -> dict[str, Any]:
 def restore_rng_state(state: dict[str, Any]) -> None:
     random.setstate(state["python"])
     np.random.set_state(state["numpy"])
-    torch.set_rng_state(state["torch"])
+    # A checkpoint loaded with ``map_location='cuda'`` also maps RNG byte
+    # tensors.  PyTorch's RNG restoration APIs intentionally require CPU
+    # ByteTensors even when restoring CUDA generator states.
+    torch.set_rng_state(state["torch"].cpu())
     if state.get("cuda") is not None and torch.cuda.is_available():
-        torch.cuda.set_rng_state_all(state["cuda"])
+        torch.cuda.set_rng_state_all([value.cpu() for value in state["cuda"]])
 
 
 def save_checkpoint(

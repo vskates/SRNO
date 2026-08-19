@@ -164,6 +164,7 @@ def _collect_inside_app(
     from isaaclab.sim import SimulationContext
 
     from srno.data.writer import H5DatasetWriter
+    from srno.sim.actuator_audit import verify_runtime_actuator
     from srno.sim.collector import QuasistaticCollector
     from srno.sim.gripper_geometry import preprocess_runtime_gripper
     from srno.sim.isaac_scene import (
@@ -302,6 +303,21 @@ def _collect_inside_app(
             print(f"[SRNO] {object_id}: initializing physics", flush=True)
             simulation.reset()
             verified_physics = material_audit.verify(app)
+            actuator_contract = verify_runtime_actuator(
+                scene["robot"],
+                expected_joint_names=tuple(gripper.joint_names),
+                relaxation=config.relaxation,
+                position_target=gripper.free_joint_knots[-1],
+            )
+            _atomic_json(
+                output / "actuator-runtime.json",
+                {
+                    "format_version": 1,
+                    "config_sha256": config.sha256(),
+                    "gripper_sha256": gripper_hash,
+                    "contract": actuator_contract,
+                },
+            )
             if not config.headless:
                 # The first environment is centered at the world origin.  Keep
                 # both a grocery-sized object and the nearby gripper in frame.

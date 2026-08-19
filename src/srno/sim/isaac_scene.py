@@ -17,6 +17,10 @@ from srno.sim.config import ContactMaterialConfig, RelaxationConfig
 
 SIM_DT = 1.0 / 120.0
 CONTROL_DECIMATION = 2
+GRIPPER_DRIVE_TYPE = "force"
+GRIPPER_TARGET_TYPE = "position"
+GRIPPER_STIFFNESS = 14.0
+GRIPPER_EFFORT_LIMIT = 480.0
 CONTACT_LINKS = (
     "astribot_gripper_right_Link_L11",
     "astribot_gripper_right_Link_R11",
@@ -87,11 +91,11 @@ def _gripper_cfg(
             # six-joint schedule to PhysX's implicit PD solve instead.
             "quasistatic_gripper": ImplicitActuatorCfg(
                 joint_names_expr=list(catalog.gripper.close_joint_position_rad),
-                effort_limit=480.0,
-                effort_limit_sim=480.0,
+                effort_limit=GRIPPER_EFFORT_LIMIT,
+                effort_limit_sim=GRIPPER_EFFORT_LIMIT,
                 velocity_limit=relaxation.gripper_velocity_limit_rad_s,
                 velocity_limit_sim=relaxation.gripper_velocity_limit_rad_s,
-                stiffness=14.0,
+                stiffness=GRIPPER_STIFFNESS,
                 damping=relaxation.gripper_damping,
             )
         },
