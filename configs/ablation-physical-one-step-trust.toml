@@ -1,0 +1,43 @@
+seed = 0
+device = "cuda"
+
+[paths]
+manifest = "/home/weshi/SRNO/data/simulator-r-v1/manifest.json"
+active_index = "/home/weshi/SRNO/data/simulator-r-v1/active-index.npz"
+output_dir = "/home/weshi/SRNO/runs/ablation-physical-one-step-trust/seed-0"
+
+[model]
+hidden_dim = 64
+contact_features = "gap"
+global_conditioning = "aperture"
+
+[loss]
+lambda_rotation = 1.0
+lambda_joints = 1.0
+lambda_feasibility = 1.0
+admissible_gap_m = -0.00049232522724196315
+
+[optimizer]
+learning_rate = 3e-4
+weight_decay = 1e-4
+gradient_clip = 1.0
+warmup_fraction = 0.05
+
+[loader]
+objects_per_batch = 4
+local_samples_per_object = 256
+rollout_trajectories_per_object = 8
+workers = 4
+
+[training]
+local_epochs = 100
+rollout_epochs_per_horizon = 25
+rollout_horizons = [4, 8, 16, 32]
+early_stopping_patience = 10
+use_bfloat16 = true
+
+[trust_region]
+constraint_target = "physical_one_step"
+# Zero selects rho = 1 / L_phys(theta_0), computed from all active train
+# transitions before the first optimizer step.
+rho = 0.0

@@ -1,0 +1,47 @@
+{
+  "split": "val",
+  "note": "target-error oracle; representational upper bound, not predictor",
+  "arms": {
+    "direct": {
+      "dx": 0.03092818520963192,
+      "translation_over_length": 0.010088440030813217,
+      "translation_m": 0.001124860718846321,
+      "rotation_rad": 0.006102536339312792,
+      "joint_rmse_over_travel": 0.026529423892498016
+    },
+    "split_continuation": {
+      "dx": 0.01943807490170002,
+      "translation_over_length": 0.004914769437164068,
+      "translation_m": 0.0005479965475387871,
+      "rotation_rad": 0.004236553329974413,
+      "joint_rmse_over_travel": 0.016123680397868156
+    },
+    "inertial_implicit": {
+      "dx": 0.012092393822968006,
+      "translation_over_length": 0.005470821168273687,
+      "translation_m": 0.0006099964375607669,
+      "rotation_rad": 0.004572803620249033,
+      "joint_rmse_over_travel": 0.0077798678539693356
+    }
+  },
+  "selection_fraction": {
+    "direct": 0.055628272251308904,
+    "split_continuation": 0.193826352530541,
+    "inertial_implicit": 0.7505453752181501
+  },
+  "oracle": {
+    "dx": 0.01108640432357788,
+    "translation_over_length": 0.004770234227180481,
+    "translation_m": 0.0005318809417076409,
+    "rotation_rad": 0.004068443085998297,
+    "joint_rmse_over_travel": 0.0074516646564006805
+  },
+  "best_single_arm": "inertial_implicit",
+  "oracle_change_from_best_percent": {
+    "dx": -8.319192329639257,
+    "translation_over_length": -12.805882691908133,
+    "translation_m": -12.805893779559053,
+    "rotation_rad": -11.029569081369583,
+    "joint_rmse_over_travel": -4.218621752054618
+  }
+}

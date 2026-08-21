@@ -48,6 +48,27 @@ def feasibility_loss(
     return torch.relu((admissible_gap - gap) / sdf_scale).square().mean()
 
 
+def huberize_squared_norm(squared_norm: Tensor, *, delta: float) -> Tensor:
+    """Huber penalty with the same local scale as a squared vector norm.
+
+    Below ``delta`` this returns ``||e||^2`` exactly.  Above it the radial
+    derivative is bounded and the penalty becomes ``2 delta ||e||-delta^2``.
+    """
+
+    if delta <= 0:
+        raise ValueError("delta must be positive")
+    delta_squared = delta * delta
+    # Clamp the norm used by the inactive linear branch at the transition.
+    # Autograd differentiates both inputs of ``where``; evaluating sqrt at
+    # exactly zero would otherwise inject an infinite derivative and NaNs.
+    linear_norm = torch.sqrt(squared_norm.clamp_min(delta_squared))
+    return torch.where(
+        squared_norm <= delta_squared,
+        squared_norm,
+        2.0 * delta * linear_norm - delta_squared,
+    )
+
+
 def combined_loss(
     prediction: PoseState,
     target: PoseState,
@@ -60,8 +81,10 @@ def combined_loss(
     lambda_joints: float = 1.0,
     lambda_feasibility: float = 1.0,
     admissible_gap: float = 0.0,
+    pose_penalty: str = "squared",
+    pose_huber_delta: float = 0.02,
 ) -> LossTerms:
-    state, translation, rotation, joints = state_error(
+    _, translation_squared, rotation_squared, joints = state_error(
         prediction,
         target,
         length_scale=length_scale,
@@ -69,6 +92,19 @@ def combined_loss(
         lambda_rotation=lambda_rotation,
         lambda_joints=lambda_joints,
     )
+    if pose_penalty == "squared":
+        translation = translation_squared
+        rotation = rotation_squared
+    elif pose_penalty == "huber":
+        translation = huberize_squared_norm(
+            translation_squared, delta=pose_huber_delta
+        )
+        rotation = huberize_squared_norm(
+            rotation_squared, delta=pose_huber_delta
+        )
+    else:
+        raise ValueError("pose_penalty must be 'squared' or 'huber'")
+    state = translation + lambda_rotation * rotation + lambda_joints * joints
     flow = state.mean()
     feasibility = feasibility_loss(
         predicted_gap,

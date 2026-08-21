@@ -20,6 +20,58 @@ def sample_sdf(
     leading sample to a unique object grid.
     """
 
+    sampled, _ = _sample_sdf_impl(
+        values,
+        origin,
+        voxel_size,
+        coordinates,
+        sample_to_object=sample_to_object,
+        outside_value=outside_value,
+        return_gradient=False,
+    )
+    return sampled
+
+
+def sample_sdf_with_gradient(
+    values: Tensor,
+    origin: Tensor,
+    voxel_size: Tensor,
+    coordinates: Tensor,
+    *,
+    sample_to_object: Tensor | None = None,
+    outside_value: float,
+) -> tuple[Tensor, Tensor]:
+    """Sample SDF values and their analytic metric XYZ gradients.
+
+    The gradient is the exact derivative of the same trilinear interpolant used
+    by :func:`sample_sdf`, divided by the per-axis voxel size.  Out-of-grid
+    samples return the configured positive value and a zero gradient.  The
+    object grids remain unique and are never expanded over state samples.
+    """
+
+    sampled, gradient = _sample_sdf_impl(
+        values,
+        origin,
+        voxel_size,
+        coordinates,
+        sample_to_object=sample_to_object,
+        outside_value=outside_value,
+        return_gradient=True,
+    )
+    assert gradient is not None
+    return sampled, gradient
+
+
+def _sample_sdf_impl(
+    values: Tensor,
+    origin: Tensor,
+    voxel_size: Tensor,
+    coordinates: Tensor,
+    *,
+    sample_to_object: Tensor | None,
+    outside_value: float,
+    return_gradient: bool,
+) -> tuple[Tensor, Tensor | None]:
     if values.ndim != 4:
         raise ValueError("values must have shape [objects, depth, height, width]")
     if coordinates.ndim < 2 or coordinates.shape[-1] != 3:
@@ -48,6 +100,11 @@ def sample_sdf(
     flat_coordinates = grid_coordinates.reshape(-1, 3)
     points_per_sample = flat_coordinates.shape[0] // sample_count
     flat_objects = mapping[:, None].expand(sample_count, points_per_sample).reshape(-1)
+    flat_voxel = (
+        selected_voxel[:, None, :]
+        .expand(sample_count, points_per_sample, 3)
+        .reshape(-1, 3)
+    )
 
     x, y, z = flat_coordinates.unbind(-1)
     depth, height, width = values.shape[1:]
@@ -91,5 +148,21 @@ def sample_sdf(
     c1 = c10 * (1 - wy) + c11 * wy
     sampled = c0 * (1 - wz) + c1 * wz
     sampled = torch.where(in_bounds, sampled, sampled.new_full((), outside_value))
-    return sampled.reshape(output_shape)
+    sampled = sampled.reshape(output_shape)
+    if not return_gradient:
+        return sampled, None
 
+    # Derivatives with respect to fractional grid coordinates.  Converting to
+    # metric XYZ requires division by the corresponding voxel size.
+    dx0 = (c001 - c000) * (1 - wy) + (c011 - c010) * wy
+    dx1 = (c101 - c100) * (1 - wy) + (c111 - c110) * wy
+    derivative_x = dx0 * (1 - wz) + dx1 * wz
+
+    dy0 = (c010 - c000) * (1 - wx) + (c011 - c001) * wx
+    dy1 = (c110 - c100) * (1 - wx) + (c111 - c101) * wx
+    derivative_y = dy0 * (1 - wz) + dy1 * wz
+    derivative_z = c1 - c0
+    gradient = torch.stack((derivative_x, derivative_y, derivative_z), dim=-1)
+    gradient = gradient / flat_voxel.to(gradient.dtype)
+    gradient = torch.where(in_bounds[:, None], gradient, torch.zeros_like(gradient))
+    return sampled, gradient.reshape(output_shape + (3,))

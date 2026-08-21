@@ -11,8 +11,9 @@ from srno.sim import SimulatorAssetCatalog
 def test_vendored_validation_assets_are_complete_and_hashed() -> None:
     catalog = SimulatorAssetCatalog.load()
 
-    assert len(catalog.object_ids) == 29
-    assert len(set(catalog.object_ids)) == 29
+    assert len(catalog.object_ids) == 28
+    assert len(set(catalog.object_ids)) == 28
+    assert "ogurtsy-marinovannye-670-g-21054" not in catalog.object_ids
     assert catalog.approach_axis_local == (0.0, 0.0, 1.0)
     assert catalog.object_spawn_scale is None
     assert catalog.object_spawn_quaternion_wxyz == (0.0, 0.0, 0.0, 1.0)

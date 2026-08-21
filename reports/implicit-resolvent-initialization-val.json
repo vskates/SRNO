@@ -1,0 +1,15 @@
+{
+  "active_fraction": 1.0,
+  "aggregate_dx": 0.017947326002949637,
+  "config": "/home/weshi/SRNO/configs/ablation-implicit-resolvent-local.toml",
+  "elapsed_seconds": 0.1574243750073947,
+  "joint_rmse_over_travel": 0.010505656996611207,
+  "nonlinear_feasible_fraction": 0.9,
+  "rotation_component": 0.006653327021781396,
+  "rotation_rad": 0.006653327021781396,
+  "samples": 300,
+  "samples_per_object": 100,
+  "split": "val",
+  "translation_m": 0.001043106608550879,
+  "translation_over_length": 0.009355219174695813
+}

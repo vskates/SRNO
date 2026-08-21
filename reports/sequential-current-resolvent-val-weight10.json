@@ -1,0 +1,48 @@
+{
+  "arms": {
+    "1": {
+      "all": {
+        "dx": 0.01722932978626517,
+        "joint_rmse_over_travel": 0.010132991193543812,
+        "rotation_rad": 0.006211151878244951,
+        "translation_m": 0.0009928982636579272
+      },
+      "all_count": 300,
+      "jump": {
+        "dx": 0.12589177675545216,
+        "joint_rmse_over_travel": 0.029389385832473636,
+        "rotation_rad": 0.0637489807792008,
+        "translation_m": 0.010619332361966372
+      },
+      "jump_count": 10,
+      "solver_statuses": {
+        "solved": 300
+      }
+    },
+    "4": {
+      "all": {
+        "dx": 0.01745613184900558,
+        "joint_rmse_over_travel": 0.01027472974825154,
+        "rotation_rad": 0.00628313515864301,
+        "translation_m": 0.0010073096034771082
+      },
+      "all_count": 300,
+      "jump": {
+        "dx": 0.12631236277520658,
+        "joint_rmse_over_travel": 0.029972750414162874,
+        "rotation_rad": 0.06415344346314669,
+        "translation_m": 0.010609091049991548
+      },
+      "jump_count": 10,
+      "solver_statuses": {
+        "solved": 300
+      }
+    }
+  },
+  "constraint_gap_m": 0.0,
+  "format_version": 1,
+  "pose_query_factor": 0.5,
+  "pose_weight": 10.0,
+  "samples_per_object": 100,
+  "split": "val"
+}

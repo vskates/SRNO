@@ -1,0 +1,32 @@
+{
+  "config": "configs/srno-r-material-v2.toml",
+  "split": "test",
+  "samples_per_object": 100,
+  "steps": 150,
+  "learning_rate": 0.02,
+  "admissible_gap_m": -0.0004923252272419631,
+  "baseline": {
+    "dx": 0.07726922631263733,
+    "translation_m": 0.001020373310893774,
+    "rotation_rad": 0.00588439404964447,
+    "joint_rmse_over_travel": 0.07292386889457703
+  },
+  "candidates": {
+    "penalty=10,pose_weight=100": {
+      "metrics": {
+        "dx": 0.05337246507406235,
+        "translation_m": 0.0010920893400907516,
+        "rotation_rad": 0.00601528026163578,
+        "joint_rmse_over_travel": 0.047835543751716614
+      },
+      "relative_change_percent": {
+        "dx": -30.926621604682335,
+        "translation_m": 7.028410918956651,
+        "rotation_rad": 2.224293799617616,
+        "joint_rmse_over_travel": -34.403447764310954
+      },
+      "nonlinear_feasible_fraction": 0.29,
+      "mean_min_gap_m": -0.0015269914874807
+    }
+  }
+}

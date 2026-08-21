@@ -1,0 +1,40 @@
+{
+  "config": "configs/srno-r-material-v2.toml",
+  "split": "test",
+  "requested_samples_per_object": 100,
+  "solved_samples": 205,
+  "solver_statuses": {
+    "solved": 203,
+    "maximum iterations reached": 20,
+    "primal infeasible inaccurate": 12,
+    "primal infeasible": 63,
+    "solved inaccurate": 2
+  },
+  "coordinates": "[delta_position/L, spatial_rotation, delta_joint/joint_travel]",
+  "admissible_gap_m": -0.0004923252272419631,
+  "free": {
+    "dx": 0.048098485104404246,
+    "translation_m": 0.0007236700733069655,
+    "rotation_rad": 0.005022661263097145,
+    "joint_rmse_over_travel": 0.04373927231989391
+  },
+  "linearized_projection": {
+    "dx": 0.39873851212952816,
+    "translation_m": 0.0315950557437458,
+    "rotation_rad": 0.12168221777988973,
+    "joint_rmse_over_travel": 0.14633334628389805
+  },
+  "relative_change_percent": {
+    "dx": 729.0043049464291,
+    "translation_m": 4265.947537303211,
+    "rotation_rad": 2322.6642292985593,
+    "joint_rmse_over_travel": 234.55825513892083
+  },
+  "mean_projection_target_cosine": 0.39684412695171406,
+  "nonlinear_feasible_fraction": 0.7658536585365854,
+  "mean_min_gap_m": {
+    "trial": -0.0071831133692224,
+    "projected": 0.0031005199094002686,
+    "target": 0.0012067270575765333
+  }
+}

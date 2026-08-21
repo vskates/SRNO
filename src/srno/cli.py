@@ -110,10 +110,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="retain complete shards and replace only missing or mismatched shards",
     )
 
-    training = commands.add_parser("train", help="train local or rollout stage")
+    training = commands.add_parser(
+        "train", help="train local, rollout, or local-resolvent trust-region stage"
+    )
     training.add_argument("--config", type=Path, required=True)
-    training.add_argument("--stage", choices=("local", "rollout"), required=True)
+    training.add_argument(
+        "--stage", choices=("local", "rollout", "trust-rollout"), required=True
+    )
     training.add_argument("--resume", type=Path)
+    training.add_argument(
+        "--advance-horizon",
+        action="store_true",
+        help="resume a rollout checkpoint at the next configured curriculum horizon",
+    )
 
     evaluate = commands.add_parser("evaluate", help="evaluate a rollout checkpoint")
     evaluate.add_argument("--config", type=Path, required=True)
@@ -230,7 +239,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "train":
         config = ExperimentConfig.load(args.config)
-        checkpoint = train(config, stage=args.stage, resume=args.resume)
+        stage = "trust_rollout" if args.stage == "trust-rollout" else args.stage
+        checkpoint = train(
+            config,
+            stage=stage,
+            resume=args.resume,
+            advance_horizon=args.advance_horizon,
+        )
         print(json.dumps({"best_checkpoint": str(checkpoint)}))
         return 0
     if args.command == "evaluate":

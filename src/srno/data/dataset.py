@@ -50,6 +50,7 @@ class LocalTransitionBatch:
     object_ids: tuple[str, ...]
     trajectory_index: Tensor
     step_index: Tensor
+    previous: PoseState | None = None
 
     def to(self, device: torch.device | str, non_blocking: bool = False) -> "LocalTransitionBatch":
         return LocalTransitionBatch(
@@ -61,6 +62,11 @@ class LocalTransitionBatch:
             self.object_ids,
             self.trajectory_index.to(device=device, non_blocking=non_blocking),
             self.step_index.to(device=device, non_blocking=non_blocking),
+            (
+                None
+                if self.previous is None
+                else self.previous.to(device=device, non_blocking=non_blocking)
+            ),
         )
 
     def pin_memory(self) -> "LocalTransitionBatch":
@@ -76,6 +82,7 @@ class LocalTransitionBatch:
             self.object_ids,
             self.trajectory_index.pin_memory(),
             self.step_index.pin_memory(),
+            None if self.previous is None else _pin_state(self.previous),
         )
 
 
@@ -297,6 +304,9 @@ class ObjectBatchCollator:
         quaternions: list[Tensor] = []
         apertures: list[Tensor] = []
         joints: list[Tensor] = []
+        previous_positions: list[Tensor] = []
+        previous_quaternions: list[Tensor] = []
+        previous_joints: list[Tensor] = []
         mapping: list[int] = []
         trajectory_indices: list[int] = []
         step_indices: list[int] = []
@@ -320,6 +330,14 @@ class ObjectBatchCollator:
                 pairs = record.active_pairs[torch.from_numpy(choices)]
                 trajectory = pairs[:, 0].long()
                 step = pairs[:, 1].long()
+                previous_step = (step - 1).clamp_min(0)
+                previous_positions.append(record.position[trajectory, previous_step])
+                previous_quaternions.append(
+                    record.quaternion_xyzw[trajectory, previous_step]
+                )
+                previous_joints.append(
+                    record.joint_position[trajectory, previous_step]
+                )
                 positions.append(record.position[trajectory, step])
                 quaternions.append(record.quaternion_xyzw[trajectory, step])
                 apertures.append(record.aperture[trajectory, step])
@@ -384,6 +402,13 @@ class ObjectBatchCollator:
                 tuple(record.object_id for record in records),
                 torch.tensor(trajectory_indices, dtype=torch.long),
                 steps,
+                PoseState(
+                    quaternion_xyzw_to_matrix(
+                        torch.cat(previous_quaternions, dim=0)
+                    ),
+                    torch.cat(previous_positions, dim=0),
+                    torch.cat(previous_joints, dim=0),
+                ),
             )
         all_positions = torch.cat(positions, dim=0)
         all_quaternions = torch.cat(quaternions, dim=0)

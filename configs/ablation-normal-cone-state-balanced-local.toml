@@ -1,0 +1,43 @@
+seed = 0
+device = "cpu"
+
+[paths]
+manifest = "../data/simulator-r-v1/manifest.json"
+active_index = "../data/simulator-r-v1/active-index.npz"
+output_dir = "../runs/ablation-normal-cone-state-balanced-local"
+
+[model]
+hidden_dim = 64
+operator_layers = 1
+contact_features = "trial_current_gap"
+contact_head = "normal_cone"
+actuation_conditioning = "drive_error"
+pose_update = "decoupled"
+history_conditioning = "none"
+
+[loss]
+lambda_rotation = 1.0
+lambda_joints = 1.0
+lambda_feasibility = 1.0
+local_lambda_joints = 0.075
+local_lambda_feasibility = 0.05
+admissible_gap_m = -0.00049232522724196315
+
+[optimizer]
+learning_rate = 3e-4
+weight_decay = 1e-4
+gradient_clip = 1.0
+warmup_fraction = 0.05
+
+[loader]
+objects_per_batch = 4
+local_samples_per_object = 256
+rollout_trajectories_per_object = 8
+workers = 4
+
+[training]
+local_epochs = 40
+rollout_epochs_per_horizon = 25
+rollout_horizons = [4, 8, 16, 32]
+early_stopping_patience = 8
+use_bfloat16 = false

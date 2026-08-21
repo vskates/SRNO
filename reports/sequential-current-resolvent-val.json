@@ -1,0 +1,86 @@
+{
+  "arms": {
+    "1": {
+      "all": {
+        "dx": 0.01708348783083475,
+        "joint_rmse_over_travel": 0.01009001117245731,
+        "rotation_rad": 0.0059438450361183415,
+        "translation_m": 0.000962946774710689
+      },
+      "all_count": 300,
+      "jump": {
+        "dx": 0.12851991392672063,
+        "joint_rmse_over_travel": 0.0315679834689945,
+        "rotation_rad": 0.06342583643272519,
+        "translation_m": 0.010860958485864103
+      },
+      "jump_count": 10,
+      "solver_statuses": {
+        "solved": 300
+      }
+    },
+    "2": {
+      "all": {
+        "dx": 0.01713602408674518,
+        "joint_rmse_over_travel": 0.010127588875358811,
+        "rotation_rad": 0.0059457116778584345,
+        "translation_m": 0.0009639118651654825
+      },
+      "all_count": 300,
+      "jump": {
+        "dx": 0.1284823276102543,
+        "joint_rmse_over_travel": 0.031568218022584915,
+        "rotation_rad": 0.06344036795198918,
+        "translation_m": 0.010857394826598466
+      },
+      "jump_count": 10,
+      "solver_statuses": {
+        "solved": 300
+      }
+    },
+    "3": {
+      "all": {
+        "dx": 0.01713961584580763,
+        "joint_rmse_over_travel": 0.01013033274011093,
+        "rotation_rad": 0.005945595687307013,
+        "translation_m": 0.0009641202791141949
+      },
+      "all_count": 300,
+      "jump": {
+        "dx": 0.12851881943643093,
+        "joint_rmse_over_travel": 0.03163978124503046,
+        "rotation_rad": 0.06344061465933919,
+        "translation_m": 0.010858269897289574
+      },
+      "jump_count": 10,
+      "solver_statuses": {
+        "solved": 300
+      }
+    },
+    "4": {
+      "all": {
+        "dx": 0.017140547818367793,
+        "joint_rmse_over_travel": 0.010131264948994195,
+        "rotation_rad": 0.005945742112898097,
+        "translation_m": 0.0009641266653434588
+      },
+      "all_count": 300,
+      "jump": {
+        "dx": 0.12851907610893248,
+        "joint_rmse_over_travel": 0.03164026066660881,
+        "rotation_rad": 0.06344056259840727,
+        "translation_m": 0.010858281375840306
+      },
+      "jump_count": 10,
+      "solver_statuses": {
+        "solved": 300
+      }
+    }
+  },
+  "constraint_gap_m": 0.0,
+  "format_version": 1,
+  "pose_query_factor": 0.5,
+  "pose_weight": 100.0,
+  "samples_per_object": 100,
+  "split": "val"
+}

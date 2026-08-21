@@ -1,0 +1,15 @@
+{
+  "active_fraction": 1.0,
+  "aggregate_dx": 0.06385753251301746,
+  "config": "/home/weshi/SRNO/configs/ablation-dual-potential-mixed-local.toml",
+  "elapsed_seconds": 0.10809413099195808,
+  "joint_rmse_over_travel": 0.06006058707212408,
+  "nonlinear_feasible_fraction": 0.24666666666666667,
+  "rotation_component": 0.006652687327650018,
+  "rotation_rad": 0.006652687327650018,
+  "samples": 300,
+  "samples_per_object": 100,
+  "split": "val",
+  "translation_m": 0.0010437677871681216,
+  "translation_over_length": 0.00936114888607342
+}

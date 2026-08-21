@@ -90,6 +90,13 @@ def test_active_index_local_collation_and_gate_calibration(
         batch = next(iter(loader))
         assert isinstance(batch, LocalTransitionBatch)
         assert batch.current.shape == (4,)
+        assert batch.previous is not None
+        assert batch.previous.shape == batch.current.shape
+        zero_step = batch.step_index == 0
+        if zero_step.any():
+            assert torch.equal(
+                batch.previous.position[zero_step], batch.current.position[zero_step]
+            )
         assert batch.sdf.values.shape[0] == 1
         assert batch.sdf.sample_to_object.tolist() == [0, 0, 0, 0]
     finally:

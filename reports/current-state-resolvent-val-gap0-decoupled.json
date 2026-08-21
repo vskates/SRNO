@@ -1,0 +1,74 @@
+{
+  "format_version": 1,
+  "config": "configs/srno-r-material-v2.toml",
+  "split": "val",
+  "samples_per_object": 100,
+  "coordinates": "[delta_position/L, left_rotation, delta_joint/travel]",
+  "query": "[0, 0, (r_free(command_next)-r_current)/travel]",
+  "linearization_state": "current observed state",
+  "constraint_gap_m": 0.0,
+  "current_nonlinear_feasible_fraction": 0.7533333333333333,
+  "mean_contact_constraints": 41.75,
+  "free_baseline": {
+    "dx": 0.07670051501997838,
+    "translation_m": 0.0010437665422754943,
+    "rotation_rad": 0.006652657699599291,
+    "joint_rmse_over_travel": 0.07301273069070949
+  },
+  "arms": {
+    "pose_weight=30": {
+      "metrics": {
+        "dx": 0.017650933164861538,
+        "translation_m": 0.0010448937038200867,
+        "rotation_rad": 0.006686575641175677,
+        "joint_rmse_over_travel": 0.010159103744251278
+      },
+      "change_percent_vs_free": {
+        "dx": -76.98720385350222,
+        "translation_m": 0.10798981371209493,
+        "rotation_rad": 0.5098404744081186,
+        "joint_rmse_over_travel": -86.08584605979684
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.5733333333333334
+    },
+    "pose_weight=100": {
+      "metrics": {
+        "dx": 0.0176480855609852,
+        "translation_m": 0.001042864991315291,
+        "rotation_rad": 0.0066561693114195585,
+        "joint_rmse_over_travel": 0.010161357689030695
+      },
+      "change_percent_vs_free": {
+        "dx": -76.99091648030218,
+        "translation_m": -0.08637477095575496,
+        "rotation_rad": 0.05278509700685774,
+        "joint_rmse_over_travel": -86.08275900256984
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.5666666666666667
+    },
+    "pose_weight=300": {
+      "metrics": {
+        "dx": 0.01765168322569991,
+        "translation_m": 0.0010432960224682178,
+        "rotation_rad": 0.006653358339563447,
+        "joint_rmse_over_travel": 0.010162238947547829
+      },
+      "change_percent_vs_free": {
+        "dx": -76.9862259450251,
+        "translation_m": -0.04507902756211157,
+        "rotation_rad": 0.010531730261686967,
+        "joint_rmse_over_travel": -86.08155200961286
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.58
+    }
+  }
+}

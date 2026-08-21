@@ -45,6 +45,9 @@ class SettlingResult:
     object_position: torch.Tensor
     object_quaternion_wxyz: torch.Tensor
     joint_position: torch.Tensor
+    joint_velocity: torch.Tensor
+    approximate_pd_effort: torch.Tensor
+    approximate_pd_effort_clipped: torch.Tensor
     linear_velocity: torch.Tensor
     angular_velocity: torch.Tensor
     contact_count: torch.Tensor
@@ -204,6 +207,9 @@ class QuasistaticCollector:
         captured_position = previous.clone()
         captured_orientation = previous_quaternion.clone()
         captured_joint_position = previous_joint_position.clone()
+        captured_joint_velocity = torch.zeros_like(previous_joint_position)
+        captured_approximate_effort = torch.zeros_like(previous_joint_position)
+        captured_clipped_effort = torch.zeros_like(previous_joint_position)
         captured_linear_velocity = torch.zeros_like(previous)
         captured_angular_velocity = torch.zeros_like(previous)
         captured_contact_count = torch.zeros_like(peak_contact_count)
@@ -259,6 +265,18 @@ class QuasistaticCollector:
                 captured_joint_position[newly_finished] = joint_position[
                     newly_finished
                 ]
+                captured_joint_velocity[newly_finished] = self.robot.data.joint_vel[
+                    newly_finished
+                ]
+                # IsaacLab reconstructs this PD effort for diagnostics.  With
+                # an implicit actuator PhysX performs the actual drive solve;
+                # these values are not measured joint/contact reactions.
+                captured_approximate_effort[newly_finished] = (
+                    self.robot.data.computed_torque[newly_finished]
+                )
+                captured_clipped_effort[newly_finished] = (
+                    self.robot.data.applied_torque[newly_finished]
+                )
                 captured_linear_velocity[newly_finished] = finite_linear_velocity[
                     newly_finished
                 ]
@@ -286,6 +304,9 @@ class QuasistaticCollector:
                         captured_position,
                         captured_orientation,
                         captured_joint_position,
+                        captured_joint_velocity,
+                        captured_approximate_effort,
+                        captured_clipped_effort,
                         captured_linear_velocity,
                         captured_angular_velocity,
                         captured_contact_count,
@@ -325,6 +346,9 @@ class QuasistaticCollector:
             captured_position,
             captured_orientation,
             captured_joint_position,
+            captured_joint_velocity,
+            captured_approximate_effort,
+            captured_clipped_effort,
             captured_linear_velocity,
             captured_angular_velocity,
             captured_contact_count,

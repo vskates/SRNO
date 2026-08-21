@@ -1,0 +1,110 @@
+{
+  "format_version": 1,
+  "config": "configs/srno-r-material-v2.toml",
+  "split": "val",
+  "samples_per_object": 100,
+  "coordinates": "[delta_position/L, left_rotation, delta_joint/travel]",
+  "query": "[0, 0, (r_free(command_next)-r_current)/travel]",
+  "linearization_state": "current observed state",
+  "constraint_gap_m": 0.0,
+  "current_nonlinear_feasible_fraction": 0.7533333333333333,
+  "mean_contact_constraints": 41.75,
+  "free_baseline": {
+    "dx": 0.07670051501997838,
+    "translation_m": 0.0010437665422754943,
+    "rotation_rad": 0.006652657699599291,
+    "joint_rmse_over_travel": 0.07301273069070949
+  },
+  "arms": {
+    "pose_weight=3": {
+      "metrics": {
+        "dx": 0.01947350974082743,
+        "translation_m": 0.0012114168887340663,
+        "rotation_rad": 0.008458997425441777,
+        "joint_rmse_over_travel": 0.011099264135761568
+      },
+      "change_percent_vs_free": {
+        "dx": -74.61097916258434,
+        "translation_m": 16.062054077062182,
+        "rotation_rad": 27.152151927962365,
+        "joint_rmse_over_travel": -84.7981796725569
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.27
+    },
+    "pose_weight=10": {
+      "metrics": {
+        "dx": 0.017948870090254445,
+        "translation_m": 0.0010677939610587235,
+        "rotation_rad": 0.007095026335078257,
+        "joint_rmse_over_travel": 0.010335949834310345
+      },
+      "change_percent_vs_free": {
+        "dx": -76.59876196974784,
+        "translation_m": 2.3019916628911563,
+        "rotation_rad": 6.649502431270604,
+        "joint_rmse_over_travel": -85.84363338210888
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.2866666666666667
+    },
+    "pose_weight=30": {
+      "metrics": {
+        "dx": 0.017699156366624228,
+        "translation_m": 0.0010445195522031862,
+        "rotation_rad": 0.006775908407982326,
+        "joint_rmse_over_travel": 0.010193295646034717
+      },
+      "change_percent_vs_free": {
+        "dx": -76.92433178315154,
+        "translation_m": 0.0721435203364873,
+        "rotation_rad": 1.852653690425976,
+        "joint_rmse_over_travel": -86.03901600501052
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.3233333333333333
+    },
+    "pose_weight=100": {
+      "metrics": {
+        "dx": 0.017661533388183936,
+        "translation_m": 0.001042778953480301,
+        "rotation_rad": 0.006687728970361645,
+        "joint_rmse_over_travel": 0.010169930494145754
+      },
+      "change_percent_vs_free": {
+        "dx": -76.97338357691133,
+        "translation_m": -0.09461778618043981,
+        "rotation_rad": 0.5271768418878109,
+        "joint_rmse_over_travel": -86.07101748155841
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.39666666666666667
+    },
+    "pose_weight=300": {
+      "metrics": {
+        "dx": 0.017655993353869803,
+        "translation_m": 0.0010432928769504753,
+        "rotation_rad": 0.006663742341046432,
+        "joint_rmse_over_travel": 0.010164885314843844
+      },
+      "change_percent_vs_free": {
+        "dx": -76.98060651969429,
+        "translation_m": -0.045380389755200756,
+        "rotation_rad": 0.16661974728999773,
+        "joint_rmse_over_travel": -86.07792748102588
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.4666666666666667
+    }
+  }
+}

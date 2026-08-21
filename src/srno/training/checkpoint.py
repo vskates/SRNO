@@ -45,6 +45,7 @@ def save_checkpoint(
     horizon_epoch: int,
     stale_epochs: int,
     best_metric: float,
+    extra_state: dict[str, Any] | None = None,
 ) -> None:
     destination = Path(path).resolve()
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -65,6 +66,7 @@ def save_checkpoint(
             "stale_epochs": stale_epochs,
             "best_metric": best_metric,
             "rng": capture_rng_state(),
+            "extra_state": {} if extra_state is None else extra_state,
         },
         temporary,
     )

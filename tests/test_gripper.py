@@ -100,3 +100,26 @@ def test_schedule_asset_preserves_all_33_exact_states(tmp_path: Path) -> None:
     restored = GripperAsset.load(path)
     assert restored.sha256() == asset.sha256()
     assert torch.equal(restored.points(restored.aperture_knots), restored.point_knots)
+
+
+def test_joint_fk_asset_roundtrip_and_gradients(
+    gripper: GripperAsset, tmp_path: Path
+) -> None:
+    assert gripper.supports_joint_fk
+    commands = torch.tensor([0.08, 0.04, 0.0])
+    joints = gripper.free_joint_configuration(commands).requires_grad_(True)
+    points = gripper.points_from_joints(joints)
+    assert points.shape == (3, 256, 3)
+    assert torch.allclose(gripper.aperture_from_joints(joints), commands, atol=1e-6)
+    points.square().sum().backward()
+    assert joints.grad is not None and torch.isfinite(joints.grad).all()
+
+    path = tmp_path / "joint-fk.npz"
+    gripper.save(path)
+    restored = GripperAsset.load(path)
+    assert restored.supports_joint_fk
+    assert restored.joint_names == gripper.joint_names
+    assert restored.sha256() == gripper.sha256()
+    assert torch.equal(
+        restored.points_from_joints(joints.detach()), points.detach()
+    )

@@ -1,0 +1,182 @@
+{
+  "format_version": 1,
+  "config": "configs/srno-r-material-v2.toml",
+  "split": "val",
+  "samples_per_object": 100,
+  "coordinates": "[delta_position/L, left_rotation, delta_joint/travel]",
+  "query": "[0, 0, (r_free(command_next)-r_current)/travel]",
+  "linearization_state": "current observed state",
+  "admissible_gap_m": -0.0004923252272419631,
+  "current_nonlinear_feasible_fraction": 1.0,
+  "mean_contact_constraints": 41.75,
+  "free_baseline": {
+    "dx": 0.07670051501997838,
+    "translation_m": 0.0010437665422754943,
+    "rotation_rad": 0.006652657699599291,
+    "joint_rmse_over_travel": 0.07301273069070949
+  },
+  "arms": {
+    "pose_weight=0.01": {
+      "metrics": {
+        "dx": 0.20034726242003123,
+        "translation_m": 0.012478502807373044,
+        "rotation_rad": 0.14691425674570954,
+        "joint_rmse_over_travel": 0.03414434316580696
+      },
+      "change_percent_vs_free": {
+        "dx": 161.2071931561949,
+        "translation_m": 1095.5262313897238,
+        "rotation_rad": 2108.3543657230193,
+        "joint_rmse_over_travel": -53.23508264545479
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.38666666666666666
+    },
+    "pose_weight=0.03": {
+      "metrics": {
+        "dx": 0.12455348348644653,
+        "translation_m": 0.007531596650680624,
+        "rotation_rad": 0.09124769353943486,
+        "joint_rmse_over_travel": 0.027863719013226197
+      },
+      "change_percent_vs_free": {
+        "dx": 62.38937046772601,
+        "translation_m": 621.5786620503416,
+        "rotation_rad": 1271.5976029389124,
+        "joint_rmse_over_travel": -61.837177229735204
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.32
+    },
+    "pose_weight=0.1": {
+      "metrics": {
+        "dx": 0.0675707818359363,
+        "translation_m": 0.004261723803085372,
+        "rotation_rad": 0.046273547876386406,
+        "joint_rmse_over_travel": 0.021466701154997356
+      },
+      "change_percent_vs_free": {
+        "dx": -11.903092412957106,
+        "translation_m": 308.3023962230552,
+        "rotation_rad": 595.5648398860743,
+        "joint_rmse_over_travel": -70.5986874454363
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.27
+    },
+    "pose_weight=0.3": {
+      "metrics": {
+        "dx": 0.038693419571616046,
+        "translation_m": 0.002565477174838442,
+        "rotation_rad": 0.022916657328559832,
+        "joint_rmse_over_travel": 0.017209426501739244
+      },
+      "change_percent_vs_free": {
+        "dx": -49.552594840416035,
+        "translation_m": 145.79032484079218,
+        "rotation_rad": 244.4737180742092,
+        "joint_rmse_over_travel": -76.42955366970125
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.2966666666666667
+    },
+    "pose_weight=1": {
+      "metrics": {
+        "dx": 0.024834396613411892,
+        "translation_m": 0.0015991041594880901,
+        "rotation_rad": 0.012123386115566024,
+        "joint_rmse_over_travel": 0.013861655198360268
+      },
+      "change_percent_vs_free": {
+        "dx": -67.62160383545897,
+        "translation_m": 53.20515601141187,
+        "rotation_rad": 82.23372767692902,
+        "joint_rmse_over_travel": -81.01474213164295
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.29
+    },
+    "pose_weight=3": {
+      "metrics": {
+        "dx": 0.02007579815430347,
+        "translation_m": 0.0012065443952288864,
+        "rotation_rad": 0.008452489576305157,
+        "joint_rmse_over_travel": 0.012011150095391183
+      },
+      "change_percent_vs_free": {
+        "dx": -73.82573226649876,
+        "translation_m": 15.595235750565784,
+        "rotation_rad": 27.054328630409998,
+        "joint_rmse_over_travel": -83.54923863035361
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.29333333333333333
+    },
+    "pose_weight=10": {
+      "metrics": {
+        "dx": 0.018538441553362,
+        "translation_m": 0.0010684612260187857,
+        "rotation_rad": 0.007103299313799915,
+        "joint_rmse_over_travel": 0.011149977784072765
+      },
+      "change_percent_vs_free": {
+        "dx": -75.83009508015266,
+        "translation_m": 2.3659202267065416,
+        "rotation_rad": 6.773858426952706,
+        "joint_rmse_over_travel": -84.72872103454755
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.32666666666666666
+    },
+    "pose_weight=30": {
+      "metrics": {
+        "dx": 0.018229784968735317,
+        "translation_m": 0.00104500425996059,
+        "rotation_rad": 0.006779029511529148,
+        "joint_rmse_over_travel": 0.010935147869257662
+      },
+      "change_percent_vs_free": {
+        "dx": -76.23251295772009,
+        "translation_m": 0.11858185091824236,
+        "rotation_rad": 1.8995688285220025,
+        "joint_rmse_over_travel": -85.02295727634099
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.33666666666666667
+    },
+    "pose_weight=100": {
+      "metrics": {
+        "dx": 0.018174752212090084,
+        "translation_m": 0.0010430654858362587,
+        "rotation_rad": 0.006688133687035851,
+        "joint_rmse_over_travel": 0.01089183266904494
+      },
+      "change_percent_vs_free": {
+        "dx": -76.30426313649124,
+        "translation_m": -0.06716601949198209,
+        "rotation_rad": 0.5332603756044163,
+        "joint_rmse_over_travel": -85.08228282108222
+      },
+      "solver_statuses": {
+        "solved": 300
+      },
+      "nonlinear_feasible_fraction": 0.3933333333333333
+    }
+  }
+}

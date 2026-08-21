@@ -1,0 +1,51 @@
+schema_version = 1
+catalog = "../assets/catalog.json"
+output_dir = "../runs/simulator-gui-10"
+headless = false
+device = "cuda:0"
+num_envs = 10
+trajectories_per_object = 10
+successful_seed_poses_only = true
+seed = 0
+overwrite = false
+memory_limit_gib = 14.0
+memory_check_interval_s = 0.25
+
+[settling]
+min_steps = 20
+max_steps = 2400
+consecutive_steps = 10
+position_delta_m = 0.0005
+linear_velocity_m_s = 0.01
+angular_velocity_rad_s = 0.1
+joint_velocity_rad_s = 0.01
+
+[relaxation]
+object_linear_damping_s_inv = 5.0
+object_angular_damping_s_inv = 5.0
+gripper_velocity_limit_rad_s = 0.1
+gripper_damping = 0.35
+
+[material]
+static_friction = 2.4
+dynamic_friction = 2.0
+restitution = 0.0
+friction_combine_mode = "min"
+restitution_combine_mode = "min"
+contact_stiffness = 0.0
+contact_damping = 0.0
+strong_friction_enabled = true
+
+[trajectory]
+command_steps = 32
+
+[sdf]
+resolution = 96
+padding_m = 0.02
+chunk_points = 8192
+
+[dataset]
+sdf_scale_m = 0.02
+delta_gate_m = 0.007934210398234427
+contact_offset_sum_m = 0.00256
+split_seed = 0

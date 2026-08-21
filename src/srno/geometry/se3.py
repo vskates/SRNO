@@ -68,6 +68,38 @@ def so3_exp(rotation_vector: Tensor) -> Tensor:
     return identity + a.unsqueeze(-1) * omega + b.unsqueeze(-1) * (omega @ omega)
 
 
+def so3_log_vector(rotation: Tensor) -> Tensor:
+    """Return the axis-angle logarithm for a rotation matrix.
+
+    The quasistatic history increments using this helper are small.  The
+    near-zero branch therefore uses ``sin(theta) ~= theta``; the general
+    branch retains the exact atan2 angle and is stable throughout the range
+    observed in the collected trajectories.
+    """
+
+    if rotation.shape[-2:] != (3, 3):
+        raise ValueError("rotation must end in (3, 3)")
+    cosine = (
+        (rotation.diagonal(dim1=-2, dim2=-1).sum(-1) - 1.0) * 0.5
+    ).clamp(-1.0, 1.0)
+    sine_axis = torch.stack(
+        (
+            rotation[..., 2, 1] - rotation[..., 1, 2],
+            rotation[..., 0, 2] - rotation[..., 2, 0],
+            rotation[..., 1, 0] - rotation[..., 0, 1],
+        ),
+        dim=-1,
+    ) * 0.5
+    sine = torch.linalg.vector_norm(sine_axis, dim=-1)
+    angle = torch.atan2(sine, cosine)
+    scale = torch.where(
+        sine > 1e-7,
+        angle / sine.clamp_min(1e-7),
+        torch.ones_like(sine),
+    )
+    return sine_axis * scale.unsqueeze(-1)
+
+
 def se3_exp(twist: Tensor) -> tuple[Tensor, Tensor]:
     """Exponential of a spatial twist ordered as ``(v, omega)``.
 
