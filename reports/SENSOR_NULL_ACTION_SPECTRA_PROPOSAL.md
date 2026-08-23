@@ -194,8 +194,8 @@ states, и стандартный overlap/Le Cam argument даёт для люб
 selector при равном prior
 
 $$
-\mathbb E[\operatorname{regret}]
-\ge \frac{\Delta}{2}\bigl(1-\operatorname{TV}(P_0,P_1)\bigr).
+\mathbb E[\mathrm{regret}]
+\ge \frac{\Delta}{2}\bigl(1-\mathrm{TV}(P_0,P_1)\bigr).
 $$
 
 Для exact sensor twins $P_0=P_1$, поэтому bound равен $\Delta/2$. Это не
@@ -220,7 +220,7 @@ $F=Q\circ\psi$, $A=DF(0)$, а $\|D^2F\|\le K$. Для пространства $
 
 $$
 \sup_{\|h\|\le c}
-\operatorname{dist}(F(h)-F(0),V_r)
+\mathrm{dist}(F(h)-F(0),V_r)
 \le c\,s_{r+1}(A)+\frac{Kc^2}{2}.
 $$
 
@@ -334,7 +334,7 @@ $$
 \{\mu+Ba+e:\|a\|_2\le1,\ \|e\|_\infty\le\rho\}.
 $$
 
-SVD $B=U\operatorname{diag}(d)V^T$ даёт learned action modes и их ordered
+SVD $B=U\mathrm{diag}(d)V^T$ даёт learned action modes и их ordered
 amplitudes. Поскольку Euclidean ball invariant к $V$, right rotation не меняет
 множество. Это позволяет сети выдавать непрерывную mode field $b(o,g)$, а
 orthogonalization выполнять только для анализа spectrum. Никакая hard QR,
@@ -344,7 +344,7 @@ Lower utility имеет closed form
 
 $$
 \widehat L(o,g_m)=
-\operatorname{clip}_{[0,1]}
+\mathrm{clip}_{[0,1]}
 \bigl(\mu_m-\|b_m\|_2-\rho\bigr).
 $$
 
@@ -365,7 +365,7 @@ set. Training-only code $a_{b,s}$ решает
 
 $$
 a_{b,s}^*=\arg\min_{\|a\|_2\le1}
-\operatorname{LSE}_{m\in\Omega_{b,s}}
+\mathrm{LSE}_{m\in\Omega_{b,s}}
 \left|q_{b,s,m}-\mu_{b,m}-b_{b,m}^Ta\right|.
 $$
 
@@ -377,7 +377,7 @@ Outer loss непосредственно учит enclosing set:
 $$
 \begin{aligned}
 \mathcal L_b={}&
-\operatorname{LSE}_{s,m}
+\mathrm{LSE}_{s,m}
 \left[
 |q_{b,s,m}-\mu_{b,m}-b_{b,m}^Ta_{b,s}^*|-\rho_b
 \right]_+\\
