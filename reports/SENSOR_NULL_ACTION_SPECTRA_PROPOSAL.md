@@ -26,18 +26,18 @@
 
 ## 1. Точная задача и сознательно исключённый scope
 
-Дано одно RGB-D наблюдение \(o\) target object на полке с wrist camera. Перед
+Дано одно RGB-D наблюдение $o$ target object на полке с wrist camera. Перед
 объектом может находиться один фронтальный occluder. Сцена не cluttered. Облако
 точек может содержать пропуски и реалистичный depth noise. Считается, что target
 mask или crop уже получен существующим perception stack.
 
-Модель должна выбрать parallel-jaw grasp \(g\) из компактной рабочей области
+Модель должна выбрать parallel-jaw grasp $g$ из компактной рабочей области
 
-\[
+$$
 \mathcal G\subset (SE(3)/C_2)\times[w_{\min},w_{\max}],
-\]
+$$
 
-где \(C_2\) учитывает симметрию параллельных губок, а \(w\) — commanded opening.
+где $C_2$ учитывает симметрию параллельных губок, а $w$ — commanded opening.
 Оценивается только terminal experiment:
 
 1. открытый gripper уже помещён в заданную grasp pose;
@@ -53,85 +53,85 @@ terminal grasp при частичном наблюдении. RL и VLA не и
 
 ## 2. Почему обычный deterministic grasp target структурно неверен
 
-Пусть \(z\in\mathcal Z\) — полное локальное физическое состояние: невидимая
+Пусть $z\in\mathcal Z$ — полное локальное физическое состояние: невидимая
 геометрия target и фиксированная геометрия полки/occluder. Для изоляции явления
 friction, density и controller держатся фиксированными; они не превращаются в
 длинный список дополнительных latent variables. Пусть
 
-\[
+$$
 R:\mathcal Z\to\mathcal O
-\]
+$$
 
 — RGB-D rendering/sensing map. Operational grasp utility определяется сразу как
-вероятность terminal success при измеренной ошибке исполнения \(\xi\):
+вероятность terminal success при измеренной ошибке исполнения $\xi$:
 
-\[
+$$
 q_z(g)=\Pr_{\xi}\{\text{close-and-lift succeeds for }g\circ\xi\mid z\}.
-\]
+$$
 
-Таким образом, \(Q:z\mapsto q_z(\cdot)\) отображает полное состояние не в один
-score, а в функцию из пространства действий в \([0,1]\).
+Таким образом, $Q:z\mapsto q_z(\cdot)$ отображает полное состояние не в один
+score, а в функцию из пространства действий в $[0,1]$.
 
-Для наблюдения \(o\) множество допустимых полных состояний есть sensor fiber
+Для наблюдения $o$ множество допустимых полных состояний есть sensor fiber
 
-\[
+$$
 \mathcal C_\varepsilon(o)
 =\{z:d_{\mathcal O}(R(z),o)\le\varepsilon,\ z\text{ удовлетворяет объявленному
 hidden-shape family}\}.
-\]
+$$
 
 Ключевой объект — не posterior над shape, а его pushforward в action space:
 
-\[
+$$
 \mathcal U(o)=\{q_z(\cdot):z\in\mathcal C_\varepsilon(o)\}.
-\]
+$$
 
-Если существуют \(z_0,z_1\) с одинаковым наблюдением, но
-\(q_{z_0}\ne q_{z_1}\), то не существует единственной физически правильной
-функции \(f(o,g)\), которую мог бы восстановить deterministic learner. Большая
+Если существуют $z_0,z_1$ с одинаковым наблюдением, но
+$q_{z_0}\ne q_{z_1}$, то не существует единственной физически правильной
+функции $f(o,g)$, которую мог бы восстановить deterministic learner. Большая
 сеть не решает эту проблему: target сам не является функцией наблюдения.
 
 При известном достоверном prior по hidden variants можно максимизировать mean или
-CVaR по \(\mathcal U(o)\). При отсутствии такого prior основной decision rule —
+CVaR по $\mathcal U(o)$. При отсутствии такого prior основной decision rule —
 maximin
 
-\[
+$$
 g^\star(o)\in\arg\max_{g\in\mathcal G}
 L(o,g),\qquad
 L(o,g)=\inf_{q\in\mathcal U(o)}q(g),
-\]
+$$
 
-с возможностью abstain, если \(\max_g L(o,g)\) ниже порога. Научный объект
-\(\mathcal U(o)\) не зависит от выбора mean/CVaR/maximin; maximin используется как
+с возможностью abstain, если $\max_g L(o,g)$ ниже порога. Научный объект
+$\mathcal U(o)$ не зависит от выбора mean/CVaR/maximin; maximin используется как
 строгий тест качества выученного множества.
 
 ## 3. Новый объект: sensor-null action spectrum
 
 ### 3.1 Локальная версия
 
-На одном гладком visibility stratum предположим дифференцируемость \(R\) и \(Q\).
+На одном гладком visibility stratum предположим дифференцируемость $R$ и $Q$.
 Tangent directions, невидимые сенсору в первом порядке, образуют
 
-\[
+$$
 \mathcal N_z=\ker DR_z.
-\]
+$$
 
 Определим **sensor-null action operator**
 
-\[
+$$
 A_z=DQ_z\big|_{\mathcal N_z}:
 \mathcal N_z\longrightarrow L^2(\mathcal G,\nu_G).
-\]
+$$
 
 Его образ содержит все первые порядки изменения *целой grasp-utility функции*,
 которые не проявляются в RGB-D. Сингулярные значения
 
-\[
+$$
 s_1(A_z)\ge s_2(A_z)\ge\cdots
-\]
+$$
 
 называются **sensor-null action spectrum**, а число значений выше operational
-tolerance \(\delta\) — **action ambiguity dimension**.
+tolerance $\delta$ — **action ambiguity dimension**.
 
 Это не intrinsic dimension полной формы. Скрытая поверхность может иметь сотни
 степеней свободы, но, возможно, менять функции grasp success только по нескольким
@@ -146,12 +146,12 @@ utility functions.
 
 Для noisy RGB-D hard nullspace можно заменить soft invisibility operator
 
-\[
+$$
 A_z^{(\tau)}=
 DQ_z\left(I+\tau^{-2}DR_z^*\Sigma_o^{-1}DR_z\right)^{-1/2},
-\]
+$$
 
-где \(\Sigma_o\) — измеренная sensor covariance. Видимые направления подавляются,
+где $\Sigma_o$ — измеренная sensor covariance. Видимые направления подавляются,
 а направления ниже noise floor сохраняются. Это extension для анализа, а не
 дополнительный tensor на входе grasp network.
 
@@ -159,17 +159,17 @@ DQ_z\left(I+\tau^{-2}DR_z^*\Sigma_o^{-1}DR_z\right)^{-1/2},
 
 Для произвольного, возможно disconnected fiber измерим centered Kolmogorov width
 
-\[
+$$
 d_r(\mathcal U(o))=
 \inf_{\mu,\,\dim V\le r}
 \sup_{q\in\mathcal U(o)}
 \inf_{v\in V}\|q-\mu-v\|.
-\]
+$$
 
 Главная эмпирическая гипотеза paper:
 
 > При реалистичном hidden-shape family и при smoothing, точно соответствующем
-> измеренному execution noise робота, \(d_r(\mathcal U(o))\) быстро падает, хотя
+> измеренному execution noise робота, $d_r(\mathcal U(o))$ быстро падает, хотя
 > dimension скрытой геометрии велик; при стремлении execution noise к нулю это
 > сжатие заметно ухудшается.
 
@@ -180,128 +180,128 @@ pilot study.
 
 ### 4.1 Impossibility: observation-only point prediction не может быть правильным
 
-Рассмотрим два latent states с observation distributions \(P_0,P_1\). Обозначим
+Рассмотрим два latent states с observation distributions $P_0,P_1$. Обозначим
 statewise regret через
-\(r_i(g)=\max_h q_i(h)-q_i(g)\) и потребуем нетривиальную pairwise decision
+$r_i(g)=\max_h q_i(h)-q_i(g)$ и потребуем нетривиальную pairwise decision
 separation
 
-\[
+$$
 \Delta=\inf_g\bigl(r_0(g)+r_1(g)\bigr)>0.
-\]
+$$
 
 Тогда ни один компромиссный третий grasp не является хорошим сразу в обоих
 states, и стандартный overlap/Le Cam argument даёт для любого observation-only
 selector при равном prior
 
-\[
+$$
 \mathbb E[\operatorname{regret}]
 \ge \frac{\Delta}{2}\bigl(1-\operatorname{TV}(P_0,P_1)\bigr).
-\]
+$$
 
-Для exact sensor twins \(P_0=P_1\), поэтому bound равен \(\Delta/2\). Это не
+Для exact sensor twins $P_0=P_1$, поэтому bound равен $\Delta/2$. Это не
 generalization error и не нехватка model capacity, а неидентифицируемость.
 
-Дополнительный factorization result делает связь точной. Если \(R\) — submersion,
-его fibers connected и \(DQ_g\ker DR=0\) в каждой точке, то \(Q_g\) постоянно на
-fibers и существует \(\bar Q_g\), для которой
+Дополнительный factorization result делает связь точной. Если $R$ — submersion,
+его fibers connected и $DQ_g\ker DR=0$ в каждой точке, то $Q_g$ постоянно на
+fibers и существует $\bar Q_g$, для которой
 
-\[
+$$
 Q_g=\bar Q_g\circ R.
-\]
+$$
 
 Нулевой sensor-null spectrum означает, что обычный deterministic grasp target
 локально корректен; ненулевой spectrum измеряет нарушение этого допущения.
 
 ### 4.2 Local nonlinear compression
 
-Пусть \(\psi:B_{\mathcal H}(c)\to\mathcal C(o)\) — chart гладкого fiber,
-\(F=Q\circ\psi\), \(A=DF(0)\), а \(\|D^2F\|\le K\). Для пространства \(V_r\),
-натянутого на первые \(r\) left singular functions \(A\), Taylor theorem даёт
+Пусть $\psi:B_{\mathcal H}(c)\to\mathcal C(o)$ — chart гладкого fiber,
+$F=Q\circ\psi$, $A=DF(0)$, а $\|D^2F\|\le K$. Для пространства $V_r$,
+натянутого на первые $r$ left singular functions $A$, Taylor theorem даёт
 
-\[
+$$
 \sup_{\|h\|\le c}
 \operatorname{dist}(F(h)-F(0),V_r)
 \le c\,s_{r+1}(A)+\frac{Kc^2}{2}.
-\]
+$$
 
 Следовательно, spectrum контролирует nonlinear width в локальном fiber с явно
 отделённым curvature term.
 
 ### 4.3 Почему execution noise может физически создавать low rank
 
-Пусть \(Y_z(g)\) — sharp success field, а \(K_\xi\) — Markov operator measured
+Пусть $Y_z(g)$ — sharp success field, а $K_\xi$ — Markov operator measured
 pose-noise kernel. Тогда operational utility
 
-\[
+$$
 q_z=K_\xi Y_z.
-\]
+$$
 
-Если \(B_z=DY_z|_{\ker DR_z}\) bounded, то
+Если $B_z=DY_z|_{\ker DR_z}$ bounded, то
 
-\[
+$$
 A_z=K_\xi B_z,
 \qquad
 s_j(A_z)\le \|B_z\|\,s_j(K_\xi).
-\]
+$$
 
 Любой compact smoothing kernel тем самым ограничивает эффективный action rank.
 Для isotropic diffusion на компактном action manifold
-\(K_\xi=H_t=e^{-t\Delta_{\mathcal G}}\), поэтому
+$K_\xi=H_t=e^{-t\Delta_{\mathcal G}}$, поэтому
 
-\[
+$$
 s_j(A_z)\le\|B_z\|e^{-t\lambda_j}.
-\]
+$$
 
-Weyl law \(\lambda_j\asymp j^{2/d}\) даёт decay вида
-\(\exp(-c t j^{2/d})\). Это не обещает rank 8 в полном 6–7D action space; именно
+Weyl law $\lambda_j\asymp j^{2/d}$ даёт decay вида
+$\exp(-c t j^{2/d})$. Это не обещает rank 8 в полном 6–7D action space; именно
 поэтому spectral pilot является обязательным. Для uniform action selection
 имеется bound
 
-\[
+$$
 \|(I-P_r)H_tf\|_\infty
 \le
 \sup_g K_t(g,g)^{1/2}
 e^{-t\lambda_{r+1}/2}\|f\|_2.
-\]
+$$
 
 Anisotropic measured covariance соответствует anisotropic diffusion, а не
 обязательной isotropic Gaussian approximation.
 
 ### 4.4 Spectrum-to-decision identity
 
-На общем конечном candidate set пусть \(e_m\) выбирает action \(g_m\). Для
+На общем конечном candidate set пусть $e_m$ выбирает action $g_m$. Для
 линейного fiber ball
 
-\[
+$$
 q(h)=q_0+Ah,\qquad \|h\|_2\le c,
-\]
+$$
 
 точная robust utility имеет форму
 
-\[
+$$
 \begin{aligned}
 L_m
 &=\inf_{\|h\|\le c}e_m^T(q_0+Ah)\\
 &=q_{0,m}-c\|A^Te_m\|_2\\
 &=q_{0,m}-c\sqrt{\sum_j s_j^2u_j(m)^2}.
 \end{aligned}
-\]
+$$
 
-Это ключевой мост между spectrum и моделью. Если оставить \(r\) modes, то
-выброшенная row sensitivity не превосходит \(cs_{r+1}\) на дискретном candidate
-set. После вычитания \(cs_{r+1}+Kc^2/2\) truncated score остаётся conservative
+Это ключевой мост между spectrum и моделью. Если оставить $r$ modes, то
+выброшенная row sensitivity не превосходит $cs_{r+1}$ на дискретном candidate
+set. После вычитания $cs_{r+1}+Kc^2/2$ truncated score остаётся conservative
 при указанных assumptions.
 
 ### 4.5 Stability learned set
 
 Если true и predicted sets utility functions находятся на Hausdorff distance не
-больше \(\delta\) в \(L^\infty\), то их lower envelopes отличаются не больше чем
-на \(\delta\). Если \(\hat g\) максимизирует learned lower envelope, а \(g^\star\)
+больше $\delta$ в $L^\infty$, то их lower envelopes отличаются не больше чем
+на $\delta$. Если $\hat g$ максимизирует learned lower envelope, а $g^\star$
 — true, то
 
-\[
+$$
 L(g^\star)-L(\hat g)\le2\delta.
-\]
+$$
 
 Таким образом, uniform set approximation — ровно та learning objective, которая
 контролирует downstream decision. Average PCA reconstruction такой гарантии не
@@ -312,69 +312,69 @@ L(g^\star)-L(\hat g)\le2\delta.
 ### 5.1 Представление
 
 Назовём модель **Sensor-Null Action Ellipsoid (SNAE)**. Frozen или jointly
-trained high-recall candidate generator получает только \(o\) и возвращает
+trained high-recall candidate generator получает только $o$ и возвращает
 
-\[
+$$
 G_o=\{g_1,\ldots,g_M\}.
-\]
+$$
 
 Один point/ray encoder обрабатывает noisy RGB-D. Query decoder для каждого grasp
 возвращает
 
-\[
+$$
 \mu_m=\mu_\theta(o,g_m),\qquad
 b_m=b_\theta(o,g_m)\in\mathbb R^r,
-\]
+$$
 
-а group head возвращает residual radius \(\rho(o)\ge0\). Матрица
-\(B=[b_1^T;\ldots;b_M^T]\) задаёт ellipsoid
+а group head возвращает residual radius $\rho(o)\ge0$. Матрица
+$B=[b_1^T;\ldots;b_M^T]$ задаёт ellipsoid
 
-\[
+$$
 \widehat{\mathcal U}_r(o)=
 \{\mu+Ba+e:\|a\|_2\le1,\ \|e\|_\infty\le\rho\}.
-\]
+$$
 
-SVD \(B=U\operatorname{diag}(d)V^T\) даёт learned action modes и их ordered
-amplitudes. Поскольку Euclidean ball invariant к \(V\), right rotation не меняет
-множество. Это позволяет сети выдавать непрерывную mode field \(b(o,g)\), а
+SVD $B=U\operatorname{diag}(d)V^T$ даёт learned action modes и их ordered
+amplitudes. Поскольку Euclidean ball invariant к $V$, right rotation не меняет
+множество. Это позволяет сети выдавать непрерывную mode field $b(o,g)$, а
 orthogonalization выполнять только для анализа spectrum. Никакая hard QR,
 зависящая от состава candidate set, не требуется.
 
 Lower utility имеет closed form
 
-\[
+$$
 \widehat L(o,g_m)=
 \operatorname{clip}_{[0,1]}
 \bigl(\mu_m-\|b_m\|_2-\rho\bigr).
-\]
+$$
 
-Inference cost после RGB-D encoder равен \(O(Mr)\); получение ordered spectrum
-из малого Gram matrix \(B^TWB\) стоит \(O(Mr^2+r^3)\). При \(M=512,r=8\) это
+Inference cost после RGB-D encoder равен $O(Mr)$; получение ordered spectrum
+из малого Gram matrix $B^TWB$ стоит $O(Mr^2+r^3)$. При $M=512,r=8$ это
 несколько тысяч scalars вместо сотен тысяч occupancy/SDF queries.
 
 ### 5.2 Grouped learning objective
 
 Training example — не одна сцена, а observation group
 
-\[
+$$
 \mathcal D_b=(o_b,G_b,\{q_{b,s}\}_{s=1}^{S_b}),
-\]
+$$
 
 где все hidden twins имеют один и тот же observation и один и тот же candidate
-set. Training-only code \(a_{b,s}\) решает
+set. Training-only code $a_{b,s}$ решает
 
-\[
+$$
 a_{b,s}^*=\arg\min_{\|a\|_2\le1}
 \operatorname{LSE}_{m\in\Omega_{b,s}}
 \left|q_{b,s,m}-\mu_{b,m}-b_{b,m}^Ta\right|.
-\]
+$$
 
 Коэффициент не оценивается на роботе: observation принципиально не содержит
 информации, какой twin присутствует. Он нужен только для fitting образа fiber.
 
 Outer loss непосредственно учит enclosing set:
 
-\[
+$$
 \begin{aligned}
 \mathcal L_b={}&
 \operatorname{LSE}_{s,m}
@@ -385,19 +385,19 @@ Outer loss непосредственно учит enclosing set:
 +\lambda_w\frac1M\sum_m\|b_{b,m}\|_2
 +\lambda_{\rm rank}\sum_j d_{b,j}.
 \end{aligned}
-\]
+$$
 
 Первая строка штрафует нарушение enclosure в uniform norm. Вторая минимизирует
 residual, среднюю decision-relevant half-width и мягко удаляет лишние modes.
 Log-sum-exp используется только для gradients; hard worst residual регулярно
 добавляется обратно через mining. Split group-level calibration может прибавить
-один held-out residual quantile к \(\rho\), но conformal calibration не заявляется
+один held-out residual quantile к $\rho$, но conformal calibration не заявляется
 как novelty.
 
 ### 5.3 Sparse supervision
 
 Для каждого twin можно симулировать только случайное
-\(\Omega_{b,s}\subset[M]\), а остальные entries использовать как held-out. Low-rank
+$\Omega_{b,s}\subset[M]$, а остальные entries использовать как held-out. Low-rank
 factor связывает изменения разных grasпов; direct lower-score baseline такой
 связи не имеет. Однако sample-efficiency — эмпирический claim, не следствие слова
 «low-rank». Нужно строить curves по числу simulated twin-action pairs и сравнивать
@@ -408,11 +408,11 @@ factor связывает изменения разных grasпов; direct low
 После каждой стадии обучения следует искать новый hidden variant, максимизирующий
 не уже покрытую моделью компоненту:
 
-\[
+$$
 z^*=\arg\max_{z:\,d(R(z),o)\le\varepsilon}
 \inf_{\|a\|\le1}
 \|Q(z,G_o)-\mu-Ba\|_\infty.
-\]
+$$
 
 Он добавляется в group, и fitting повторяется. Это reduced-basis greedy algorithm
 в task space. На inference shape completion не выполняется. Начинать следует с
@@ -440,13 +440,13 @@ rendering; отдельно тестируется независимый реа
 обязательно публикуются dimension, covariance spectrum и held-out deformation
 programs самого hidden generator.
 
-Candidate generator запускается ровно один раз на \(o_b\); его output копируется
+Candidate generator запускается ровно один раз на $o_b$; его output копируется
 всем twins. Генерировать candidates с full hidden mesh запрещено, иначе benchmark
 утекает latent information.
 
 ### 6.2 Utility labels
 
-Для каждого \((z_{b,s},g_m)\) выполняются common-random-number Monte Carlo rollouts
+Для каждого $(z_{b,s},g_m)$ выполняются common-random-number Monte Carlo rollouts
 при measured gripper pose covariance. Label — beta-binomial/shrinkage estimate
 close-and-1–2 cm-lift success probability. Один и тот же набор perturbations для
 всех twins снижает variance их utility differences.
@@ -486,13 +486,13 @@ visual generalization задача, а не sensor-fiber ambiguity.
 - не меньше 32–64 независимых hidden deformation coordinates;
 - exact field и utility fields при 0.5×, 1× и 2× measured covariance.
 
-Для centered twin-by-action matrix \(X_b\) считаются singular spectra, но только
-Frobenius energy недостаточно. Дополнительно решается oracle rank-\(r\)
-\(L^\infty\) enclosing-factor problem и измеряется downstream robust selection.
+Для centered twin-by-action matrix $X_b$ считаются singular spectra, но только
+Frobenius energy недостаточно. Дополнительно решается oracle rank $r$
+$L^\infty$ enclosing-factor problem и измеряется downstream robust selection.
 
 Проект продолжать только при одновременном выполнении условий:
 
-1. \(r\le8\) объясняет не меньше 90% centered energy минимум в 70% held-out
+1. $r\le8$ объясняет не меньше 90% centered energy минимум в 70% held-out
    shell groups.
 2. В тех же groups 90-й percentile absolute entry error меньше 0.05 и uniform
    residual не доминирует ellipsoid width.
@@ -533,7 +533,7 @@ Train/test split по hidden program обязателен: split только п
 3. Independent per-grasp quantile или evidential head.
 4. Deep ensemble scalar scorers.
 5. Conditional PCA/SVD basis и ICLR-2026-style subspace regression.
-6. Conditional scenario critics с \(K\) целыми utility vectors.
+6. Conditional scenario critics с $K$ целыми utility vectors.
 7. Deterministic shape completion + grasp evaluator.
 8. Multiple stochastic shape completions + mean/CVaR/maximin evaluation.
 9. TARGO-style completion/occlusion-aware model, адаптированный к single-object
@@ -547,7 +547,7 @@ implementation baseline без корректной адаптации.
 ### 8.3 Metrics
 
 - spectrum/width curves и learned-vs-oracle principal angles;
-- held-out \(L^2\), \(L^\infty\) и Hausdorff-set proxy error;
+- held-out $L^2$, $L^\infty$ и Hausdorff-set proxy error;
 - lower-envelope calibration, coverage и sharpness;
 - expected, CVaR и worst-twin utility выбранного grasp;
 - maximin regret относительно full-matrix oracle;
@@ -559,16 +559,16 @@ implementation baseline без корректной адаптации.
 
 ### 8.4 Ablations
 
-- rank \(r\in\{0,1,2,4,8,16,32\}\);
+- rank $r\in\{0,1,2,4,8,16,32\}$;
 - exact utility против smoothed utility и несколько noise scales;
-- ellipsoid против box, \(K\)-scenario set и direct lower head;
+- ellipsoid против box, $K$-scenario set и direct lower head;
 - average reconstruction loss против uniform enclosure loss;
 - без hard twin mining;
 - без group identity / со случайно перемешанными twins;
 - 8, 16, 32, 64, 128 twins — демонстрация finite-sample rank bias;
 - sparse label fraction;
 - continuous query decoder против фиксированной candidate table;
-- predicted residual \(\rho\) против held-out calibrated residual.
+- predicted residual $\rho$ против held-out calibrated residual.
 
 ## 9. Novelty boundary после adversarial literature audit
 
@@ -627,8 +627,8 @@ literature, достаточность доказательств и significanc
 1. «Это conditional PCA plus robust grasping; SVD стандартна».
 2. Exact twins выглядят искусственно, а admissible hidden family выбран авторами.
 3. Low rank возникает потому, что deformation generator сам low-dimensional.
-4. \(L^2\) heat theorem не гарантирует малый rank в 6–7D и не контролирует
-   optimizer-sensitive \(L^\infty\) error.
+4. $L^2$ heat theorem не гарантирует малый rank в 6–7D и не контролирует
+   optimizer-sensitive $L^\infty$ error.
 5. Direct lower head получает тот же robust action дешевле.
 6. Worst-case selection слишком conservative и не соответствует test prior.
 7. Simulator utility и real utility плохо коррелируют.
@@ -660,7 +660,7 @@ candidate oracle и physical discriminator.
 2. Spectrum зависит от scale/metric hidden perturbations; глобальные utility
    widths и whitened deformation measure должны репортиться вместе.
 3. Один ellipsoid плохо описывает сильно disconnected or asymmetric utility set.
-   Большой residual \(\rho\) должен честно показать failure, а не скрываться mixture
+   Большой residual $\rho$ должен честно показать failure, а не скрываться mixture
    model после просмотра результатов.
 4. В zero-noise, point-contact limit action rank может быть большим.
 5. Model не решает approach planning, reachability, clutter и long-horizon lift.
