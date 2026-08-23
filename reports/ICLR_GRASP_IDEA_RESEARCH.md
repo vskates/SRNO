@@ -881,3 +881,841 @@ Strict minimax regret can sacrifice absolute worst-case success. It should there
 3. Exact observation fibers are easy synthetically but require careful verification on real RGB-D. The physical-twin benchmark must show that a discriminator cannot identify the hidden variant better than chance.
 4. If candidate recall is poor, no re-ranker can recover a robust grasp; this must be isolated experimentally.
 5. To be ICLR-level rather than only a robotics systems paper, the paper should emphasize the general learning object and theory, with grasping as a stringent non-injective physical inverse problem.
+
+## Second independent search pass: 2026 boundary and new cycles
+
+This pass deliberately did **not** elaborate Candidate D or any of cycles
+1--20.  It restarted from the task constraints and used robotics papers only
+to mark occupied territory or to falsify novelty.  The mathematical
+inspirations considered after that audit were sparse witnesses, stochastic
+orders, mathematical morphology, variational inequalities, hybrid-system
+jets, homogenization, dimensional analysis, and set convergence in numerical
+analysis.
+
+### Updated occupancy map
+
+Several developments narrow the space more than the older survey alone
+suggests:
+
+1. TARGO now directly benchmarks target-conditioned grasping from a single
+   RGB-D view under target occlusion.  Its model segments the visible target,
+   completes missing target geometry, and fuses target and scene features.
+   Therefore, "target-aware grasping under occlusion" is a setting, not a new
+   problem statement: https://targo-benchmark.github.io/
+2. ICGNet already makes instance-centric implicit geometry simultaneously
+   serve reconstruction, segmentation, and grasp detection from a partial
+   point cloud.  A new proposal cannot claim novelty merely from avoiding a
+   monolithic scene field or from composing per-object fields:
+   https://icgraspnet.github.io/
+3. NeuGraspNet already couples local neural surface rendering and grasp
+   evaluation from arbitrary single views:
+   https://openreview.net/forum?id=Fdu33eoZas
+4. A 2026 hybrid energy-based/ICP method explicitly treats partial-observation
+   6-DoF grasp generation, while a separate 2026 study reports that modular
+   pose-and-shape estimation followed by classical antipodal planning can
+   outperform end-to-end alternatives.  Thus "use a better implicit
+   representation" and "restore a modular geometry stage" are both occupied
+   methodological choices, not open scientific objects:
+   https://arxiv.org/abs/2606.18053 and
+   https://arxiv.org/abs/2605.26944
+5. ICLR 2026 work on learning grasps from procedurally random primitive
+   assemblies shows that data generation itself can carry broad ML novelty,
+   but also raises the bar for any proposal whose only contribution is a new
+   synthetic object distribution:
+   https://proceedings.iclr.cc/paper_files/paper/2026/hash/4b2a917e30e1bb1aff055b4d8c6c081c-Abstract-Conference.html
+
+These sources leave a real empirical gap -- robust grasping of a partially
+occluded target remains unsolved -- but they do not by themselves imply a new
+learning problem.
+
+### 21. Continuous amodal co-rigidity
+
+Proposal: predict a continuous kernel
+
+\[
+K_o(x,y)=\Pr[x\text{ and }y\text{ belong to the same rigid target}\mid o]
+\]
+
+and use it to choose two jaw contacts without completing a mesh.
+
+Rejection: this is an instance-centric amodal representation.  ICGNet already
+learns an instance-centric implicit field jointly for reconstruction and
+grasping.  A random-partition-consistent kernel would be an elegant structural
+constraint, but it neither establishes contact stability nor supplies a new
+capability.  The likely paper would be reviewed as a different head for
+amodal instance completion.
+
+### 22. Grasp-evidence coresets
+
+Proposal: learn a small subset of RGB-D points or camera rays that preserves
+the ranking or argmax of all candidate grasps.
+
+Rejection: differentiable point-cloud sampling is already the purpose of
+SampleNet, L2G learns task-aware point downsampling, and Graspness learns which
+scene points deserve expensive grasp processing.  Replacing their downstream
+loss by grasp-ranking distortion would be a useful efficiency paper, but not a
+new grasping object.  A formal coreset guarantee would also be relative to a
+fixed scorer, rather than to physical grasp success.
+
+Sources:
+
+- https://arxiv.org/abs/1912.03663
+- https://arxiv.org/abs/2203.05585
+- https://openaccess.thecvf.com/content/ICCV2021/papers/Wang_Graspness_Discovery_in_Clutters_for_Fast_and_Accurate_Grasp_Detection_ICCV_2021_paper.pdf
+
+### 23. Sensor-grounded proof-carrying grasps
+
+Proposal: output a grasp together with a sparse subset of raw RGB-D rays whose
+depth intervals prove visible antipodality and collision-free finger occupancy
+under bounded sensor noise.  A nonlearned interval verifier would accept or
+reject the proof.
+
+Rejection as the top direction: the distinction between a prediction and a
+raw-sensor witness is conceptually clean, but coverage is structurally poor in
+the stated setting.  The second contact or first-contact surface is often in
+the camera/obstacle shadow, so a sound visible-ray certificate must abstain
+precisely on many interesting grasps.  If hidden surfaces are supplied by a
+network, the proof is no longer sensor-verifiable.  Certified Grasping also
+already establishes grasp certificates for known planar geometry; the
+remaining novelty would mainly be a 3-D partial-observation verifier and a
+selective-prediction protocol.
+
+Source: https://arxiv.org/abs/1909.03985
+
+This remains a potentially publishable narrow safety project, but not the best
+match to a broad ICLR thesis.
+
+### 24. Universal grasp-dominance partial order
+
+Proposal: learn
+
+\[
+g\succeq_o h
+\quad\Longleftrightarrow\quad
+Q(z,g)\ge Q(z,h)\quad
+\text{for every }z\text{ compatible with }o,
+\]
+
+instead of learning scalar scores.
+
+Rejection: dominance only removes actions; it need not leave one executable
+maximal action, and empirically most candidates may be incomparable.  More
+fundamentally, stochastic-dominance and partial-order learning are established
+general decision frameworks.  Specializing them to hidden grasp geometry
+returns to the utility-world and robust-selection constructions already
+rejected in cycles 5, 6, and 10.
+
+Closest general source: https://arxiv.org/abs/2402.02698
+
+### 25. Mathematical-morphology grasp transform
+
+Proposal: express jaw closing and collision exclusion as a learned hit-or-miss
+transform or max-plus convolution between the gripper and observed target.
+
+Rejection: generalized grasp planning has already used voxel
+cross-correlation between gripper and object, including collision constraints,
+and SpectGRASP uses spectral surface correlation.  Morphological notation
+would expose useful algebra but would not change the learned problem.
+
+Sources:
+
+- https://arxiv.org/abs/2006.12676
+- https://arxiv.org/abs/2107.12492
+
+### 26. Monotone-operator closure surrogate
+
+Proposal: write terminal jaw closure as a variational inequality and learn its
+resolvent with a firmly nonexpansive network, giving a stable differentiable
+map from a local contact description to final contacts.
+
+Rejection: learned solution operators for variational inequalities already
+cover contact problems, while differentiable grasp simulators already optimize
+through contact.  For this project, the operational object is also the learned
+closure map rejected in cycle 4.  Monotonicity would be a valuable inductive
+bias, not an independently new subproblem.
+
+Sources:
+
+- https://doi.org/10.1007/s40687-022-00327-1
+- https://arxiv.org/abs/2208.12250
+
+### 27. Thermodynamic friction-potential grasping
+
+Proposal: predict a convex local dissipation potential from RGB-D and derive
+contact forces as its gradient, guaranteeing passive and physically consistent
+friction.
+
+Rejection: physically consistent learned friction laws and dissipation
+potentials are established in general mechanics, and visual or visuo-haptic
+friction estimation has already been used to guide grasp planning.  More
+importantly, a single RGB-D image does not identify the contact-pair-specific
+friction of an unseen object and gripper pad.  The method would either learn
+dataset material priors or require an additional tactile/material sensor.
+
+Sources:
+
+- https://proceedings.mlr.press/v242/dai24a.html
+- https://arxiv.org/abs/2010.08277
+
+### 28. Union-to-intersection obstacle semilattice
+
+Proposal: enforce the exact compositional law that adding obstacles intersects
+the feasible-grasp set, using per-obstacle factors combined by a minimum.
+
+Rejection: analytic collision filters already have this compositionality, and
+ICGNet explicitly motivates instance-level composability.  In the non-cluttered
+laboratory setting there is usually only one frontal obstacle, so the proposed
+algebra has little room to demonstrate extrapolation.  It is an architecture
+constraint around an old collision subproblem.
+
+### 29. Infinitesimal support-release jet
+
+Proposal: for an object initially supported by the shelf, learn the one-sided
+derivative of the quasi-static contact equilibrium as the gripper begins a
+millimetric lift.  A compact output would include object twist, support-force
+unloading rate, and a strict-complementarity margin.
+
+Rejection after a deeper mechanics audit: this is not merely close to
+whole-cycle feasibility; the underlying contact-transition object is old.
+Early squeeze-grasp mechanics explicitly partition configurations into those
+that slide out, jam, or lift from the support.  Shared grasping subsequently
+formalized robust environmental contact modes, and modern quasi-static
+formulations cover pushing, grasping, and jamming with complementarity
+problems.  Learning a KKT derivative would be technically new, but the
+scientific problem would remain learned evaluation of a known support-to-hand
+contact transition.
+
+Sources:
+
+- https://arxiv.org/abs/1902.03487
+- https://arxiv.org/abs/2006.02996
+- https://roboticsproceedings.org/rss08/p23.pdf
+
+### 30. Mechanical-similarity equivariant grasp fields
+
+Proposal: use Buckingham-\(\Pi\) groups for object scale, jaw stiffness,
+closing force, mass, and gravity, and require the grasp field to transform
+according to mechanical similarity rather than merely \(SE(3)\) equivariance.
+
+Rejection: it is a promising inductive bias for cross-scale transfer, but the
+required dimensionless groups contain mass, stiffness, and friction that the
+given RGB-D observation does not identify.  With those quantities provided,
+the main contribution becomes dimensional-analysis feature engineering; with
+them latent, the equivariance is not valid across visually identical objects.
+Classical scale-invariant grasp design also prevents a broad "first
+scale-invariant grasping" claim:
+https://publications.ri.cmu.edu/grasp-invariance-2
+
+### 31. Homogenized contact affordances
+
+Proposal: treat unresolved surface microgeometry as a fast scale and learn the
+effective friction/compliance law seen by a finite-area jaw pad, rather than
+completing microscopic shape.
+
+Rejection: homogenized friction is mathematically legitimate -- effective
+friction need not equal spatially averaged friction -- but the requisite
+microtopography is below ordinary wrist RGB-D resolution and material
+properties remain unobserved.  Recent work already learns
+mechanics-derived rough-surface engagement descriptors from measured
+topography.  In the available setup this would be a contact-law surrogate
+trained from missing inputs, not a reliable grasp perception problem.
+
+Sources:
+
+- https://arxiv.org/abs/2110.12762
+- https://doi.org/10.1016/j.triboint.2026.112411
+
+## Candidate E: LimitGrasp -- learning action-set limits from approximate contact oracles
+
+### Recommendation in one sentence
+
+Treat simulator supervision for contact-rich decisions as a **converging family
+of action sets**, not as ground-truth scalar labels: learn the inner limit of
+grasps that remain successful under numerical refinement and the outer limit
+of grasps that can remain successful, directly from partial RGB-D.
+
+This is the strongest new direction found in the second pass, but it is a
+**conditional recommendation**, not a paper-ready claim.  The cheap
+multi-resolution simulation audit below has to demonstrate a substantial,
+structured label-instability phenomenon before model development.
+
+### The scientific gap
+
+Large grasp datasets routinely turn a simulator run or an analytic metric into
+a label.  This silently identifies three different objects:
+
+1. physical success under a fixed terminal close-and-load protocol;
+2. the solution of a chosen continuous contact model;
+3. the output of one discretization and one numerical contact solver.
+
+For smooth forward problems, treating item 3 as an approximation of item 2 is
+often harmless.  Parallel-jaw contact is not smooth: contact creation,
+friction-cone activation, edge contact, and slip create switching surfaces in
+grasp space.  A timestep, mesh, contact stiffness, collision margin, or solver
+tolerance can move those surfaces.  A network trained on one resolution can
+therefore learn a *numerical decision boundary* with high validation accuracy
+against the same oracle.
+
+The problem is documented on the simulator side but is not made the supervised
+learning target:
+
+- comparative contact-model work shows that numerical relaxations can
+  severely affect downstream robotics applications:
+  https://arxiv.org/abs/2304.06372
+- SimBenchmark separates solver error from time-discretization error and
+  measures the speed--accuracy curve:
+  https://leggedrobotics.github.io/SimBenchmark/
+- IPC-GraspSim obtains better physical grasp prediction by modeling compliant
+  parallel jaws with a much more accurate contact method, at substantial
+  computational cost:
+  https://arxiv.org/abs/2111.01391
+- Get a Grip reports that merely spawning the hand at a pre-grasp rather than
+  already in contact removed nonphysical Isaac Gym behavior and unstable
+  simulation labels.  This is direct evidence that the data-generation
+  protocol can alter the supervised target:
+  https://arxiv.org/abs/2410.23701
+- ICLR 2026 accepted work shows that hard-contact settings can yield erroneous
+  gradients and that adaptive integration materially changes the result:
+  https://proceedings.iclr.cc/paper_files/paper/2026/hash/44039e59aaf6a41b16f1fc5b27bcd409-Abstract-Conference.html
+
+The unoccupied question found in this audit is:
+
+> What should a perception model learn when its physical training label is
+> available only through a family of non-uniformly converging numerical
+> oracles?
+
+Grasping supplies a consequential, discontinuous instance, but the question is
+broader than grasping and distinct from learning a faster simulator.
+
+### Precise scope
+
+- The arm has already placed the open parallel jaw gripper at a queried
+  terminal pose.  The operational test is close, hold, and lift/load by a few
+  millimetres.
+- Approach reachability and full-cycle execution are excluded.
+- Input is a target-masked local RGB-D/ray point set, a compact shelf-plane
+  descriptor, and a grasp query.  No complete mesh or scene SDF is an input.
+- A separate frozen generator proposes grasps.  LimitGrasp evaluates the new
+  scientific target; candidate generation is not claimed as a contribution.
+- Physical perturbations such as measured pose error are held to one declared
+  distribution.  Numerical refinement variables are not randomized and
+  averaged as though they were physical properties.
+
+### 1. A refinement family, not a simulator ensemble
+
+Let \(z\) be a complete scene used only by the offline simulator, \(o=R(z)\)
+the RGB-D observation, and
+
+\[
+\mathcal G = SE(3)/C_2
+\]
+
+the parallel-jaw pose space after quotienting the finger-swap symmetry.  Width
+can either be included in \(g\) or deterministically obtained by closure.
+
+Fix:
+
+- one continuous compliant-contact model \(\mathcal M\);
+- one terminal execution protocol;
+- one distribution \(\Xi\) of *physical* pose/control perturbations;
+- a collection \(\Gamma\) of numerical refinement paths that are intended to
+  approximate \(\mathcal M\).
+
+A path \(\gamma\in\Gamma\) specifies meshes, timesteps, collision
+discretizations, tolerances, and solver iterations at levels \(k=1,2,\ldots\).
+Let \(\eta_{\gamma,k}\downarrow0\) denote its resolution scale.  The
+operationally smoothed simulator utility is
+
+\[
+q_{\gamma,k}(z,g)
+=
+\Pr_{\xi\sim\Xi}
+\left[
+Y_{\mathcal M,\gamma,k}(z,g,\xi)=1
+\right].
+\]
+
+This probability is estimated using matched perturbation seeds across
+resolutions.  Matching is important: otherwise ordinary Monte Carlo noise is
+mistaken for numerical disagreement.
+
+At a success threshold \(\tau\), every level induces a closed action set
+
+\[
+S_{\gamma,k}(z;\tau)
+=
+\overline{\{g\in\mathcal G:q_{\gamma,k}(z,g)\ge\tau\}}.
+\]
+
+### 2. The new target: inner and outer action-set limits
+
+For a metric \(d_{\mathcal G}\) on the grasp quotient, define the
+Painlevé--Kuratowski limits along a refinement path:
+
+\[
+\operatorname{Li} S_{\gamma,k}
+=
+\left\{
+g:\limsup_{k\to\infty}
+d_{\mathcal G}(g,S_{\gamma,k})=0
+\right\},
+\]
+
+\[
+\operatorname{Ls} S_{\gamma,k}
+=
+\left\{
+g:\liminf_{k\to\infty}
+d_{\mathcal G}(g,S_{\gamma,k})=0
+\right\}.
+\]
+
+The first contains grasps approximable by successful grasps at every
+sufficiently fine level.  The second also contains actions that are approached
+by success along only a subsequence.  Aggregate declared consistent
+refinement paths as
+
+\[
+S_{\mathrm{core}}(z;\tau)
+=
+\bigcap_{\gamma\in\Gamma}
+\operatorname{Li}S_{\gamma,k}(z;\tau),
+\]
+
+\[
+S_{\mathrm{possible}}(z;\tau)
+=
+\overline{
+\bigcup_{\gamma\in\Gamma}
+\operatorname{Ls}S_{\gamma,k}(z;\tau)
+}.
+\]
+
+The difference
+
+\[
+B_{\mathrm{num}}(z;\tau)
+=
+S_{\mathrm{possible}}(z;\tau)
+\setminus
+S_{\mathrm{core}}(z;\tau)
+\]
+
+is the numerically unresolved action band.  If all consistent schemes converge
+to the same success set, core and possible sets coincide except at the
+decision boundary.  If they do not, returning one scalar "ground truth" hides
+an ill-posed label.
+
+This construction is deliberately invariant to every finite prefix of a
+refinement sequence.  A very inaccurate coarse simulation can save compute,
+but cannot define the scientific target.
+
+### 3. What the RGB-D model predicts
+
+The observation-conditioned fields are
+
+\[
+L(o,g)
+=
+\Pr_{Z\mid o}
+\left[g\in S_{\mathrm{core}}(Z;\tau)\right],
+\qquad
+U(o,g)
+=
+\Pr_{Z\mid o}
+\left[g\in S_{\mathrm{possible}}(Z;\tau)\right].
+\]
+
+\(L\) is the probability that a queried grasp belongs to the stable success
+core; \(U-L\) is the probability that it belongs to the numerical ambiguity
+band.  Partial visibility and sensor noise remain ordinary input uncertainty;
+the target specifically records whether the *same complete scene and grasp*
+changes label under numerical refinement.
+
+The decision rule is simply
+
+\[
+\hat g(o)=\arg\max_{g\in G(o)}L_\theta(o,g),
+\]
+
+possibly with \(U_\theta-L_\theta\le\beta\) as a coverage constraint.  No
+trajectory, full scene representation, or causal failure taxonomy is
+predicted.
+
+### 4. A compact nested-envelope network
+
+Use a point/ray encoder on a fixed physical-radius crop around the queried
+gripper closing region.  Cross-attention with a compact gripper query produces
+six nonnegative or unconstrained scalars:
+
+\[
+a_\theta,\quad b^-_\theta,b^+_\theta,\quad
+c^-_\theta,c^+_\theta,\quad p^-_\theta,p^+_\theta.
+\]
+
+One parsimonious refinement model is
+
+\[
+\ell_\theta(o,g,\eta)
+=
+\sigma\!\left(
+a_\theta-b^-_\theta-c^-_\theta\eta^{p^-_\theta}
+\right),
+\]
+
+\[
+u_\theta(o,g,\eta)
+=
+\sigma\!\left(
+a_\theta+b^+_\theta+c^+_\theta\eta^{p^+_\theta}
+\right),
+\]
+
+with \(b^\pm,c^\pm\ge0\) and \(p^\pm\) constrained to a plausible positive
+range.  As resolution improves, the lower envelope can only rise and the
+upper envelope can only fall.  At the formal limit,
+
+\[
+L_\theta(o,g)=\sigma(a_\theta-b^-_\theta),
+\qquad
+U_\theta(o,g)=\sigma(a_\theta+b^+_\theta).
+\]
+
+Here \(c^\pm\) describe removable numerical uncertainty, while \(b^\pm\)
+permit a residual gap across refinement paths.  A single scalar
+\(\eta\) is acceptable only for a prescribed path.  For independent timestep,
+mesh, and tolerance coordinates, replace the power law by a small monotone
+lattice; do not pretend incomparable discretizations have a canonical scalar
+order.
+
+The model remains a candidate-query field with \(O(M)\) inference for \(M\)
+grasps.  It does not run a simulator or reconstruct geometry at deployment.
+
+### 5. Finite supervision
+
+For each fixed \((z,g)\), run matched perturbation trials at levels
+\((\gamma,k)\).  From the binomial observations form finite-sample lower and
+upper confidence bounds
+
+\[
+\operatorname{LCB}_{\gamma,k}(z,g),
+\qquad
+\operatorname{UCB}_{\gamma,k}(z,g).
+\]
+
+At refinement level \(k\), empirical tail envelopes are
+
+\[
+\widehat\ell_k(z,g)
+=
+\min_{\gamma,\;j\ge k}
+\operatorname{LCB}_{\gamma,j}(z,g),
+\]
+
+\[
+\widehat u_k(z,g)
+=
+\max_{\gamma,\;j\ge k}
+\operatorname{UCB}_{\gamma,j}(z,g).
+\]
+
+By construction, \(\widehat\ell_k\) is nondecreasing and
+\(\widehat u_k\) nonincreasing with \(k\).  Train the nested-envelope field on
+all levels with a weighted proper binomial loss plus envelope regression.  A
+width penalty may be applied only subject to held-out finer-level coverage;
+otherwise the network can win by becoming confidently narrow.
+
+Most labels need not use the finest solver:
+
+1. evaluate every scene/grasp with one cheap level;
+2. refine a stratified subset spanning score, object geometry, occlusion, and
+   observed solver margin;
+3. allocate the most expensive level to items whose predicted tail interval
+   crosses \(\tau\) or whose observed labels fail to stabilize;
+4. keep a uniformly sampled finest-level subset for unbiased evaluation of the
+   allocation rule.
+
+This is offline experimental design, not RL.
+
+### 6. The necessary mathematical honesty
+
+No finite collection of approximate labels identifies an infinite-resolution
+limit without assumptions.  This should be a theorem in the paper, not hidden
+in limitations:
+
+> For any finite observed prefix of simulator outputs, there exist two
+> continuation sequences agreeing on that prefix but having different
+> Kuratowski limits.
+
+Consequently, LimitGrasp must declare and test a convergence class.  A
+reasonable local assumption away from contact-mode intersections is an
+asymptotic expansion of the signed distance to the success set,
+
+\[
+d_{\mathcal G}(g,S_{\gamma,k})_{\mathrm{signed}}
+=
+d_{\gamma,\infty}(g)
++c_\gamma(g)\eta_{\gamma,k}^{p_\gamma(g)}
++o(\eta_{\gamma,k}^{p_\gamma(g)}).
+\]
+
+At mode intersections this expansion may fail; that is exactly where the
+inner/outer set formulation is preferable to extrapolating a scalar label.
+Held-out levels finer than every training level are therefore mandatory.
+
+Potential formal results are:
+
+1. **Finite-prefix invariance.**  Inner and outer limits are unchanged by any
+   finite set of coarse levels, unlike majority vote or a fixed-resolution
+   label.
+2. **Set consistency.**  Under graph convergence of the numerical contact
+   solutions, regularity of the threshold away from a null boundary, and
+   uniform convergence of learned signed-distance envelopes, the predicted
+   core/possible sets converge in Kuratowski distance; with compactness and
+   stronger regularity this upgrades to Hausdorff convergence.
+3. **Selection stability.**  If
+   \(\sup_g|\widehat L(o,g)-L(o,g)|\le\delta\), maximizing
+   \(\widehat L\) over a fixed candidate set has at most \(2\delta\) excess
+   stable-core regret.
+4. **Refinement stopping.**  If a validated numerical error bound keeps a
+   candidate's entire envelope on one side of \(\tau\), finer simulation
+   cannot change its core classification and can be skipped.
+5. **Solver-selection dependence of ERM.**  When core and possible sets differ
+   on positive measure, ordinary ERM trained from one solver converges to a
+   solver-dependent target even with infinite data.
+
+The first, third, and fifth statements should be elementary.  The second is
+where genuine technical care is required; it must not be overstated for
+frictional rigid contact without verified convergence hypotheses.
+
+### 7. Why this is not an occupied neighboring method
+
+| Neighbor | Its target | Difference in Candidate E |
+|---|---|---|
+| IPC-GraspSim / improved contact solvers | make one simulator more physically accurate | learn the stable action-set limit exposed by refinement, without proposing a solver |
+| contact-engine benchmarks | compare physical and computational errors on prescribed mechanics tests | predict perception-conditioned grasp action sets and test selection on real objects |
+| DiffMJX / differentiable simulation | improve gradients through hard contact | forward success-label convergence, not gradient usefulness |
+| multi-fidelity regression | predict a designated highest-fidelity output cheaply | no finite fidelity is declared truth; learn an inner/outer asymptotic set |
+| discretization-invariant neural operators | make a learned operator commute with input/output resampling | study discretization of the **label oracle** and a discontinuous decision set |
+| domain randomization | average performance over a chosen physical nuisance distribution | numerical settings are approximation errors to remove or expose, not deployment randomness |
+| simulator ensembles | reduce variance or hedge over engines | refinement paths must share a declared continuous model; arbitrary engines are not votes |
+| robust grasp planning | hedge over pose, shape, friction, or load uncertainty | hold physical uncertainty fixed and isolate numerical-label uncertainty |
+
+Relevant general boundaries:
+
+- multi-fidelity active learning:
+  https://proceedings.mlr.press/v202/wu23p.html
+- discretization invariance in operator learning:
+  https://iclr-blogposts.github.io/2026/blog/2026/discretisation-invariance/
+
+The distinction will be credible only if experiments separately vary physical
+nuisance parameters and numerical approximation parameters.
+
+### 8. Benchmark and experimental protocol
+
+#### Simulation matrix
+
+Start with 200--500 rigid objects, including ordinary household shapes and
+adversarial contact geometry: thin rims, rounded edges, small chamfers,
+near-parallel faces, narrow necks, and shallow concavities.  Render a single
+wrist RGB-D view with:
+
+- no occlusion, mild frontal occlusion, and severe but non-total frontal
+  occlusion;
+- measured depth quantization, dropout, and pose noise;
+- an explicit target mask and shelf plane;
+- no clutter beyond the one occluder.
+
+Generate 256--512 grasps from the same frozen observation-only generator.
+Every selected full-scene/grasp pair is then evaluated with matched physical
+perturbation seeds over a refinement grid:
+
+- timestep, including at least a \(4\times\) ratio between adjacent levels;
+- collision and compliant-pad mesh resolution;
+- contact tolerance/collision margin;
+- nonlinear/contact solver tolerance and iteration budget;
+- at least two independently implemented *consistent* paths where model
+  matching can be defended.
+
+Do not mix rigid point-contact, penalty contact, and compliant-pad mechanics
+inside one alleged numerical path.  Those are different continuous models.
+A secondary experiment may compare their separate limit sets as model-form
+uncertainty, but it is not the primary target.
+
+#### Real protocol
+
+Use the actual parallel jaw gripper with repeatable prepositioning.  For each
+test:
+
+1. move to a collision-free pre-grasp by an external planner;
+2. start scoring only at the standardized terminal open pose;
+3. close with fixed force/velocity control;
+4. lift or load by the same few millimetres;
+5. record retention and relative slip.
+
+Select a balanced physical subset from numerically stable successes, stable
+failures, and the ambiguity band.  Repeat pose perturbations rather than
+testing each grasp once.  The decisive hypothesis is that ambiguity-band
+membership predicts a default simulator's real errors beyond its scalar score,
+geometry class, and analytic force-closure margin.
+
+#### Metrics
+
+- label flip rate versus each numerical coordinate and refinement depth;
+- distance between successive success sets on the grasp quotient;
+- size and geometry of the estimated ambiguity band;
+- coverage of the predicted envelope on unseen finer levels;
+- width of that envelope at fixed coverage;
+- precision and recall of stable-core membership;
+- real grasp success, slip, and selection regret;
+- simulation calls and wall-clock cost;
+- results stratified by occlusion, PCD noise, object geometry, and score
+  margin.
+
+Essential baselines:
+
+- one default simulator/fidelity;
+- the finest available level for every training item;
+- mean and worst-case labels over an arbitrary simulator ensemble;
+- physical-parameter domain randomization;
+- deep ensemble on single-fidelity labels;
+- a scalable multi-fidelity GP or deep multi-fidelity regressor;
+- a direct model predicting the finest observed label;
+- analytic force closure and a standard learned grasp scorer;
+- an oracle using all refinement levels.
+
+All learned baselines must share the RGB-D encoder, candidate set, and
+simulation budget where applicable.
+
+### 9. Cheap falsification before building the neural model
+
+Run this audit on only 30--50 objects and roughly 5,000 geometrically diverse
+grasps:
+
+1. Use at least four nested timestep/tolerance levels and two mesh levels with
+   matched perturbation seeds.
+2. Verify that contact parameters describe the same intended continuous model;
+   remove disagreements caused by unit errors, inconsistent friction
+   conventions, or different execution controllers.
+3. Measure the default-to-finest label flip rate.  If it is below 5% overall
+   and below 10% even in low-margin strata, stop.
+4. Require a structured ambiguity band: flips should concentrate near
+   contact-mode or geometric margins and should be reproducible across random
+   seeds.  Unstructured nondeterministic engine noise is not the proposed
+   phenomenon.
+5. Test a simple tail-envelope extrapolator on a withheld finer level.  At
+   least 90% coverage with mean probability width below 0.20 on at least 70%
+   of items is a reasonable proceed threshold.
+6. Execute a small real balanced set.  After conditioning on default
+   simulator score, ambiguity-band membership must still predict error.  If it
+   does not, numerical convergence is scientifically interesting but not
+   useful for grasp selection.
+7. Compare equal-compute strategies.  If "run IPC-GraspSim once on fewer
+   examples" or "use the finest solver only" matches the learned limit model,
+   the amortization thesis is false.
+8. Check that each image has at least one candidate with high stable-core
+   probability.  Otherwise lower-limit selection is vacuously conservative.
+
+Only a positive result on items 3, 5, 6, and 7 justifies a full paper.
+
+### 10. ICLR acceptance audit
+
+The current ICLR 2027 reviewer guide asks whether the paper studies a specific,
+well-motivated problem, supports its claims rigorously, and creates significant
+new knowledge or value; it explicitly asks reviewers to be open to surprising
+work that may take the field in a new direction rather than requiring an
+established leaderboard result:
+https://iclr.cc/Conferences/2027/ReviewerGuidelines
+
+#### Potential strengths
+
+1. **Original learning object.**  The target is a limit of decision sets
+   generated by approximate numerical oracles, not another grasp score,
+   completion field, or trajectory feasibility head.
+2. **Broad relevance.**  The same issue appears wherever learned decisions are
+   supervised by nonsmooth simulators: legged contact, assembly, deformable
+   manipulation, fracture, and collision.
+3. **Tight theory--experiment link.**  Finite-prefix non-identifiability,
+   set convergence, nested envelopes, and action-selection bounds directly
+   determine the data collection and metrics.
+4. **Practical efficiency.**  Expensive refined simulation is used only on a
+   subset offline; deployment remains one local candidate-query evaluation.
+5. **Clean compliance with project constraints.**  No RL, VLA, full-cycle
+   feasibility, causal failure modes, or scene SDF is required.
+
+#### Principal rejection risks
+
+1. **Phenomenon risk.**  Carefully calibrated compliant simulation may already
+   make action labels stable.  Then the paper manufactures a problem from bad
+   simulator settings.
+2. **Ground-truth risk.**  Different engines often encode different physical
+   contact models, not different discretizations of one model.  Calling their
+   intersection a continuum limit would be mathematically wrong.
+3. **Method risk.**  If the result is only min/max labels plus a two-headed
+   network, reviewers will call it robust multi-fidelity regression.  The
+   set-limit target, unseen-refinement evaluation, adaptive data allocation,
+   and theory must all matter empirically.
+4. **Reality risk.**  Numerical stability need not imply physical accuracy.
+   A consistently wrong solver is stable.  A real balanced ambiguity-band
+   experiment is essential.
+5. **Cost risk.**  Producing paired compliant-pad simulations over multiple
+   refinements may be more expensive than collecting enough real grasps.
+6. **Scope risk.**  A grasp-only benchmark is unlikely to establish the broad
+   ML claim.  Add at least one inexpensive non-grasp contact benchmark, such
+   as a frictional block/peg or planar complementarity system, where the
+   continuous solution or a verified finest reference is known.
+7. **Asymptotic-model risk.**  Power-law convergence can fail at contact-mode
+   switches.  Report failure regions rather than forcing false extrapolation.
+
+### 11. Minimum paper that would be defensible
+
+A credible paper would make four contributions:
+
+1. formulate **learning action-set limits from approximate oracles** and prove
+   the non-identifiability and selection results;
+2. introduce a nested-envelope estimator with budget-aware adaptive
+   refinement and evaluation on unseen finer oracle levels;
+3. release a paired multi-resolution parallel-jaw grasp benchmark from noisy,
+   partially occluded RGB-D;
+4. show on real hardware that selecting from the learned stable core improves
+   small-lift reliability at equal simulation and inference cost.
+
+A possible title is:
+
+> **LimitGrasp: Learning Stable Action Sets from Non-Converged Contact
+> Simulators**
+
+The strongest honest abstract claim would be:
+
+> Contact-rich learned decision systems are commonly supervised by one
+> numerical simulator setting.  We show that near contact-mode boundaries the
+> induced successful-action set need not be stable under refinement, making
+> ordinary labels solver-dependent.  We formulate supervision through the
+> inner and outer limits of refining action sets, propose an amortized nested
+> estimator from partial observations, and demonstrate that its stable core
+> transfers better to finer solvers and physical parallel-jaw grasping.
+
+The claim must remain conditional until the falsification audit establishes
+that the ambiguity band is nontrivial, learnable, and predictive of real
+failure.
+
+### 12. Submission-timing and AI-disclosure note
+
+As of 2026-08-24, the ICLR 2027 abstract and paper deadlines are 2026-09-18
+and 2026-09-25 AOE:
+https://iclr.cc/Conferences/2027/AuthorGuidelines
+
+Unless the laboratory already has a matched multi-resolution simulation
+pipeline and real grasp data, Candidate E cannot be validated to the standard
+claimed above in one month.  The scientifically responsible target is ICLR
+2028 rather than a rushed ICLR 2027 submission.
+
+ICLR 2027 also requires an AI-use statement.  This research-ideation process
+is significant enough that it must be described precisely in that statement;
+the human authors remain responsible for verifying every novelty, citation,
+theorem, and empirical claim:
+https://iclr.cc/Conferences/2027/AIPolicyForAuthors
+
+A standalone Russian-language proposal with the full mathematical model,
+benchmark, falsification gates, mock review, and execution order is available
+in reports/LIMITGRASP_PROPOSAL.md.
