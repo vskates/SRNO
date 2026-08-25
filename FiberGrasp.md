@@ -10,9 +10,9 @@
 
 Это непрерывный action-space аналог нижнего и верхнего приближений rough-set theory. Невидимая геометрия не превращается в одну «наиболее вероятную» форму, а задаёт **волокно наблюдения** — множество физических миров, совместимых с тем, что камера действительно увидела. Метод обучает амортизированный оператор
 
-\[
+$$
 o\longmapsto\bigl(\mathcal G_-(o),\mathcal G_+(o)\bigr)
-\]
+$$
 
 без генерации полных форм во время инференса.
 
@@ -73,7 +73,7 @@ o\longmapsto\bigl(\mathcal G_-(o),\mathcal G_+(o)\bigr)
 |---|---|---|
 | Probabilistic full shape + CVaR/LCB | Явно учитывает скрытую форму | Занято Lundell, PSSNet, IROS 2025 и UNCLE-Grasp; дорого во время инференса |
 | Local occupancy около каждого gripper | Не нужен global SDF | Слишком близко к Local Occupancy ECCV 2024 и ShellGrasp |
-| Direct success probability \(p(y=1\mid o,g)\) | Просто и быстро | Усредняет observation-equivalent миры согласно частоте training prior; не отделяет unknowable от unlikely |
+| Direct success probability $p(y=1\mid o,g)$ | Просто и быстро | Усредняет observation-equivalent миры согласно частоте training prior; не отделяет unknowable от unlikely |
 | Quantile/conformal grasp score | Даёт статистическую осторожность | LCB и conformal safety для grasping уже существуют; coverage не равна физической необходимости |
 | Diffusion over robust grasps | Мультимодальность | Без новой target semantics это очередной conditional grasp generator |
 | Moment/SOS-робастность скрытой массы и поверхности | Красивые гарантии | Слишком много жёстких предположений и переменных; плохо согласуется с noisy PCD и требованием эффективного обучения |
@@ -84,50 +84,50 @@ o\longmapsto\bigl(\mathcal G_-(o),\mathcal G_+(o)\bigr)
 
 ### 4.1. Состояние, наблюдение и действие
 
-Пусть \(x\in\mathcal X_c\) — полное локальное физическое состояние: поверхность целевого объекта, препятствие, полка и параметры, необходимые для локальной проверки закрытия gripper. Индекс \(c\) — известный класс; если класс неизвестен, берётся объединение допустимых supports.
+Пусть $x\in\mathcal X_c$ — полное локальное физическое состояние: поверхность целевого объекта, препятствие, полка и параметры, необходимые для локальной проверки закрытия gripper. Индекс $c$ — известный класс; если класс неизвестен, берётся объединение допустимых supports.
 
 Камера реализует оператор наблюдения
 
-\[
+$$
 \mathcal R:\mathcal X\rightarrow\mathcal O.
-\]
+$$
 
-Наблюдение \(o\) содержит только доступные из wrist RGB-D данные: sparse target/obstacle points, known-free camera rays и uncertainty/noise metadata. Полная форма не создаётся на инференсе.
+Наблюдение $o$ содержит только доступные из wrist RGB-D данные: sparse target/obstacle points, known-free camera rays и uncertainty/noise metadata. Полная форма не создаётся на инференсе.
 
-Для noiseless-случая все \(x\), имеющие одно наблюдение, образуют equivalence class. Для реального сенсора используется tolerance fiber
+Для noiseless-случая все $x$, имеющие одно наблюдение, образуют equivalence class. Для реального сенсора используется tolerance fiber
 
-\[
+$$
 \mathcal F_\varepsilon(o,c)
 =
 \left\{
 x\in\mathcal X_c:
 d_{\rm obs}\bigl(\mathcal R(x),o\bigr)\leq\varepsilon
 \right\}.
-\]
+$$
 
 Это множество всех сцен из выбранного support, которые камера не умеет различить с учётом шума и окклюзии.
 
 Grasp:
 
-\[
+$$
 g\in\mathcal G
 =
 \bigl(SE(3)/C_2\bigr)\times[w_{\min},w_{\max}],
-\]
+$$
 
-где фактор \(C_2\) учитывает 180-градусную симметрию parallel-jaw gripper.
+где фактор $C_2$ учитывает 180-градусную симметрию parallel-jaw gripper.
 
 ### 4.2. Только локальная физическая допустимость
 
 Вводится signed margin
 
-\[
+$$
 m(x,g)\in\mathbb R,
 \qquad
 m(x,g)\geq0
 \iff
 g\text{ локально допустим в }x.
-\]
+$$
 
 Margin агрегирует только:
 
@@ -140,96 +140,96 @@ Arm reachability, полный approach trajectory, whole-cycle motion planning 
 
 Для полного состояния:
 
-\[
+$$
 \mathcal A(x)=\{g:m(x,g)\geq0\}.
-\]
+$$
 
 ### 4.3. Необходимое и возможное множества захватов
 
 Два экстремальных поля:
 
-\[
+$$
 m_-(o,g)
 =
 \inf_{x\in\mathcal F_\varepsilon(o,c)}m(x,g),
-\]
+$$
 
-\[
+$$
 m_+(o,g)
 =
 \sup_{x\in\mathcal F_\varepsilon(o,c)}m(x,g).
-\]
+$$
 
 Они порождают
 
-\[
+$$
 \mathcal G_-(o)
 =
 \{g:m_-(o,g)\geq0\}
 =
 \bigcap_{x\in\mathcal F_\varepsilon(o,c)}\mathcal A(x),
-\]
+$$
 
-\[
+$$
 \mathcal G_+(o)
 =
 \{g:m_+(o,g)\geq0\}
 =
 \bigcup_{x\in\mathcal F_\varepsilon(o,c)}\mathcal A(x).
-\]
+$$
 
 Интерпретация:
 
-- \(\mathcal G_-\): grasp допустим независимо от того, какая из неразличимых скрытых геометрий истинна;
-- \(\mathcal G_+\): grasp допустим хотя бы в одном совместимом мире;
-- \(\mathcal G_+\setminus\mathcal G_-\): область решений, которую single-view RGB-D принципиально не может разрешить без более сильного prior или нового observation.
+- $\mathcal G_-$: grasp допустим независимо от того, какая из неразличимых скрытых геометрий истинна;
+- $\mathcal G_+$: grasp допустим хотя бы в одном совместимом мире;
+- $\mathcal G_+\setminus\mathcal G_-$: область решений, которую single-view RGB-D принципиально не может разрешить без более сильного prior или нового observation.
 
 Рабочая политика:
 
-\[
+$$
 g^\star
 =
 \arg\max_{g\in\mathcal G}m_-(o,g).
-\]
+$$
 
-Если максимум положителен, получен necessary grasp. Если он отрицателен, тот же \(g^\star\) является maximin fallback — наименее хрупким решением в принятой модели support. Отказ можно измерять как диагностический режим, но он не является главным результатом.
+Если максимум положителен, получен necessary grasp. Если он отрицателен, тот же $g^\star$ является maximin fallback — наименее хрупким решением в принятой модели support. Отказ можно измерять как диагностический режим, но он не является главным результатом.
 
 ## 5. Чем это отличается от вероятности успеха
 
 Обычный score
 
-\[
+$$
 p(g\text{ succeeds}\mid o)
 =
 \int\mathbf 1[m(x,g)\geq0]p(x\mid o)\,dx
-\]
+$$
 
 зависит от того, как часто скрытые формы встречались в training distribution. Редкая, но observation-compatible геометрия может почти не повлиять на probability, хотя именно на ней grasp сталкивается с невидимой поверхностью.
 
 FiberGrasp использует support:
 
-\[
+$$
 \mathcal F_\varepsilon(o,c)
 =
 \operatorname{supp}p(x\mid o,c)
 \quad\text{с сенсорным tolerance}.
-\]
+$$
 
-Поэтому при изменении частот форм, но неизменном support, \(\mathcal G_-\) и \(\mathcal G_+\) не меняются. Это не «лучше откалиброванная вероятность», а другой объект предсказания.
+Поэтому при изменении частот форм, но неизменном support, $\mathcal G_-$ и $\mathcal G_+$ не меняются. Это не «лучше откалиброванная вероятность», а другой объект предсказания.
 
-Ограничение честно: гарантия верна только относительно заданного support и \(\varepsilon\). Неизвестную форму вне support никакой single-view метод не может магически исключить.
+Ограничение честно: гарантия верна только относительно заданного support и $\varepsilon$. Неизвестную форму вне support никакой single-view метод не может магически исключить.
 
 ## 6. Теоретический пакет
 
 ### Proposition 1. Наблюдательная невозможность
 
-Пусть \(\mathcal R(x_1)=\mathcal R(x_2)=o\) и
+Пусть $\mathcal R(x_1)=\mathcal R(x_2)=o$ и
 
-\[
+$$
 \mathcal A(x_1)\cap\mathcal A(x_2)=\varnothing.
-\]
+$$
 
-Тогда любая детерминированная observation-only policy \(g=\pi(o)\) терпит неудачу хотя бы в одном из \(x_1,x_2\).
+Тогда любая детерминированная observation-only policy $g=\pi(o)$ терпит неудачу хотя бы в одном из $x_1,x_2$.
 
 **Proof sketch.** Policy получает одинаковый input и обязана вернуть один и тот же grasp. Этот grasp не может принадлежать двум непересекающимся feasible sets.
 
@@ -237,31 +237,31 @@ FiberGrasp использует support:
 
 ### Theorem 1. Максимальность certifiable action set
 
-\(\mathcal G_-(o)\) является максимальным множеством, каждый элемент которого можно гарантировать локально допустимым, зная только \(o\), support \(\mathcal X_c\) и tolerance \(\varepsilon\).
+$\mathcal G_-(o)$ является максимальным множеством, каждый элемент которого можно гарантировать локально допустимым, зная только $o$, support $\mathcal X_c$ и tolerance $\varepsilon$.
 
-Если \(g\notin\mathcal G_-(o)\), существует \(x'\in\mathcal F_\varepsilon(o,c)\), для которого \(m(x',g)<0\). Следовательно, ни один метод с тем же observation и теми же assumptions не может soundly сертифицировать такой \(g\).
+Если $g\notin\mathcal G_-(o)$, существует $x'\in\mathcal F_\varepsilon(o,c)$, для которого $m(x',g)<0$. Следовательно, ни один метод с тем же observation и теми же assumptions не может soundly сертифицировать такой $g$.
 
-Аналогично, если \(g\notin\mathcal G_+(o)\), он невозможен во всех observation-compatible мирах.
+Аналогично, если $g\notin\mathcal G_+(o)$, он невозможен во всех observation-compatible мирах.
 
 ### Theorem 2. Оценка ошибки конечного fiber oracle
 
-Пусть \(\{x_j\}_{j=1}^{K}\) — \(\delta\)-net множества \(\mathcal F_\varepsilon(o,c)\) в метрике \(d_\mathcal X\), а \(m(\cdot,g)\) является \(L_x\)-Lipschitz. Тогда
+Пусть $\{x_j\}_{j=1}^{K}$ — $\delta$-net множества $\mathcal F_\varepsilon(o,c)$ в метрике $d_\mathcal X$, а $m(\cdot,g)$ является $L_x$-Lipschitz. Тогда
 
-\[
+$$
 0\leq
 \min_j m(x_j,g)-m_-(o,g)
 \leq L_x\delta,
-\]
+$$
 
-\[
+$$
 0\leq
 m_+(o,g)-\max_j m(x_j,g)
 \leq L_x\delta.
-\]
+$$
 
-Если ошибка neural approximation empirical extrema не выше \(\eta\), sound margins:
+Если ошибка neural approximation empirical extrema не выше $\eta$, sound margins:
 
-\[
+$$
 \widehat m_-^{\,\rm cert}
 =
 \widehat m_- - (L_x\delta+\eta),
@@ -269,21 +269,21 @@ m_+(o,g)-\max_j m(x_j,g)
 \widehat m_+^{\,\rm cert}
 =
 \widehat m_+ + (L_x\delta+\eta).
-\]
+$$
 
-Условие \(\widehat m_-^{\,\rm cert}\geq0\) достаточно для робастной локальной допустимости внутри model class.
+Условие $\widehat m_-^{\,\rm cert}\geq0$ достаточно для робастной локальной допустимости внутри model class.
 
-Практический caveat: глобальный \(L_x\) трудно оценить. В первой работе нужны либо контролируемая simulator metric и spectral/Lipschitz bounds, либо эмпирическая held-out correction. Conformal widening допустим как инструмент проверки, но не как novelty claim.
+Практический caveat: глобальный $L_x$ трудно оценить. В первой работе нужны либо контролируемая simulator metric и spectral/Lipschitz bounds, либо эмпирическая held-out correction. Conformal widening допустим как инструмент проверки, но не как novelty claim.
 
 ### Proposition 2. Инвариантность к frequency shift
 
-Пусть две условные меры \(P_1(x\mid o)\) и \(P_2(x\mid o)\) имеют одинаковый support \(\mathcal F_\varepsilon(o,c)\). Тогда их необходимые и возможные множества совпадают, хотя posterior success probabilities могут различаться.
+Пусть две условные меры $P_1(x\mid o)$ и $P_2(x\mid o)$ имеют одинаковый support $\mathcal F_\varepsilon(o,c)$. Тогда их необходимые и возможные множества совпадают, хотя posterior success probabilities могут различаться.
 
 Это даёт отдельный falsifiable experiment: reweight частоты форм, не меняя support.
 
 ### Proposition 3. Дискретизация grasp manifold
 
-Если \(m_-(o,\cdot)\) является \(L_g\)-Lipschitz, а query set — \(h\)-cover пространства \(\mathcal G\), лучший дискретный maximin grasp отстаёт от непрерывного optimum не более чем на \(L_gh\). Это обосновывает Sobol queries с последующим manifold gradient refinement.
+Если $m_-(o,\cdot)$ является $L_g$-Lipschitz, а query set — $h$-cover пространства $\mathcal G$, лучший дискретный maximin grasp отстаёт от непрерывного optimum не более чем на $L_gh$. Это обосновывает Sobol queries с последующим manifold gradient refinement.
 
 ## 7. Модель: Equivariant Fiber Operator
 
@@ -301,32 +301,32 @@ m_+(o,g)-\max_j m(x_j,g)
 
 ### 7.2. Запрос
 
-Для каждого candidate \(g\) локальные tokens переводятся в gripper frame. SE(3)-equivariant point encoder создаёт scene features, а query decoder предсказывает два ordered scalar fields:
+Для каждого candidate $g$ локальные tokens переводятся в gripper frame. SE(3)-equivariant point encoder создаёт scene features, а query decoder предсказывает два ordered scalar fields:
 
-\[
+$$
 \widehat m_-(o,g)=a_\theta(o,g),
-\]
+$$
 
-\[
+$$
 \widehat m_+(o,g)
 =
 a_\theta(o,g)+\operatorname{softplus}b_\theta(o,g).
-\]
+$$
 
 Так архитектурно гарантируется
 
-\[
+$$
 \widehat m_-(o,g)\leq\widehat m_+(o,g).
-\]
+$$
 
 Нужна одна shared backbone и один двухголовый decoder. Дополнительный diffusion-generator не требуется.
 
 ### 7.3. Выбор grasp
 
 1. Сэмплировать 1–4 тысячи Sobol poses/widths в допустимом workspace.
-2. Одним batched forward pass получить \(\widehat m_-\).
-3. Взять top-\(k\).
-4. Выполнить несколько шагов Riemannian gradient ascent по \(SE(3)/C_2\) и width.
+2. Одним batched forward pass получить $\widehat m_-$.
+3. Взять top-$k$.
+4. Выполнить несколько шагов Riemannian gradient ascent по $SE(3)/C_2$ и width.
 5. Исполнить максимум certified/adjusted lower field.
 
 Это direct inference; полные формы во время работы робота не генерируются.
@@ -347,37 +347,37 @@ a_\theta(o,g)+\operatorname{softplus}b_\theta(o,g).
 
 ### 8.2. Hard witnesses
 
-Для каждого \((o,g)\) ищутся witness shapes:
+Для каждого $(o,g)$ ищутся witness shapes:
 
-\[
+$$
 z^-
 =
 \arg\min_z m(S_\phi(z),g)
-\]
+$$
 
 и
 
-\[
+$$
 z^+
 =
 \arg\max_z m(S_\phi(z),g)
-\]
+$$
 
 при ограничениях
 
-\[
+$$
 d_{\rm obs}\bigl(\mathcal R(S_\phi(z)),o\bigr)\leq\varepsilon,
 \qquad
 S_\phi(z)\in\mathcal X_c.
-\]
+$$
 
 Используются multiple starts, augmented Lagrangian, adversarial refinement и replay bank найденных witnesses. Shape model здесь служит офлайн генератором контрпримеров; online model никогда не выдаёт completed shape.
 
 ### 8.3. Loss
 
-Для margins \(M_j=m(x_j,g)\):
+Для margins $M_j=m(x_j,g)$:
 
-\[
+$$
 \mathcal L_{\rm contain}
 =
 \frac1K\sum_j
@@ -386,17 +386,17 @@ S_\phi(z)\in\mathcal X_c.
 +
 \operatorname{ReLU}(M_j-\widehat m_+)^2
 \right],
-\]
+$$
 
-\[
+$$
 \mathcal L_{\rm tight}
 =
 \left|\widehat m_--\min_jM_j\right|
 +
 \left|\widehat m_+-\max_jM_j\right|,
-\]
+$$
 
-\[
+$$
 \mathcal L
 =
 \mathcal L_{\rm contain}
@@ -404,7 +404,7 @@ S_\phi(z)\in\mathcal X_c.
 +\lambda_{\rm gap}(\widehat m_+-\widehat m_-)
 +\lambda_{\rm eq}\mathcal L_{\rm equivariance}
 +\lambda_{\rm Lip}\mathcal L_{\rm Lipschitz}.
-\]
+$$
 
 Containment отвечает за sound interval, extrema regression — за tightness, gap penalty не позволяет выдавать тривиальный бесконечно широкий interval.
 
@@ -424,21 +424,21 @@ Containment отвечает за sound interval, extrema regression — за ti
 
 Uncertain-completion pipeline имеет приблизительную стоимость
 
-\[
+$$
 O(KC_{\rm completion}+KQ C_{\rm physics}),
-\]
+$$
 
-где \(K\) — число completions, \(Q\) — candidates.
+где $K$ — число completions, $Q$ — candidates.
 
 FiberGrasp после scene encoding имеет
 
-\[
+$$
 O(C_{\rm encoder}+Q C_{\rm decoder}),
-\]
+$$
 
-без множителя \(K\) и без online mesh processing.
+без множителя $K$ и без online mesh processing.
 
-Заявлять конкретные миллисекунды заранее нельзя. Paper-level target: batched inference вместе с refinement менее 100 ms на лабораторном GPU и выигрыш не менее \(5\times\) против 30–60 completion samples.
+Заявлять конкретные миллисекунды заранее нельзя. Paper-level target: batched inference вместе с refinement менее 100 ms на лабораторном GPU и выигрыш не менее $5\times$ против 30–60 completion samples.
 
 ### Обучение
 
@@ -511,29 +511,29 @@ Robotics определяет только физический margin и экс
 
 - grasp success rate по bins окклюзии;
 - worst-bin success;
-- падение easy \(\rightarrow\) severe occlusion;
+- падение easy $\rightarrow$ severe occlusion;
 - regret к full-geometry oracle;
 - precision/soundness necessary set;
-- fraction сцен с непустым \(\mathcal G_-\);
+- fraction сцен с непустым $\mathcal G_-$;
 - violation rate: доля predicted-necessary grasps, опровергнутых held-out compatible shape;
-- tightness \(\widehat m_+-\widehat m_-\);
+- tightness $\widehat m_+-\widehat m_-$;
 - success-coverage curve maximin/certified policy;
 - latency, memory и число geometry-model calls.
 
 ### 12.4. Killer experiment
 
-Создать пары \((x_1,x_2)\), которые:
+Создать пары $(x_1,x_2)$, которые:
 
-\[
+$$
 d_{\rm obs}\bigl(\mathcal R(x_1),\mathcal R(x_2)\bigr)\leq\varepsilon,
-\]
+$$
 
 но имеют разные hidden collisions или contact feasibility.
 
 Для каждой пары проверить:
 
 1. posterior-mean detector выбирает высокочастотный, но не necessary grasp;
-2. FiberGrasp исключает его из \(\mathcal G_-\);
+2. FiberGrasp исключает его из $\mathcal G_-$;
 3. shared feasible grasp, если он существует, остаётся в lower set;
 4. при пустом intersection model показывает отрицательный maximin margin, а не искусственную уверенность.
 
@@ -548,7 +548,7 @@ d_{\rm obs}\bigl(\mathcal R(x_1),\mathcal R(x_2)\bigr)\leq\varepsilon,
 - mismatch depth noise;
 - segmentation boundary corruption;
 - obstacle pose errors;
-- расширение/сужение \(\varepsilon\).
+- расширение/сужение $\varepsilon$.
 
 ### 12.6. Критические ablations
 
@@ -558,8 +558,8 @@ d_{\rm obs}\bigl(\mathcal R(x_1),\mathcal R(x_2)\bigr)\leq\varepsilon,
 - без ray/free-space tokens;
 - без equivariance;
 - class known vs unknown;
-- разное \(K\) в offline fiber bank;
-- без \(\delta,\eta\) correction;
+- разное $K$ в offline fiber bank;
+- без $\delta,\eta$ correction;
 - Sobol only vs gradient refinement;
 - true analytic margins vs learned outcome labels.
 
@@ -605,7 +605,7 @@ d_{\rm obs}\bigl(\mathcal R(x_1),\mathcal R(x_2)\bigr)\leq\varepsilon,
 
 1. Observation-only grasp certification ограничена intersection feasible sets.
 2. Это intersection — максимальный certifiable set при данных assumptions.
-3. Fiber extrema допускают bounded approximation через \(\delta\)-net.
+3. Fiber extrema допускают bounded approximation через $\delta$-net.
 4. Support-based sets инвариантны к reweighting frequency.
 5. Equivariant implicit operator оценивает их быстрее online sampling.
 6. На severe occlusion такой target уменьшает hidden-geometry failures.
@@ -631,10 +631,10 @@ d_{\rm obs}\bigl(\mathcal R(x_1),\mathcal R(x_2)\bigr)\leq\varepsilon,
 1. **Support misspecification.** Гарантия условна. Нужно публиковать violation under support expansion.
 2. **Пустой lower set.** Нужны coverage curve и maximin fallback.
 3. **Triviality theorem.** Intersection identity проста; научная ценность должна идти от learnable operator, approximation bounds и benchmark.
-4. **Oracle bias.** Hard witnesses могут не покрыть fiber; нужны held-out generators и \(\delta\)-net/empirical corrections.
+4. **Oracle bias.** Hard witnesses могут не покрыть fiber; нужны held-out generators и $\delta$-net/empirical corrections.
 5. **Amortized robust optimization objection.** Отбивается только полным набором отличий из раздела 11.
-6. **Metric ambiguity.** \(d_{\rm obs}\), shape support и physical margin должны быть определены до экспериментов, а не подогнаны после.
-7. **Overconservatism.** Нужно сравнить support extrema с \(\alpha\)-trimmed fibers, но robust version оставить основной.
+6. **Metric ambiguity.** $d_{\rm obs}$, shape support и physical margin должны быть определены до экспериментов, а не подогнаны после.
+7. **Overconservatism.** Нужно сравнить support extrema с $\alpha$-trimmed fibers, но robust version оставить основной.
 
 ## 15. Фальсификация новизны до дорогого обучения
 
@@ -664,9 +664,9 @@ d_{\rm obs}\bigl(\mathcal R(x_1),\mathcal R(x_2)\bigr)\leq\varepsilon,
 
 1. Сгенерировать силуэты объектов с одинаковой видимой фронтальной частью и разными скрытыми protrusions.
 2. Перечислить planar parallel-jaw grasps.
-3. Аналитически вычислить \(m_-\) и \(m_+\).
+3. Аналитически вычислить $m_-$ и $m_+$.
 4. Обучить небольшой equivariant query network.
-5. Сравнить с mean-shape, success probability и min по малому \(K\).
+5. Сравнить с mean-shape, success probability и min по малому $K$.
 6. Выполнить paired indistinguishability и frequency-reweighting tests.
 
 Go-критерий: network сохраняет necessary-set precision при смене частот и находит shared grasp, когда mean-probability baseline выбирает несовместимый с одной из скрытых форм.
@@ -693,7 +693,7 @@ Go-критерий: network сохраняет necessary-set precision при �
 
 Это критически более новое направление, чем очередной completion, fusion module или diffusion grasp generator, потому что меняет сам prediction target: от скрытой формы или средней вероятности к границам того, что наблюдение позволяет и не позволяет утверждать о действиях.
 
-Суть работы можно потерять очень легко. Если реализация станет «K hidden shapes \(\rightarrow\) min score», это будет инженерное ускорение существующей линии. Если же будет direct lower/upper operator, maximality result, hard counterexample supervision и paired indistinguishability benchmark, возникает самостоятельный ML-вклад с разумной ICLR-мотивацией.
+Суть работы можно потерять очень легко. Если реализация станет «K hidden shapes $\rightarrow$ min score», это будет инженерное ускорение существующей линии. Если же будет direct lower/upper operator, maximality result, hard counterexample supervision и paired indistinguishability benchmark, возникает самостоятельный ML-вклад с разумной ICLR-мотивацией.
 
 ## Источники, использованные в этой итерации
 

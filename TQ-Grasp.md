@@ -13,11 +13,11 @@
 
 Наиболее сильная найденная постановка — не реконструировать скрытую часть объекта и не выдавать один детерминированный grasp score, а непосредственно учить **условный posterior случайного grasp-outcome field**
 
-\[
+$$
 \Pi_o = \mathcal L\big(M_S(\cdot)\mid O=o\big),
-\]
+$$
 
-где \(S\) — полная, но скрытая геометрия объекта, \(O\) — единственное шумное RGB-D наблюдение с foreground-окклюзией, а \(M_S(g)\) — один signed margin локальной устойчивости parallel-jaw grasp \(g\). Полные формы \(S,S'\) отождествляются, если они дают одинаковую функцию \(M(\cdot)\) на допустимых grasps; поэтому модель учит posterior не в пространстве форм, а в гораздо более узком **task quotient**. Архитектура с одним общим latent sample на целое поле выдаёт согласованные samples margins только в запрошенных grasp poses и никогда не декодирует voxel/SDF/mesh. Новый objective состоит из strictly proper energy/variogram score по случайным конечным наборам grasp-запросов и условного moment restriction, заставляющего предсказанные posteriors удовлетворять tower property при физически корректном garbling наблюдения дополнительной окклюзией. Это даёт general-ML тезис: *при частичной наблюдаемости следует амортизировать posterior минимального decision-complete функционала скрытого мира и обучать его быть согласованным с порядком информации, а не амортизировать весь скрытый мир*.
+где $S$ — полная, но скрытая геометрия объекта, $O$ — единственное шумное RGB-D наблюдение с foreground-окклюзией, а $M_S(g)$ — один signed margin локальной устойчивости parallel-jaw grasp $g$. Полные формы $S,S'$ отождествляются, если они дают одинаковую функцию $M(\cdot)$ на допустимых grasps; поэтому модель учит posterior не в пространстве форм, а в гораздо более узком **task quotient**. Архитектура с одним общим latent sample на целое поле выдаёт согласованные samples margins только в запрошенных grasp poses и никогда не декодирует voxel/SDF/mesh. Новый objective состоит из strictly proper energy/variogram score по случайным конечным наборам grasp-запросов и условного moment restriction, заставляющего предсказанные posteriors удовлетворять tower property при физически корректном garbling наблюдения дополнительной окклюзией. Это даёт general-ML тезис: *при частичной наблюдаемости следует амортизировать posterior минимального decision-complete функционала скрытого мира и обучать его быть согласованным с порядком информации, а не амортизировать весь скрытый мир*.
 
 Это top-1 не потому, что shape completion заведомо хуже: напротив, свежие результаты делают shape-first подход самым опасным baseline. Идея сильна только если совместно подтвердятся три утверждения: (i) на одинаковом candidate pool task-quotient posterior даёт не худший top-1 outcome и лучший selected-grasp tail risk; (ii) BTPS действительно улучшает high-occlusion calibration сверх обычного proper scoring; (iii) это достигается заметно дешевле multi-sample completion. Candidate recall — отдельное свойство proposer, которое нельзя приписывать selector.
 
@@ -111,7 +111,7 @@ Gap не в наличии direct predictor, а в том, что эти мет�
 |---|---|---|
 | Completion ensemble + LCB/CVaR | Явно представляет hidden-shape ambiguity | Уже сделано Lundell et al., UNCLE-Grasp и uncertainty-scoring работами; дорого; reconstructs more than needed |
 | Один uncertainty head над grasp score | Очень дёшево | Почти обычная heteroscedastic regression/calibration; не представляет multimodal hidden hypotheses и joint action structure |
-| Direct probability \(P(success\mid O,g)\) | Для forced single binary decision теоретически достаточно | S4G/direct grasp scoring уже близки; нет нового general-ML объекта. Остаётся обязательным strong baseline и возможным falsifier TQ-Grasp |
+| Direct probability $P(success\mid O,g)$ | Для forced single binary decision теоретически достаточно | S4G/direct grasp scoring уже близки; нет нового general-ML объекта. Остаётся обязательным strong baseline и возможным falsifier TQ-Grasp |
 | Contact-signature posterior | Декодирует только две local contact sections, физически интерпретируем | Для nonconvex geometry и finite finger pads signature быстро разрастается; это всё ещё локальная reconstruction с error propagation. Хороший runner-up, но слабее broad-ML story |
 | Random feasible-grasp set / capacity functional | Элегантная random-set математика | Hitting probabilities не дают автоматически надёжность конкретного выбранного grasp; continuous set learning и adaptive refinement усложняют первую paper |
 | Только martingale/tower loss над scalar scores | Новый information-order regularizer | В population обычный proper BCE на всех mask levels уже восстанавливает conditional means; без posterior-process target вклад легко назвать redundant regularization |
@@ -127,11 +127,11 @@ Gap не в наличии direct predictor, а в том, что эти мет�
 
 Пусть
 
-- \(S\in\mathcal S\) — полное состояние target geometry в camera/shelf frame;
-- \(O\in\mathcal O\) — noisy RGB-D target observation вместе с target mask, foreground cloud и depth-validity mask;
-- \(\overline{\mathcal G}\subset SE(3)\times [w_{\min},w_{\max}]\) — compact global domain допустимых terminal grasps;
-- \(G(O)\subset\overline{\mathcal G}\) — finite candidate set, построенный **только** из \(O\);
-- \(g=(R,t,w)\) — parallel-jaw terminal grasp pose и width.
+- $S\in\mathcal S$ — полное состояние target geometry в camera/shelf frame;
+- $O\in\mathcal O$ — noisy RGB-D target observation вместе с target mask, foreground cloud и depth-validity mask;
+- $\overline{\mathcal G}\subset SE(3)\times [w_{\min},w_{\max}]$ — compact global domain допустимых terminal grasps;
+- $G(O)\subset\overline{\mathcal G}$ — finite candidate set, построенный **только** из $O$;
+- $g=(R,t,w)$ — parallel-jaw terminal grasp pose и width.
 
 В training simulator полная форма доступна только для построения supervision. Модель её не получает и не восстанавливает.
 
@@ -139,11 +139,11 @@ Gap не в наличии direct predictor, а в том, что эти мет�
 
 Определим один bounded signed margin
 
-\[
+$$
 M_S(g)\in[-1,1].
-\]
+$$
 
-Он должен вычисляться единым grasp-local evaluator: например, normalized signed force-closure/stability margin после jaw closure, усреднённый или минимизированный по малому фиксированному набору calibration/pose perturbations. Отрицательное значение означает локально неустойчивый grasp; положительное — запас. Terminal collision с уже наблюдаемым shelf/foreground лучше фильтровать одинаковым детерминированным модулем до модели, чтобы не превращать \(M\) в длинный список failure variables.
+Он должен вычисляться единым grasp-local evaluator: например, normalized signed force-closure/stability margin после jaw closure, усреднённый или минимизированный по малому фиксированному набору calibration/pose perturbations. Отрицательное значение означает локально неустойчивый grasp; положительное — запас. Terminal collision с уже наблюдаемым shelf/foreground лучше фильтровать одинаковым детерминированным модулем до модели, чтобы не превращать $M$ в длинный список failure variables.
 
 На hardware primary label — удержал ли gripper target после короткого 1–2 cm lift. Модель не оценивает arm approach, IK или полный lift.
 
@@ -151,17 +151,17 @@ M_S(g)\in[-1,1].
 
 Каждая полная форма индуцирует функцию
 
-\[
+$$
 T(S)=M_S(\cdot):\overline{\mathcal G}\rightarrow[-1,1].
-\]
+$$
 
 Вводим отношение
 
-\[
+$$
 S\sim_{\overline{\mathcal G}}S'
 \quad\Longleftrightarrow\quad
 M_S(g)=M_{S'}(g)\;\;\forall g\in\overline{\mathcal G}.
-\]
+$$
 
 То есть две формы считаются одинаковыми, если никакой допустимый parallel-jaw grasp не различает их по локальному outcome. Все back-side детали, которые не меняют ни один доступный grasp, исчезают автоматически. Это не latent shape compression по heuristic bottleneck, а exact task-defined quotient.
 
@@ -169,17 +169,17 @@ M_S(g)=M_{S'}(g)\;\;\forall g\in\overline{\mathcal G}.
 
 TQ-Grasp учит
 
-\[
+$$
 \Pi_o := \mathcal L(T(S)\mid O=o),
-\]
+$$
 
 условное распределение на пространстве функций. На практике запрашиваются finite marginals:
 
-\[
+$$
 \Pi_o^{G}=\mathcal L\left(
 [M_S(g_1),\ldots,M_S(g_m)]\mid O=o
 \right).
-\]
+$$
 
 Важно различать три распределения:
 
@@ -191,7 +191,7 @@ TQ-Grasp относится к третьему.
 
 ### 5.5 Почему не достаточно expected score
 
-Для одного фиксированного binary loss и risk-neutral forced pick действительно достаточно \(p_g=P(Y_g=1\mid O)\). Это не следует замалчивать. Полный task posterior нужен, когда хотя бы одно из следующего является частью paper:
+Для одного фиксированного binary loss и risk-neutral forced pick действительно достаточно $p_g=P(Y_g=1\mid O)$. Это не следует замалчивать. Полный task posterior нужен, когда хотя бы одно из следующего является частью paper:
 
 - grasp quality — continuous margin, а не Bernoulli;
 - необходим lower-tail criterion, chance constraint или смена risk level без retraining;
@@ -209,17 +209,17 @@ TQ-Grasp относится к третьему.
 
 Вход разделяется на два point sets:
 
-\[
+$$
 P_{tar}=\{(x_i,c_i,n_i,v_i,r_i)\},\qquad
 P_{ctx}=\{(x_j,c_j,v_j,r_j)\},
-\]
+$$
 
-где \(x\) — 3D point, \(c\) — RGB feature, \(n\) — normal для валидных target points, \(v\) — depth-validity/noise feature, \(r\) — camera-ray/occlusion-boundary feature. Target и foreground/shelf имеют разные type embeddings.
+где $x$ — 3D point, $c$ — RGB feature, $n$ — normal для валидных target points, $v$ — depth-validity/noise feature, $r$ — camera-ray/occlusion-boundary feature. Target и foreground/shelf имеют разные type embeddings.
 
 Sparse point transformer кодирует:
 
-- global evidence token \(h_o\), несущий prior о hidden shape;
-- local visible tokens \(H_o=\{h_i\}\), используемые grasp queries.
+- global evidence token $h_o$, несущий prior о hidden shape;
+- local visible tokens $H_o=\{h_i\}$, используемые grasp queries.
 
 Никакого dense scene grid не создаётся.
 
@@ -227,49 +227,49 @@ Sparse point transformer кодирует:
 
 Для каждого posterior sample:
 
-\[
+$$
 \epsilon_k\sim\mathcal N(0,I_d),\qquad
 z_k=A_\theta(\epsilon_k;h_o),
-\]
+$$
 
-где \(A_\theta\) — малый conditional implicit generator или 4–6 layer conditional flow, \(d\approx16\text{–}32\). Один \(z_k\) используется для **всех** grasp queries данной сцены. Поэтому sample \(k\) означает одну согласованную hypothesis в task quotient, а не независимый шум каждого grasp.
+где $A_\theta$ — малый conditional implicit generator или 4–6 layer conditional flow, $d\approx16\text{–}32$. Один $z_k$ используется для **всех** grasp queries данной сцены. Поэтому sample $k$ означает одну согласованную hypothesis в task quotient, а не независимый шум каждого grasp.
 
 ### 6.3 Projective query decoder
 
-Для каждого \(g_j\):
+Для каждого $g_j$:
 
 1. nearby visible tokens переводятся в gripper frame;
 2. query cross-attends к target/context tokens в terminal closing volume и camera occlusion cone;
 3. shared decoder выдаёт
 
-\[
+$$
 \widehat M^{(k)}(g_j)=D_\theta(g_j,H_o,h_o,z_k).
-\]
+$$
 
-Для набора \(G=\{g_1,\ldots,g_m\}\):
+Для набора $G=\{g_1,\ldots,g_m\}$:
 
-\[
+$$
 F_\theta(O,G,z_k)=
 [D_\theta(O,g_1,z_k),\ldots,D_\theta(O,g_m,z_k)].
-\]
+$$
 
 Между candidate queries **нет self-attention**. Это намеренное ограничение:
 
 - permutation equivariance выполняется автоматически;
-- marginal prediction для \(g\) не меняется, если рядом добавили другой query;
+- marginal prediction для $g$ не меняется, если рядом добавили другой query;
 - finite marginals projectively consistent по конструкции;
-- вычисление батчится как \(O(Km)\).
+- вычисление батчится как $O(Km)$.
 
-Корреляция между grasps проходит через общий \(z_k\) и общий observation representation. Если этой ёмкости недостаточно, \(z_k\) может параметризовать low-rank adapters query decoder, не нарушая projectivity.
+Корреляция между grasps проходит через общий $z_k$ и общий observation representation. Если этой ёмкости недостаточно, $z_k$ может параметризовать low-rank adapters query decoder, не нарушая projectivity.
 
 ### 6.4 Candidate interface
 
 Первая статья должна изолировать **selection**, а не смешивать её с proposal recall:
 
-- frozen observation-only proposer строит \(m=256\text{–}1024\) candidates;
+- frozen observation-only proposer строит $m=256\text{–}1024$ candidates;
 - один и тот же pool получают все ranking baselines;
 - отдельно публикуется oracle success@pool, чтобы отсутствие хорошего grasp не приписывать selector;
-- для tower training один и тот же \(G\) строится из более coarse observation и затем подаётся и coarse, и fine branch.
+- для tower training один и тот же $G$ строится из более coarse observation и затем подаётся и coarse, и fine branch.
 
 Можно использовать union из visible-contact anchored proposals и широкого object-bounding-frustum sampler. Сильные published proposers допустимы как baseline interface, но не должны объявляться частью novelty.
 
@@ -279,66 +279,66 @@ F_\theta(O,G,z_k)=
 
 ### 7.1 Proper finite-marginal learning
 
-Для training shape \(S_i\), observation \(o_i\) и random query bundle \(G_i=\{g_j\}_{j=1}^m\) simulator даёт
+Для training shape $S_i$, observation $o_i$ и random query bundle $G_i=\{g_j\}_{j=1}^m$ simulator даёт
 
-\[
+$$
 y_i^G=[M_{S_i}(g_1),\ldots,M_{S_i}(g_m)].
-\]
+$$
 
-Модель генерирует \(K\) samples \(\hat y^{1:K}\). Базовая loss — unbiased ensemble energy score при \(0<\beta<2\):
+Модель генерирует $K$ samples $\hat y^{1:K}$. Базовая loss — unbiased ensemble energy score при $0<\beta<2$:
 
-\[
+$$
 \mathcal L_{ES}=
 \frac1K\sum_{k=1}^K
 \|W_G(\hat y^k-y)\|_2^\beta
 -\frac{1}{2K(K-1)}
 \sum_{k\ne l}
 \|W_G(\hat y^k-\hat y^l)\|_2^\beta.
-\]
+$$
 
-Первый член обеспечивает accuracy, второй не даёт samples схлопнуться. \(W_G\) зависит только от observation/query sampling density, но не от realized outcome; importance weights корректируют oversampling около high-quality и decision-boundary grasps. Для \(\beta=1\) score strictly proper для distributions с конечным первым моментом. Теория proper scores изложена в [Gneiting & Raftery](https://www.eecs.harvard.edu/cs286r/courses/fall10/papers/Gneiting07.pdf); energy-score training implicit generative networks не требует tractable likelihood.
+Первый член обеспечивает accuracy, второй не даёт samples схлопнуться. $W_G$ зависит только от observation/query sampling density, но не от realized outcome; importance weights корректируют oversampling около high-quality и decision-boundary grasps. Для $\beta=1$ score strictly proper для distributions с конечным первым моментом. Теория proper scores изложена в [Gneiting & Raftery](https://www.eecs.harvard.edu/cs286r/courses/fall10/papers/Gneiting07.pdf); energy-score training implicit generative networks не требует tractable likelihood.
 
-Поскольку energy score может быть слабо чувствителен к high-dimensional dependence, добавляется небольшой proper variogram score на случайных query pairs. Сумма strictly proper ES и proper variogram score остаётся strictly proper. На каждой итерации достаточно \(m=16\text{–}64\) queries; random bundles покрывают action space за training.
+Поскольку energy score может быть слабо чувствителен к high-dimensional dependence, добавляется небольшой proper variogram score на случайных query pairs. Сумма strictly proper ES и proper variogram score остаётся strictly proper. На каждой итерации достаточно $m=16\text{–}64$ queries; random bundles покрывают action space за training.
 
 ### 7.2 Физически корректные nested occlusions
 
 Из одного fine same-camera observation строится coarse observation:
 
-\[
+$$
 O^- = \mathcal K(O^+,U),
-\]
+$$
 
-где \(\mathcal K\) физически накладывает более крупный foreground depth layer, удаляет закрытые target pixels и добавляет calibrated sensor noise. Важно, что coarse signal получается post-processing/garbling fine signal; изменение camera viewpoint не подходит, потому что два view обычно не упорядочены по Blackwell.
+где $\mathcal K$ физически накладывает более крупный foreground depth layer, удаляет закрытые target pixels и добавляет calibrated sensor noise. Важно, что coarse signal получается post-processing/garbling fine signal; изменение camera viewpoint не подходит, потому что два view обычно не упорядочены по Blackwell.
 
-Имеем filtrations \(\mathcal F^-\subset\mathcal F^+\). Истинные conditional outcome laws обязаны удовлетворять tower property:
+Имеем filtrations $\mathcal F^-\subset\mathcal F^+$. Истинные conditional outcome laws обязаны удовлетворять tower property:
 
-\[
+$$
 \mathbb E[\Pi_{O^+}^{G}(A)\mid O^-,G]
 =\Pi_{O^-}^{G}(A)
 \quad\forall A.
-\]
+$$
 
-Иначе говоря, coarse posterior — mixture fine posteriors, а не копия конкретного fine posterior. Поэтому обычная \(\|\Pi^- - \Pi^+\|\) consistency loss **неверна** и уничтожила бы нужный рост неопределённости.
+Иначе говоря, coarse posterior — mixture fine posteriors, а не копия конкретного fine posterior. Поэтому обычная $\|\Pi^- - \Pi^+\|$ consistency loss **неверна** и уничтожила бы нужный рост неопределённости.
 
 ### 7.3 Trainable tower moment
 
-Пусть \(\varphi(y)\in\mathbb R^r\) — random Fourier features characteristic kernel на margin vectors, а
+Пусть $\varphi(y)\in\mathbb R^r$ — random Fourier features characteristic kernel на margin vectors, а
 
-\[
+$$
 \mu_\theta(o,G)=\mathbb E_{z}[\varphi(F_\theta(o,G,z))]
-\]
+$$
 
 — kernel mean embedding predicted finite marginal. Тогда truth удовлетворяет
 
-\[
+$$
 \mathbb E[
 \mu_\theta(O^+,G)-\mu_\theta(O^-,G)
 \mid O^-,G]=0.
-\]
+$$
 
 Условие оценивается как maximum conditional moment restriction:
 
-\[
+$$
 \mathcal L_{tower}(\theta)
 =\sup_{h\in\mathcal H}
 \frac{
@@ -349,13 +349,13 @@ h(O^-,G)^\top
 \right]
 \right\|_2^2
 }{\mathbb E\|h(O^-,G)\|_2^2+\varepsilon}.
-\]
+$$
 
 Практический вариант — bank из fixed random probes над stop-gradient coarse encoder; более сильный — маленький learned critic с alternating updates. [Adversarial GMM](https://arxiv.org/abs/1803.07164) подтверждает, что continuum conditional moment restrictions можно обучать нейросетевым adversary; здесь conditional moment вытекает не из causal IV assumptions, а из exact observation garbling.
 
 ### 7.4 Полный objective
 
-\[
+$$
 \boxed{
 \mathcal L_{BTPS}
 =\mathcal L_{ES}(O^-)
@@ -363,13 +363,13 @@ h(O^-,G)^\top
 +\lambda_V\mathcal L_{vario}
 +\lambda_T\mathcal L_{tower}
 }
-\]
+$$
 
 Новый вклад — не сам energy score, не martingale fact и не GMM по отдельности, а **proper finite-marginal learning task-quotient process, regularized exact conditional moments induced by a known information-garbling operator**.
 
 ### 7.5 Почему это не просто consistency regularization
 
-Если модель истинна, adding \(\mathcal L_{tower}\ge0\) не сдвигает population optimum strictly proper term: truth уже даёт zero tower residual. В finite sample regularizer связывает разные occlusion regimes и запрещает две типичные ошибки:
+Если модель истинна, adding $\mathcal L_{tower}\ge0$ не сдвигает population optimum strictly proper term: truth уже даёт zero tower residual. В finite sample regularizer связывает разные occlusion regimes и запрещает две типичные ошибки:
 
 - coarse observation искусственно уверенно повторяет одну fine hypothesis;
 - fine prediction добавляет систематический drift, который не усредняется обратно в coarse belief.
@@ -382,22 +382,22 @@ h(O^-,G)^\top
 
 Для test observation:
 
-1. frozen proposer выдаёт \(G(O)\);
+1. frozen proposer выдаёт $G(O)$;
 2. observed-cloud collision filter удаляет terminal poses, явно пересекающие shelf/foreground;
-3. один observation encoding используется для \(K\approx8\text{–}16\) latent samples;
+3. один observation encoding используется для $K\approx8\text{–}16$ latent samples;
 4. для каждого candidate вычисляется lower posterior quantile
 
-\[
+$$
 s_\alpha(g)=Q_\alpha(M_S(g)\mid O),\qquad \alpha\in[0.05,0.2];
-\]
+$$
 
 5. выбирается
 
-\[
+$$
 g^*=\arg\max_{g\in G(O)}s_\alpha(g).
-\]
+$$
 
-Если \(\max_gs_\alpha(g)\le0\), система может abstain. В forced-pick режиме всё равно берётся argmax; обе метрики следует публиковать.
+Если $\max_gs_\alpha(g)\le0$, система может abstain. В forced-pick режиме всё равно берётся argmax; обе метрики следует публиковать.
 
 Optional real-calibration layer может conformalize threshold на held-out hardware data, но не является contribution: decision-aware conformal methods уже быстро развиваются, включая [Utility-Directed Conformal Prediction](https://proceedings.iclr.cc/paper_files/paper/2025/hash/0c6b452f1bbfb6905f6bac957d73b321-Abstract-Conference.html), [Conformal Robustness Control](https://proceedings.iclr.cc/paper_files/paper/2026/hash/a80188f9b1246d4b95d396165cf99207-Abstract-Conference.html) и [action-conditional conformal decision making](https://arxiv.org/abs/2606.05551). Conformalization надо позиционировать только как deployment wrapper.
 
@@ -407,28 +407,28 @@ Optional real-calibration layer может conformalize threshold на held-out 
 
 ### Proposition 1: universal grasp-decision sufficiency
 
-Пусть downstream loss зависит от hidden world только через \(M_S(g)\), а risk functional \(\rho\) law-invariant. Тогда для любого \(g\)
+Пусть downstream loss зависит от hidden world только через $M_S(g)$, а risk functional $\rho$ law-invariant. Тогда для любого $g$
 
-\[
+$$
 R_\rho(g\mid o)
 =\rho\big((\mathrm{ev}_g)_\#\Pi_o\big),
-\]
+$$
 
-где \(\mathrm{ev}_g(f)=f(g)\). Следовательно, \(\Pi_o\) достаточно для всех mean/quantile/CVaR/chance-constrained selectors на данном action domain.
+где $\mathrm{ev}_g(f)=f(g)$. Следовательно, $\Pi_o$ достаточно для всех mean/quantile/CVaR/chance-constrained selectors на данном action domain.
 
 ### Proposition 2: quotient minimality
 
-Если \(\overline{\mathcal G}\) compact/separable, \(M_S(\cdot)\) continuous almost surely и representation \(R(o)\) позволяет восстановить joint law \([M(g_1),\ldots,M(g_m)]\mid o\) для любого конечного query set, то \(R\) определяет \(\Pi_o\) с точностью до almost-sure isomorphism. Ни одна универсально decision-complete representation не может отождествить два разных task-quotient posteriors.
+Если $\overline{\mathcal G}$ compact/separable, $M_S(\cdot)$ continuous almost surely и representation $R(o)$ позволяет восстановить joint law $[M(g_1),\ldots,M(g_m)]\mid o$ для любого конечного query set, то $R$ определяет $\Pi_o$ с точностью до almost-sure isomorphism. Ни одна универсально decision-complete representation не может отождествить два разных task-quotient posteriors.
 
 Это отличается от свежего понятия [Bayes quotient](https://arxiv.org/abs/2606.04045), которое для **фиксированных loss и decision problem** может сохранять только optimal action. Здесь сохраняется posterior hidden-world outcome function, минимальный для **семейства** grasp risks и thresholds. В paper это различие надо доказать, а не заявить терминологически.
 
 ### Proposition 3: finite-marginal Fisher consistency
 
-Для \(0<\beta<2\) expected energy score уникально минимизируется истинным \(\Pi_o^G\) при каждом \((o,G)\). Если random query distribution имеет dense support, а sample paths continuous, совпадение всех sampled finite marginals определяет stochastic process.
+Для $0<\beta<2$ expected energy score уникально минимизируется истинным $\Pi_o^G$ при каждом $(o,G)$. Если random query distribution имеет dense support, а sample paths continuous, совпадение всех sampled finite marginals определяет stochastic process.
 
 ### Proposition 4: BTPS не меняет population truth
 
-Истинный process одновременно минимизирует proper-score terms и обнуляет tower moment. Поэтому при достаточно богатом critic class добавление \(\lambda_T\mathcal L_{tower}\) Fisher-consistent. Нужен отдельный bound: learned violation любой normalized witness moment не превышает \(\sqrt{\mathcal L_{tower}}\).
+Истинный process одновременно минимизирует proper-score terms и обнуляет tower moment. Поэтому при достаточно богатом critic class добавление $\lambda_T\mathcal L_{tower}$ Fisher-consistent. Нужен отдельный bound: learned violation любой normalized witness moment не превышает $\sqrt{\mathcal L_{tower}}$.
 
 ### Proposition 5: Blackwell implication
 
@@ -489,11 +489,11 @@ GIGA, TARGO, ZeroGrasp, diffusion completion и 2026 shape-first comparison по
 
 ### 11.2 Counterfactual occlusion twins — критически важный benchmark
 
-Нужно специально строить pairs \((S_a,S_b)\), у которых:
+Нужно специально строить pairs $(S_a,S_b)$, у которых:
 
 - visible RGB-D under chosen occluder почти одинаков;
 - hidden geometry различна;
-- хотя бы для одного common candidate \(M_{S_a}(g)>0\), \(M_{S_b}(g)<0\).
+- хотя бы для одного common candidate $M_{S_a}(g)>0$, $M_{S_b}(g)<0$.
 
 Именно здесь deterministic completion, scalar mean, independent quantiles и posterior process имеют различимые predictions. Без такого controlled ambiguity benchmark paper может показать лишь очередное улучшение на natural scenes, не подтверждая центральный scientific claim.
 
@@ -506,7 +506,7 @@ GIGA, TARGO, ZeroGrasp, diffusion completion и 2026 shape-first comparison по
 - небольшой subset получает repeated perturbation trials;
 - никаких occupancy/SDF/mesh losses TQ-Grasp не использует.
 
-Training curriculum: low→high occlusion использовать допустимо только как sampling schedule, но не как отдельную pipeline. Каждый batch должен содержать paired \((O^-,O^+)\), общий \(G\), один truth margin vector и \(K\) generated samples каждой branch.
+Training curriculum: low→high occlusion использовать допустимо только как sampling schedule, но не как отдельную pipeline. Каждый batch должен содержать paired $(O^-,O^+)$, общий $G$, один truth margin vector и $K$ generated samples каждой branch.
 
 ### 11.4 Real data
 
@@ -567,7 +567,7 @@ Training curriculum: low→high occlusion использовать допуст�
 ### Distributional
 
 - held-out energy/variogram score margin vectors;
-- calibration of \(P(M>0\mid O,g)\);
+- calibration of $P(M>0\mid O,g)$;
 - lower-quantile coverage;
 - selected-action calibration отдельно от all-candidate calibration;
 - tower residual на unseen physical occlusion chains;
@@ -607,7 +607,7 @@ Training curriculum: low→high occlusion использовать допуст�
 
 | Работа/направление | Что уже даёт | Что остаётся новым в TQ-Grasp |
 |---|---|---|
-| Amortized Bayesian Decision Making | Direct expected cost \((x,a)\) без явного posterior | Posterior **function** outcomes, risk-flexible finite marginals, physical information-order consistency |
+| Amortized Bayesian Decision Making | Direct expected cost $(x,a)$ без явного posterior | Posterior **function** outcomes, risk-flexible finite marginals, physical information-order consistency |
 | Optimal simulation-based decisions | Utility surrogate и active simulator allocation | Amortized conditional stochastic process из partial sensor input, не per-instance BO |
 | Bayes-sufficient representations | Minimal representation для фиксированных loss/Bayes action | Hidden-world equivalence по всей action-outcome function и posterior, decision-complete для семейства risks |
 | Conditional/Neural Diffusion Processes | Generic distributions over functions | Task quotient, projective grasp-query decoder, known garbling/tower objective |
@@ -675,7 +675,7 @@ Training curriculum: low→high occlusion использовать допуст�
 
 1. Single-view occlusion makes many hidden shapes compatible with the same RGB-D input.
 2. Shape completion estimates far more latent detail than grasp selection consumes; direct grasp scores discard ambiguity.
-3. Define task quotient \(S/\!\sim\) through equality of action-outcome functions and learn its conditional posterior process.
+3. Define task quotient $S/\!\sim$ through equality of action-outcome functions and learn its conditional posterior process.
 4. Introduce projectively consistent shared-latent query architecture and BTPS.
 5. Prove universal decision sufficiency, finite-marginal propriety and tower consistency.
 6. Demonstrate exact posterior recovery on controlled ambiguity, better risk/latency trade-off on TARGO-like scenes and higher real Success@1 under severe foreground occlusion.
@@ -730,7 +730,7 @@ Training curriculum: low→high occlusion использовать допуст�
 
 Развивать **TQ-Grasp / BTPS** как top-1. Это не модификация конкретного robotic pipeline, а новая decision-theoretic постановка, выведенная из достаточности, stochastic processes, proper scoring и Blackwell information order. Её наиболее ценная часть — не latent architecture сама по себе, а связка:
 
-\[
+$$
 \text{hidden world}
 \longrightarrow
 \text{task quotient outcome function}
@@ -740,7 +740,7 @@ Training curriculum: low→high occlusion использовать допуст�
 \text{proper finite-marginal learning}
 \longrightarrow
 \text{tower-consistent risk selection}.
-\]
+$$
 
 При этом результат надо считать **high-risk/high-upside**. Strongest shape-first evidence уже очень серьёзно. Наиболее честный и быстрый следующий шаг — controlled occlusion-twins benchmark. Если full TQ process и BTPS там не превосходят calibrated independent quantiles, идею следует остановить до больших роботических затрат. Если превосходят и сохраняют преимущество на TARGO-like noise, получится не просто occlusion grasping method, а broad general-ML statement о том, какой posterior объект следует учить для решений под частичной наблюдаемостью.
 

@@ -11,24 +11,24 @@
 
 Ключевая обучающая величина — **условный hitting functional**, или ёмкость:
 
-\[
+$$
 T_{U\mid x}(K)=\Pr\{U\cap K\neq\varnothing\mid X=x\},
-\]
+$$
 
-где \(U\) — множество опасных терминальных захватов, а \(K\) — компактная область действий: один захват, окрестность позы, эллипсоид ошибки исполнения либо объединение нескольких альтернатив. Для команды \(g\) с ограниченной ошибкой исполнения \(K_g\), \(T_{U\mid x}(K_g)\) имеет прямой смысл: это вероятность того, что хотя бы одна реализуемая поза внутри допуска команды окажется опасной из-за скрытой формы.
+где $U$ — множество опасных терминальных захватов, а $K$ — компактная область действий: один захват, окрестность позы, эллипсоид ошибки исполнения либо объединение нескольких альтернатив. Для команды $g$ с ограниченной ошибкой исполнения $K_g$, $T_{U\mid x}(K_g)$ имеет прямой смысл: это вероятность того, что хотя бы одна реализуемая поза внутри допуска команды окажется опасной из-за скрытой формы.
 
 Это даёт новую, проверяемую цель обучения — **Conditional Capacity Matching**:
 
-\[
+$$
 \mathcal L_{\mathrm{CCM}}=
 \mathbb E_{(x,S),K}\left[
 \operatorname{BCE}\left(
 \widehat T_\theta(K\mid x),
 \mathbf 1\{U(S)\cap K\neq\varnothing\}
 \right)\right].
-\]
+$$
 
-Полная модель объекта используется только офлайн для вычисления метки попадания. На инференсе нет ни mesh, ни voxel/TSDF/SDF, ни множества восстановленных форм. Модель задаёт непрерывное случайное поле механического margin в пространстве \(SE(3)\times\mathbb R_+\), а общий латентный код сцены делает ответы для разных захватов согласованными. Объединённые probes обучают зависимости между действиями, которые принципиально не идентифицируются pointwise-BCE.
+Полная модель объекта используется только офлайн для вычисления метки попадания. На инференсе нет ни mesh, ни voxel/TSDF/SDF, ни множества восстановленных форм. Модель задаёт непрерывное случайное поле механического margin в пространстве $SE(3)\times\mathbb R_+$, а общий латентный код сцены делает ответы для разных захватов согласованными. Объединённые probes обучают зависимости между действиями, которые принципиально не идентифицируются pointwise-BCE.
 
 Идея выглядит достойной ICLR только при трёх условиях: (1) теория random-set identifiability является центром статьи, а не украшением; (2) есть отдельный простой general-ML benchmark на скрытые непрерывные ограничения; (3) робототехническая проверка прямо сравнивает метод с full completion, multiple completion, direct amodal и современными uncertainty-моделями. Без этого работа легко будет воспринята как clever perturbation augmentation для grasp scoring и скорее попадёт в CoRL/робототехнический трек.
 
@@ -92,75 +92,75 @@ T_{U\mid x}(K)=\Pr\{U\cap K\neq\varnothing\mid X=x\},
 
 ## 4. Общая идея: action quotient вместо hidden world
 
-Пусть \(S\) — полная скрытая форма цели вместе с небольшим набором физически необходимых nuisance-параметров (например, friction/mass class), \(O\) — наблюдаемое переднее препятствие, а \(X\) — единственное RGB-D-наблюдение. Пространство команд
+Пусть $S$ — полная скрытая форма цели вместе с небольшим набором физически необходимых nuisance-параметров (например, friction/mass class), $O$ — наблюдаемое переднее препятствие, а $X$ — единственное RGB-D-наблюдение. Пространство команд
 
-\[
+$$
 \mathcal G\subset SE(3)\times[w_{\min},w_{\max}]
-\]
+$$
 
 компактно после задания рабочей области, диапазона ориентаций и ширины пальцев.
 
-Пусть \(m(S,O,g)\) — непрерывный или сглаженный терминальный механический margin. Положительное значение означает запас по контакту/force closure/terminal collision/lift wrench, отрицательное — нарушение. Для допуска исполнения \(E_\delta\subset\mathfrak{se}(3)\) определим robust feasible set
+Пусть $m(S,O,g)$ — непрерывный или сглаженный терминальный механический margin. Положительное значение означает запас по контакту/force closure/terminal collision/lift wrench, отрицательное — нарушение. Для допуска исполнения $E_\delta\subset\mathfrak{se}(3)$ определим robust feasible set
 
-\[
+$$
 F^\delta_{S,O}=\left\{g\in\mathcal G:
 \inf_{\xi\in E_\delta}m(S,O,\exp(\widehat\xi)g)\ge\gamma
 \right\},
-\]
+$$
 
 и unsafe set
 
-\[
+$$
 U_{S,O}=\{g\in\mathcal G:m(S,O,g)\le 0\}.
-\]
+$$
 
-При непрерывном \(m\) оба множества замкнуты. Из-за неизвестной скрытой части \(S\mid X=x\) это **условные случайные замкнутые множества**.
+При непрерывном $m$ оба множества замкнуты. Из-за неизвестной скрытой части $S\mid X=x$ это **условные случайные замкнутые множества**.
 
 Введём отношение эквивалентности форм:
 
-\[
+$$
 S_1\sim S_2
 \quad\Longleftrightarrow\quad
 U_{S_1,O}=U_{S_2,O}
 \quad
 (\text{эквивалентно }F_{S_1,O}=F_{S_2,O}).
-\]
+$$
 
-Класс \([S]\) — task/action quotient. Он стирает цвет внутренней поверхности, геометрию вдали от контактов и другие детали, не меняющие допустимые действия, но сохраняет скрытую толщину, полости, края и контактные нормали, если они меняют захваты.
+Класс $[S]$ — task/action quotient. Он стирает цвет внутренней поверхности, геометрию вдали от контактов и другие детали, не меняющие допустимые действия, но сохраняет скрытую толщину, полости, края и контактные нормали, если они меняют захваты.
 
 ### 4.1. Почему pointwise probabilities недостаточны
 
-Рассмотрим два действия \(a,b\). В модели A опасное множество равно \(\{a\}\) или \(\{b\}\), каждое с вероятностью \(1/2\). В модели B оно равно \(\varnothing\) или \(\{a,b\}\), каждое с вероятностью \(1/2\). В обоих случаях
+Рассмотрим два действия $a,b$. В модели A опасное множество равно $\{a\}$ или $\{b\}$, каждое с вероятностью $1/2$. В модели B оно равно $\varnothing$ или $\{a,b\}$, каждое с вероятностью $1/2$. В обоих случаях
 
-\[
+$$
 \Pr(a\in U)=\Pr(b\in U)=1/2.
-\]
+$$
 
 Любая модель, обученная только на singleton-labels, считает эти распределения одинаковыми. Но
 
-\[
+$$
 \Pr(U\cap\{a,b\}\neq\varnothing)=
 \begin{cases}
 1,&\text{модель A},\\
 1/2,&\text{модель B}.
 \end{cases}
-\]
+$$
 
 То есть вероятность того, что **область исполнения или набор альтернатив содержит опасное действие**, разная. Эта зависимость нужна для bounded execution error, выбора диверсифицированного набора кандидатов и понимания multimodality скрытой формы. Независимые pointwise scores её не идентифицируют.
 
 ### 4.2. Почему capacity — правильный статистический объект
 
-Для случайного замкнутого множества \(U\) hitting functional
+Для случайного замкнутого множества $U$ hitting functional
 
-\[
+$$
 T_U(K)=\Pr(U\cap K\neq\varnothing)
-\]
+$$
 
-задаётся на компактных \(K\). Классическая теорема Шоке–Кендалла–Матерона утверждает, что корректный capacity functional однозначно определяет закон random closed set; систематическое изложение даёт монография Молчанова [Theory of Random Sets](https://link.springer.com/book/10.1007/978-1-4471-7349-6). Современное изложение связи закона и capacity также формулирует это как one-to-one correspondence для случайных замкнутых множеств ([пример математической статьи](https://www.sciencedirect.com/science/article/abs/pii/S0165011421003699)).
+задаётся на компактных $K$. Классическая теорема Шоке–Кендалла–Матерона утверждает, что корректный capacity functional однозначно определяет закон random closed set; систематическое изложение даёт монография Молчанова [Theory of Random Sets](https://link.springer.com/book/10.1007/978-1-4471-7349-6). Современное изложение связи закона и capacity также формулирует это как one-to-one correspondence для случайных замкнутых множеств ([пример математической статьи](https://www.sciencedirect.com/science/article/abs/pii/S0165011421003699)).
 
-Здесь это не декоративная аналогия. Компактные \(K\) имеют операционный смысл:
+Здесь это не декоративная аналогия. Компактные $K$ имеют операционный смысл:
 
-- singleton \(\{g\}\): обычный риск одного идеального захвата;
+- singleton $\{g\}$: обычный риск одного идеального захвата;
 - малая геодезическая сфера/эллипсоид: bounded pose and width error;
 - tube вдоль короткой closing perturbation: чувствительность к установке пальцев;
 - объединение удалённых компонент: совместная неопределённость альтернатив;
@@ -170,17 +170,17 @@ T_U(K)=\Pr(U\cap K\neq\varnothing)
 
 ### 5.1. Разметка без reconstruction target
 
-На тренировке доступен полный mesh/симулятор только как оракул. Для примера \((x,S,O)\) семплируется компактный probe \(K\subset\mathcal G\), и вычисляется бинарная метка
+На тренировке доступен полный mesh/симулятор только как оракул. Для примера $(x,S,O)$ семплируется компактный probe $K\subset\mathcal G$, и вычисляется бинарная метка
 
-\[
+$$
 y_U(S,O,K)=\mathbf 1\{U_{S,O}\cap K\neq\varnothing\}.
-\]
+$$
 
 Дополнительно можно разметить событие наличия уверенно допустимого действия
 
-\[
+$$
 y_F(S,O,K)=\mathbf 1\{F^\delta_{S,O}\cap K\neq\varnothing\}.
-\]
+$$
 
 Это не требует хранить dense volume или ground-truth completion: оракул отвечает на batched action queries. В датасете достаточно сохранить RGB-D, параметры probe и два бита/минимальный margin.
 
@@ -188,28 +188,28 @@ y_F(S,O,K)=\mathbf 1\{F^\delta_{S,O}\cap K\neq\varnothing\}.
 
 Основная функция потерь:
 
-\[
+$$
 \mathcal L_{\mathrm{CCM}}(\theta)=
 \mathbb E\left[
 -y_U\log \widehat T_{U,\theta}(K\mid X)
 -(1-y_U)\log(1-\widehat T_{U,\theta}(K\mid X))
 \right].
-\]
+$$
 
-Bernoulli log score строго proper для каждого события попадания. Если распределение probes имеет достаточную поддержку и разделяет компактные множества, population optimum восстанавливает условный capacity на поддержке probes. При плотном/separating семействе и регулярности это идентифицирует условный закон \(U\mid X=x\), а не только его pointwise marginals.
+Bernoulli log score строго proper для каждого события попадания. Если распределение probes имеет достаточную поддержку и разделяет компактные множества, population optimum восстанавливает условный capacity на поддержке probes. При плотном/separating семействе и регулярности это идентифицирует условный закон $U\mid X=x$, а не только его pointwise marginals.
 
 Практический loss:
 
-\[
+$$
 \mathcal L=
 \mathcal L_{\mathrm{CCM}}^U
 +\lambda_F\mathcal L_{\mathrm{CCM}}^F
 +\lambda_m\mathcal L_{\mathrm{margin}}
 +\lambda_c\mathcal L_{\mathrm{cal}}
 +\lambda_e\mathcal L_{\mathrm{equiv}}.
-\]
+$$
 
-Здесь margin regression — вспомогательная локальная задача, calibration term оценивается по occlusion bins, а equivariance regularizer применяет совместное \(SE(3)\)-преобразование наблюдения и probes. Ни Chamfer distance, ни occupancy reconstruction не являются основной или обязательной потерей.
+Здесь margin regression — вспомогательная локальная задача, calibration term оценивается по occlusion bins, а equivariance regularizer применяет совместное $SE(3)$-преобразование наблюдения и probes. Ни Chamfer distance, ни occupancy reconstruction не являются основной или обязательной потерей.
 
 ### 5.3. Curriculum probes
 
@@ -218,7 +218,7 @@ Bernoulli log score строго proper для каждого события п�
 1. 30% singletons для совместимости с обычной grasp-quality supervision.
 2. 30% малых anisotropic ellipsoids, соответствующих реальной ковариации ошибки позы/ширины.
 3. 20% unions из 2–4 локальных компонент, в том числе удалённых, чтобы учить зависимости.
-4. 10% hard boundary tubes вокруг текущего \(m\approx0\).
+4. 10% hard boundary tubes вокруг текущего $m\approx0$.
 5. 10% coarse cells для иерархического поиска.
 
 Радиусы следует рандомизировать от сенсорного/исполнительного разрешения до нескольких сантиметров и 10–15 градусов. Критический ablation — singleton-only при том же encoder, decoder и числе action evaluations.
@@ -240,58 +240,58 @@ Bernoulli log score строго proper для каждого события п�
 
 Модель предсказывает условное распределение низкоразмерного scene latent:
 
-\[
+$$
 z\sim p_\theta(z\mid x),
-\]
+$$
 
-например, normalizing flow поверх 16–32 измерений. Один и тот же \(z\) используется для **всех** запросов \(g\) в сцене. Это принципиально: независимый шум на каждом query не способен представить согласованную гипотезу скрытой формы и возвращает нас к независимым scores.
+например, normalizing flow поверх 16–32 измерений. Один и тот же $z$ используется для **всех** запросов $g$ в сцене. Это принципиально: независимый шум на каждом query не способен представить согласованную гипотезу скрытой формы и возвращает нас к независимым scores.
 
 Continuous implicit decoder в canonical frame захвата выдаёт margin:
 
-\[
+$$
 m_\theta(x,z,g)=
 \mu_\theta(x,g)+
 \sum_{\ell=1}^{r}a_{\theta,\ell}(x,z)\,\phi_{\theta,\ell}(x,g),
-\]
+$$
 
-где low-rank basis \(\phi_\ell\) разделяет вычисление query features и scene-level randomness. Decoder выбирает локальные target/obstacle tokens вокруг пальцев, геометрические признаки между пальцами и terminal body clearance. Непрерывные активации и spectral/Lipschitz regularization делают level set
+где low-rank basis $\phi_\ell$ разделяет вычисление query features и scene-level randomness. Decoder выбирает локальные target/obstacle tokens вокруг пальцев, геометрические признаки между пальцами и terminal body clearance. Непрерывные активации и spectral/Lipschitz regularization делают level set
 
-\[
+$$
 U_{\theta,z}(x)=\{g:m_\theta(x,z,g)\le0\}
-\]
+$$
 
 замкнутым.
 
 ### 6.3. Capacity layer с гарантированной согласованностью
 
-Для \(M\) общих latent samples и \(Q\) Sobol-точек в каждом probe:
+Для $M$ общих latent samples и $Q$ Sobol-точек в каждом probe:
 
-\[
+$$
 \widehat T_{U,\theta}(K\mid x)
 =\frac1M\sum_{j=1}^{M}
 \sigma\!\left(
 -\tau^{-1}\operatorname{softmin}_{q=1:Q}
 m_\theta(x,z_j,g_q)
 \right).
-\]
+$$
 
-При \(\tau\to0\) это эмпирическая частота события \(U_{\theta,z_j}\cap K\neq\varnothing\). Поскольку каждый sample сначала задаёт целое замкнутое множество, полученный empirical capacity автоматически монотонен и обладает нужной alternating-структурой. Это предпочтительнее произвольной сети \(f(x,K)\), для которой валидность capacity пришлось бы приближённо штрафовать экспоненциальным числом ограничений.
+При $\tau\to0$ это эмпирическая частота события $U_{\theta,z_j}\cap K\neq\varnothing$. Поскольку каждый sample сначала задаёт целое замкнутое множество, полученный empirical capacity автоматически монотонен и обладает нужной alternating-структурой. Это предпочтительнее произвольной сети $f(x,K)$, для которой валидность capacity пришлось бы приближённо штрафовать экспоненциальным числом ограничений.
 
-Для unions один и тот же набор \(z_j\) применяется ко всем компонентам. Именно так модель учит корреляцию вида «при одной скрытой форме опасна левая зона, при другой — правая».
+Для unions один и тот же набор $z_j$ применяется ко всем компонентам. Именно так модель учит корреляцию вида «при одной скрытой форме опасна левая зона, при другой — правая».
 
 ### 6.4. Поиск захвата без dense volume
 
 Поиск можно построить как собственный differentiable set search, а не как замену головы в VGN/TARGO:
 
 1. Из видимых target points и learned boundary tokens сгенерировать 256–512 coarse action cells по позиции, ориентации и ширине.
-2. Оценить feasible hitting probability \(T_F(C\mid x)\) для каждой ячейки.
+2. Оценить feasible hitting probability $T_F(C\mid x)$ для каждой ячейки.
 3. Сохранить и рекурсивно разбить ячейки, в которых вероятно существует margin-положительное действие.
 4. Оптимизировать 32–64 центра по ожидаемому margin с diversity repulsion.
 5. Выбрать команду
 
-\[
-g^*=\arg\max_g\left[1-widehat T_U(K_g\mid x)ight],
-\]
+$$
+g^*=\arg\max_g\left[1-\widehat T_U(K_g\mid x)\right],
+$$
 
 а ожидаемый положительный margin использовать только как tie-breaker.
 
@@ -299,31 +299,31 @@ g^*=\arg\max_g\left[1-widehat T_U(K_g\mid x)ight],
 
 ### 6.5. Реалистичный вычислительный бюджет
 
-Начальная инженерная гипотеза, а не результат: 1024 target points, 1024 obstacle/shelf points, \(M=8\) latent fields, 512 кандидатов и \(Q=16\) Sobol perturbations. Encoder и basis вычисляются один раз, latent coefficients — восемь раз, а queries полностью батчатся. Цель — менее 100 мс на современной GPU и существенно меньше памяти, чем у 64k voxel queries плюс completion. Эти числа должны быть проверены; их нельзя подавать как достигнутые заранее.
+Начальная инженерная гипотеза, а не результат: 1024 target points, 1024 obstacle/shelf points, $M=8$ latent fields, 512 кандидатов и $Q=16$ Sobol perturbations. Encoder и basis вычисляются один раз, latent coefficients — восемь раз, а queries полностью батчатся. Цель — менее 100 мс на современной GPU и существенно меньше памяти, чем у 64k voxel queries плюс completion. Эти числа должны быть проверены; их нельзя подавать как достигнутые заранее.
 
 ## 7. Теоретическое ядро статьи
 
 ### Proposition 1: task-quotient sufficiency
 
-Если условная utility решения имеет вид \(u(g,S,O)=\widetilde u(g,U_{S,O})\), то Bayes-optimal decision зависит от \(p(S\mid x)\) только через pushforward-law \(p(U\mid x)\). Следовательно, восстановление переменных формы внутри одного класса \([S]\) статистически избыточно для этой задачи.
+Если условная utility решения имеет вид $u(g,S,O)=\widetilde u(g,U_{S,O})$, то Bayes-optimal decision зависит от $p(S\mid x)$ только через pushforward-law $p(U\mid x)$. Следовательно, восстановление переменных формы внутри одного класса $[S]$ статистически избыточно для этой задачи.
 
 Это простой результат через условное ожидание, но он формально отделяет «reconstruction may help» от «reconstruction is necessary».
 
 ### Proposition 2: capacity identifiability under proper supervision
 
-Для каждого probe \(K\) conditional BCE минимизируется при
+Для каждого probe $K$ conditional BCE минимизируется при
 
-\[
+$$
 \widehat T(K\mid x)=\Pr(U\cap K\neq\varnothing\mid x).
-\]
+$$
 
-Если probes образуют separating/dense family компактов, согласованная оценка capacity определяет условный закон random closed set. В статье нужно точно сформулировать топологию на \(\mathcal G\), measurability и условия продолжения с плотного семейства; нельзя ограничиться ссылкой на теорему Шоке.
+Если probes образуют separating/dense family компактов, согласованная оценка capacity определяет условный закон random closed set. В статье нужно точно сформулировать топологию на $\mathcal G$, measurability и условия продолжения с плотного семейства; нельзя ограничиться ссылкой на теорему Шоке.
 
 ### Proposition 3: exact bounded-error interpretation
 
-Пусть фактическая команда лежит в \(K_g=\{\exp(\widehat\xi)g:\xi^\top\Sigma^{-1}\xi\le1\}\). Событие «существует допустимое возмущение, приводящее к hidden-geometry failure» эквивалентно \(U\cap K_g\neq\varnothing\). Поэтому capacity является точным conditional probability этого robust-failure event относительно неопределённости скрытой формы. Это не heuristic averaging noise samples.
+Пусть фактическая команда лежит в $K_g=\{\exp(\widehat\xi)g:\xi^\top\Sigma^{-1}\xi\le1\}$. Событие «существует допустимое возмущение, приводящее к hidden-geometry failure» эквивалентно $U\cap K_g\neq\varnothing$. Поэтому capacity является точным conditional probability этого robust-failure event относительно неопределённости скрытой формы. Это не heuristic averaging noise samples.
 
-Важно различать existential bounded-error certificate и риск при известном распределении ошибки. Для стохастической ошибки \(\xi\) можно дополнительно интегрировать \(\Pr(m\le0\mid x,\xi)\); основная статья должна ясно сказать, какой из двух смыслов используется.
+Важно различать existential bounded-error certificate и риск при известном распределении ошибки. Для стохастической ошибки $\xi$ можно дополнительно интегрировать $\Pr(m\le0\mid x,\xi)$; основная статья должна ясно сказать, какой из двух смыслов используется.
 
 ### Proposition 4: pointwise non-identifiability
 
@@ -331,13 +331,13 @@ g^*=\arg\max_g\left[1-widehat T_U(K_g\mid x)ight],
 
 ### Proposition 5: finite query approximation
 
-Если \(m_\theta(x,z,\cdot)\) \(L\)-липшицева, а \(\{g_q\}_{q=1}^Q\) — \(\varepsilon\)-сеть \(K\), то
+Если $m_\theta(x,z,\cdot)$ $L$-липшицева, а $\{g_q\}_{q=1}^Q$ — $\varepsilon$-сеть $K$, то
 
-\[
+$$
 \left|\min_{g\in K}m(g)-\min_q m(g_q)\right|\le L\varepsilon.
-\]
+$$
 
-Следовательно, hit/no-hit определяется точно, когда истинный минимум отделён от нуля больше чем на \(L\varepsilon\). Это связывает стоимость probes, smoothness decoder и ошибку capacity, давая содержательную compute–accuracy теорему.
+Следовательно, hit/no-hit определяется точно, когда истинный минимум отделён от нуля больше чем на $L\varepsilon$. Это связывает стоимость probes, smoothness decoder и ошибку capacity, давая содержательную compute–accuracy теорему.
 
 ### Необязательное усиление
 
@@ -392,7 +392,7 @@ Split обязан удерживать отдельно unseen object instances
 - TARGO-Net как target completion + grasp field;
 - multiple completion + evaluate across shapes;
 - vMF-Contact как uncertainty-aware direct model;
-- тот же encoder/decoder, но deterministic \(z\);
+- тот же encoder/decoder, но deterministic $z$;
 - тот же stochastic decoder с singleton-only BCE;
 - CCM без union probes;
 - CCM с независимым latent на каждый query вместо shared latent;
@@ -428,7 +428,7 @@ Chamfer/IoU формы не должна быть главной метрико�
 
 - восстановление union probabilities при одинаковых singleton marginals;
 - статистическую сходимость capacity;
-- зависимость ошибки от \(M,Q,\varepsilon\);
+- зависимость ошибки от $M,Q,\varepsilon$;
 - перенос идеи за пределы grasping без RL.
 
 ## 10. Проверка новизны относительно ближайших работ
@@ -459,7 +459,7 @@ Chamfer/IoU формы не должна быть главной метрико�
 5. Decision-focused learning подтверждает общий принцип: оптимизация predictive fidelity не обязана совпадать с качеством downstream decision. См. [Predict-then-Optimize generalization](https://proceedings.neurips.cc/paper/2019/hash/a70145bf8b173e4496b554ce57969e24-Abstract.html), [Decision-Focused Learning without Decision-Making](https://proceedings.neurips.cc/paper_files/paper/2022/hash/0904c7edde20d7134a77fc7f9cd86ea2-Abstract-Conference.html) и современные [feasibility-aware](https://proceedings.neurips.cc/paper_files/paper/2025/hash/ef158a0d4f5364741a571b8d1d44fb1b-Abstract-Conference.html) подходы.
 6. Random-set theory даёт не метафору, а идентифицирующий объект и точное значение регионального риска.
 
-Но эти пункты **не доказывают**, что CHOQUET-GRASP превзойдёт SOTA. Full completion может выиграть при сильных pretrained shape priors; capacity estimator может иметь высокую variance; поиск по \(SE(3)\) может съесть вычислительное преимущество. Поэтому правильное утверждение статьи — не «мы неизбежно лучше», а «мы вводим decision-sufficient statistical target и проверяем, даёт ли он superior reliability–compute trade-off».
+Но эти пункты **не доказывают**, что CHOQUET-GRASP превзойдёт SOTA. Full completion может выиграть при сильных pretrained shape priors; capacity estimator может иметь высокую variance; поиск по $SE(3)$ может съесть вычислительное преимущество. Поэтому правильное утверждение статьи — не «мы неизбежно лучше», а «мы вводим decision-sufficient statistical target и проверяем, даёт ли он superior reliability–compute trade-off».
 
 ## 12. ICLR-аудит
 
@@ -508,7 +508,7 @@ Unseen category, occlusion twins, prior-shift, noise-shift и calibration/absten
 1. На occlusion twins union/tube NLL полного метода не лучше singleton-only модели при одинаковом backbone.
 2. Shared latent не восстанавливает известную корреляционную структуру Hidden-Constraint Placement.
 3. Completion baseline при одинаковой latency/parameter budget доминирует по success и calibration во всех occlusion bins.
-4. \(M,Q\), достаточные для устойчивой capacity, делают inference медленнее multiple completion.
+4. $M,Q$, достаточные для устойчивой capacity, делают inference медленнее multiple completion.
 5. Выигрыш исчезает после контроля размера encoder или числа oracle labels.
 6. Реальная depth noise полностью разрушает occlusion-boundary features, и training corruption не исправляет перенос.
 
@@ -520,7 +520,7 @@ Unseen category, occlusion twins, prior-shift, noise-shift и calibration/absten
 
 - Формально задать random closed sets на компактном подмножестве Lie group.
 - Реализовать 2D Hidden-Constraint Placement с аналитическим законом.
-- Проверить singleton non-identifiability, union recovery, monotonicity и \(M,Q\)-scaling.
+- Проверить singleton non-identifiability, union recovery, monotonicity и $M,Q$-scaling.
 - Сравнить direct capacity regressor и generative random-field construction.
 
 ### Фаза B: симуляция (6–10 недель)
@@ -561,7 +561,7 @@ Unseen category, occlusion twins, prior-shift, noise-shift и calibration/absten
 
 **Новизна:** высокая при сохранении set-level law, union probes и theory; средняя, если оставить только robust neighborhoods.  
 **Обучаемость:** реалистичная благодаря бинарным hit labels, shared low-rank latent и batched queries.  
-**Инженерный риск:** средне-высокий из-за \(SE(3)\)-поиска и variance Monte Carlo capacity.  
+**Инженерный риск:** средне-высокий из-за $SE(3)$-поиска и variance Monte Carlo capacity.
 **Научная фальсифицируемость:** высокая; есть twins, pointwise counterexample, held-out probe metrics и равнобюджетные baselines.  
 **Соответствие исходной задаче:** прямое — single noisy RGB-D, target + foreground obstacle, parallel jaw, learned hidden-shape distribution, без full reconstruction.  
 **Потенциал ICLR:** убедительный только как общая structured-prediction идея с робототехнической проверкой, а не как локальная модификация grasp pipeline.

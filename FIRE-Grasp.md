@@ -113,81 +113,81 @@
 
 Пусть
 
-- \(x\in\mathcal X\) — полный latent physical state целевого объекта: mesh и nuisance variables, используемые только при генерации training labels;
-- \(c\) — известная camera/occluder configuration;
-- \(y=\mathcal A_c(x)+\epsilon\) — одно RGB-D наблюдение;
-- \(\mathcal G(y)\) — конечный набор candidate parallel-jaw grasps после одинакового reachability/visible-collision filter;
-- \(u(x,g)\in[-1,1]\) — closure-only mechanics utility;
-- \(g=\bot\) — разрешенный reject/abstain action с \(u(x,\bot)=0\).
+- $x\in\mathcal X$ — полный latent physical state целевого объекта: mesh и nuisance variables, используемые только при генерации training labels;
+- $c$ — известная camera/occluder configuration;
+- $y=\mathcal A_c(x)+\epsilon$ — одно RGB-D наблюдение;
+- $\mathcal G(y)$ — конечный набор candidate parallel-jaw grasps после одинакового reachability/visible-collision filter;
+- $u(x,g)\in[-1,1]$ — closure-only mechanics utility;
+- $g=\bot$ — разрешенный reject/abstain action с $u(x,\bot)=0$.
 
-Для tolerance \(\tau\) определим observation fiber:
+Для tolerance $\tau$ определим observation fiber:
 
-\[
+$$
 \mathcal F_\tau(y,c)=\{x':d(\mathcal A_c(x'),y)\le \tau\}.
-\]
+$$
 
 Это множество полных форм, которые RGB-D sensor не может различить в данной конфигурации. В отличие от стандартной data augmentation, изменения внутри fiber могут менять правильный grasp.
 
-Full-information oracle знает \(x\), но ограничен тем же candidate set:
+Full-information oracle знает $x$, но ограничен тем же candidate set:
 
-\[
+$$
 u^*(x,y)=\max\left(0,\max_{h\in\mathcal G(y)}u(x,h)\right).
-\]
+$$
 
-Нормированный hindsight gap grasp \(g\):
+Нормированный hindsight gap grasp $g$:
 
-\[
+$$
 \Delta(x,y,g)=\frac{u^*(x,y)-u(x,g)}{2}\in[0,1].
-\]
+$$
 
-Reject action нужен не для превращения задачи в selective prediction, а для корректного масштаба regret: если все grasps небезопасны, omniscient oracle тоже может отказаться. Если deployment обязан сделать попытку, \(\bot\) удаляется только после scoring, но coverage–risk curve все равно следует публиковать.
+Reject action нужен не для превращения задачи в selective prediction, а для корректного масштаба regret: если все grasps небезопасны, omniscient oracle тоже может отказаться. Если deployment обязан сделать попытку, $\bot$ удаляется только после scoring, но coverage–risk curve все равно следует публиковать.
 
 ### 4.1 Closure-only utility
 
 Не нужен длинный вектор scene variables. Практичная scalar utility:
 
-\[
+$$
 u(x,g)=2\,p_{\text{term}}(x,g)-1,
-\]
+$$
 
-где \(p_{\text{term}}\) — вероятность bilateral antipodal/force-closure terminal contact без gripper penetration при малых SE(3), depth и friction perturbations. Она оценивается офлайн на полной mesh с небольшим батчем perturbations. Никакой approach trajectory или полный lift не симулируется. Реальный критерий — удержание после минимального вертикального отрыва — используется только для финальной hardware evaluation.
+где $p_{\text{term}}$ — вероятность bilateral antipodal/force-closure terminal contact без gripper penetration при малых SE(3), depth и friction perturbations. Она оценивается офлайн на полной mesh с небольшим батчем perturbations. Никакой approach trajectory или полный lift не симулируется. Реальный критерий — удержание после минимального вертикального отрыва — используется только для финальной hardware evaluation.
 
-Альтернатива для более дешевого первого прототипа: normalized robust wrench-resistance / epsilon metric, аналогичный analytic supervision в Dex-Net/GraspNet. Binary success нельзя использовать как единственный \(u\): для Bernoulli outcome многие risk transforms сводятся к тому же ranking по success probability; нужен непрерывный mechanics margin или perturbation-averaged utility.
+Альтернатива для более дешевого первого прототипа: normalized robust wrench-resistance / epsilon metric, аналогичный analytic supervision в Dex-Net/GraspNet. Binary success нельзя использовать как единственный $u$: для Bernoulli outcome многие risk transforms сводятся к тому же ranking по success probability; нужен непрерывный mechanics margin или perturbation-averaged utility.
 
 ## 5. FIRE objective: conditional entropic hindsight regret
 
-Для \(\beta>0\):
+Для $\beta>0$:
 
-\[
+$$
 R_\beta(y,g)
 =\frac{1}{\beta}\log
 \mathbb E_{X\mid Y=y}
 \left[\exp\big(\beta\Delta(X,y,g)\big)\right].
-\]
+$$
 
 Deployment rule:
 
-\[
+$$
 g_\theta(y)=\arg\min_{g\in\mathcal G(y)\cup\{\bot\}}
 \widehat R_{\beta,\theta}(y,g).
-\]
+$$
 
 Интерпретация:
 
-- \(\beta\to0\): expected hindsight regret;
-- большой \(\beta\): приближение к worst plausible completion regret;
-- конечный \(\beta\): плавный компромисс, который не определяется одним hallucinated completion.
+- $\beta\to0$: expected hindsight regret;
+- большой $\beta$: приближение к worst plausible completion regret;
+- конечный $\beta$: плавный компромисс, который не определяется одним hallucinated completion.
 
 Через variational duality:
 
-\[
+$$
 R_\beta(y,g)=
 \sup_{Q\ll P(\cdot\mid y)}
 \left\{
 \mathbb E_Q[\Delta(X,y,g)]-
 \frac{1}{\beta}\mathrm{KL}(Q\Vert P(\cdot\mid y))
 \right\}.
-\]
+$$
 
 Следовательно, score отвечает adversary, который reweight-ит plausible hidden shapes, но платит KL penalty. Аналогичная KL-DRO duality используется в современной robust optimization literature; см., например, lemma и формулу в [Distributionally Robust Q-Learning](https://proceedings.mlr.press/v162/liu22a.html). В FIRE это не RL: одно статическое supervised decision из одного наблюдения.
 
@@ -197,34 +197,34 @@ R_\beta(y,g)=
 
 Пусть
 
-\[
+$$
 z=\exp\{\beta(\Delta-1)\}\in[e^{-\beta},1]
-\]
+$$
 
-и network output \(f_\theta(y,g,\beta)\in[-\beta,0]\). Определим FIRE loss:
+и network output $f_\theta(y,g,\beta)\in[-\beta,0]$. Определим FIRE loss:
 
-\[
+$$
 \ell_{\mathrm{FIRE}}(f;\Delta,\beta)
 =e^f-zf.
-\]
+$$
 
-Условный population risk строго выпуклый по scalar \(f\), и
+Условный population risk строго выпуклый по scalar $f$, и
 
-\[
+$$
 f^*(y,g,\beta)
 =\log\mathbb E[z\mid y,g]
 =\beta\big(R_\beta(y,g)-1\big).
-\]
+$$
 
 Поэтому
 
-\[
+$$
 \widehat R_{\beta,\theta}(y,g)=1+f_\theta(y,g,\beta)/\beta.
-\]
+$$
 
 Это важно practically: один случайно выбранный hidden variant дает unbiased gradient правильного fiber log-moment. На inference нет ни sampling, ни log-sum-exp по shapes.
 
-Для fixed \(\beta\) можно параметризовать \(f=-\beta\,\sigma(a_\theta)\). Для risk spectrum обучать один head на \(\beta\sim p(\beta)\), задавая \(f(0)=0\) и штрафуя нарушения convexity по \(\beta\). Первую статью лучше строить вокруг одного заранее выбранного \(\beta\) плюс sensitivity curve, чтобы не размывать вклад.
+Для fixed $\beta$ можно параметризовать $f=-\beta\,\sigma(a_\theta)$. Для risk spectrum обучать один head на $\beta\sim p(\beta)$, задавая $f(0)=0$ и штрафуя нарушения convexity по $\beta$. Первую статью лучше строить вокруг одного заранее выбранного $\beta$ плюс sensitivity curve, чтобы не размывать вклад.
 
 ### 5.2 Почему regret, а не absolute quality
 
@@ -241,13 +241,13 @@ Absolute quality учит «насколько хорош grasp». Regret учи
 
 ### 6.1 Exact hidden-only deformation
 
-Для mesh \(x\), camera и occluder вычисляется visibility mask. Строится smooth spatial mask \(m(p)\), равная нулю на visible surface и в safety band около occlusion boundary, и единице глубоко в occlusion shadow. Hidden geometry меняется только полем
+Для mesh $x$, camera и occluder вычисляется visibility mask. Строится smooth spatial mask $m(p)$, равная нулю на visible surface и в safety band около occlusion boundary, и единице глубоко в occlusion shadow. Hidden geometry меняется только полем
 
-\[
+$$
 p' = p + m(p)\,d_\phi(p),
-\]
+$$
 
-где \(d_\phi\) — ограниченное diffeomorphic deformation либо watertight primitive graft/cut. Variant принимается, только если:
+где $d_\phi$ — ограниченное diffeomorphic deformation либо watertight primitive graft/cut. Variant принимается, только если:
 
 - повторный RGB-D render отличается не больше sensor tolerance;
 - mesh watertight и не self-intersecting;
@@ -260,10 +260,10 @@ p' = p + m(p)\,d_\phi(p),
 
 Чтобы exact deformations не задали искусственный prior, нужен второй источник. Среди большого CAD corpus ищутся shapes, чьи renders под данной маской совпадают по visible depth/RGB/normal features, но hidden geometry различается. Variants получают веса
 
-\[
+$$
 w_j\propto p_{\text{shape}}(x_j)
 \exp\left[-d(\mathcal A_c(x_j),y)^2/(2\sigma^2)\right].
-\]
+$$
 
 Loss легко расширяется: conditional moment использует weighted expectation. Exact fibers дают controlled identifiability test; natural near-fibers — realism.
 
@@ -299,13 +299,13 @@ SE(3)-equivariant либо carefully canonicalized point transformer кодир�
 
 ### 7.3 Gripper-query decoder
 
-Candidate \(g=(R,t,w)\) представляется небольшим фиксированным набором anchor points на двух пальцах, inner closing slab и palm, перенесенных в camera frame. Gripper anchors cross-attend к observation tokens. Они служат queries, но **не запрашивают occupancy** и не рендерят local surface.
+Candidate $g=(R,t,w)$ представляется небольшим фиксированным набором anchor points на двух пальцах, inner closing slab и palm, перенесенных в camera frame. Gripper anchors cross-attend к observation tokens. Они служат queries, но **не запрашивают occupancy** и не рендерят local surface.
 
-Decoder выдает \(a_\theta(y,g,\beta)\), затем bounded head \(f=-\beta\sigma(a)\) и \(R=1+f/\beta\).
+Decoder выдает $a_\theta(y,g,\beta)$, затем bounded head $f=-\beta\sigma(a)$ и $R=1+f/\beta$.
 
 ### 7.4 Вычислительная сложность
 
-Observation кодируется один раз. После этого каждый grasp требует только несколько query tokens. Нет \(64^3\) grid, marching cubes, diffusion completion или \(M\) forward passes. Ожидаемая inference cost — один encoder pass плюс batched candidate decoder. Заявлять speed advantage можно только после wall-clock/memory измерений против TARGO-Net, NeuGraspNet и MC-completion baseline.
+Observation кодируется один раз. После этого каждый grasp требует только несколько query tokens. Нет $64^3$ grid, marching cubes, diffusion completion или $M$ forward passes. Ожидаемая inference cost — один encoder pass плюс batched candidate decoder. Заявлять speed advantage можно только после wall-clock/memory измерений против TARGO-Net, NeuGraspNet и MC-completion baseline.
 
 ## 8. Проверяемые теоретические результаты
 
@@ -313,28 +313,28 @@ Observation кодируется один раз. После этого кажд
 
 ### Proposition 1: Fisher consistency FIRE loss
 
-Для bounded \(\Delta\) условный minimizer \(\mathbb E[\ell_{\mathrm{FIRE}}\mid y,g]\) единственен и равен \(f^*=\log\mathbb E[e^{\beta(\Delta-1)}\mid y,g]\). Доказательство — производная \(e^f-\mathbb E[z]\) и положительная вторая производная \(e^f\).
+Для bounded $\Delta$ условный minimizer $\mathbb E[\ell_{\mathrm{FIRE}}\mid y,g]$ единственен и равен $f^*=\log\mathbb E[e^{\beta(\Delta-1)}\mid y,g]$. Доказательство — производная $e^f-\mathbb E[z]$ и положительная вторая производная $e^f$.
 
 ### Proposition 2: finite-fiber concentration
 
-Для \(m\) iid variants и \(\Delta\in[0,1]\), поскольку \(e^{\beta\Delta}\in[1,e^\beta]\), Hoeffding и Lipschitz log на \([1,\infty)\) дают с probability \(1-\eta\) bound порядка
+Для $m$ iid variants и $\Delta\in[0,1]$, поскольку $e^{\beta\Delta}\in[1,e^\beta]$, Hoeffding и Lipschitz log на $[1,\infty)$ дают с probability $1-\eta$ bound порядка
 
-\[
+$$
 |\widehat R_\beta-R_\beta|
 \le
 \frac{e^\beta-1}{\beta}
 \sqrt{\frac{\log(2/\eta)}{2m}}.
-\]
+$$
 
-Это также показывает цену слишком большого \(\beta\): sample complexity экспоненциально ухудшается.
+Это также показывает цену слишком большого $\beta$: sample complexity экспоненциально ухудшается.
 
 ### Proposition 3: decision regret from uniform estimation
 
-Если \(\sup_g|\widehat R_\beta(y,g)-R_\beta(y,g)|\le\varepsilon\), то выбранный grasp имеет entropic regret не более optimum + \(2\varepsilon\). Это стандартный argmin stability proof, но он связывает learning error с конечным decision.
+Если $\sup_g|\widehat R_\beta(y,g)-R_\beta(y,g)|\le\varepsilon$, то выбранный grasp имеет entropic regret не более optimum + $2\varepsilon$. Это стандартный argmin stability proof, но он связывает learning error с конечным decision.
 
 ### Proposition 4: decision sufficiency, не reconstruction sufficiency
 
-Для bounded \(\Delta\) функция \(\beta\mapsto\log\mathbb E[e^{\beta\Delta}\mid y,g]\) на любой окрестности нуля однозначно определяет conditional distribution oracle gap. Значит risk operator сохраняет всю информацию, нужную для любого analytic entropic risk в данном action space, но может отбрасывать произвольные latent shape details, не меняющие regret.
+Для bounded $\Delta$ функция $\beta\mapsto\log\mathbb E[e^{\beta\Delta}\mid y,g]$ на любой окрестности нуля однозначно определяет conditional distribution oracle gap. Значит risk operator сохраняет всю информацию, нужную для любого analytic entropic risk в данном action space, но может отбрасывать произвольные latent shape details, не меняющие regret.
 
 ### Proposition 5: impossibility/strict separation toy model
 
@@ -390,12 +390,12 @@ Observation кодируется один раз. После этого кажд
 - random shape augmentation против measurement-null augmentation;
 - label-preserving invariance loss против FIRE aggregation;
 - absolute loss против oracle gap;
-- \(\beta=0\), несколько finite \(\beta\), near-worst-case;
+- $\beta=0$, несколько finite $\beta$, near-worst-case;
 - без occlusion-ray tokens;
 - без global target token;
 - RGB-D против depth-only;
 - exact fibers против natural near-fibers;
-- varying number of variants \(m\) для проверки concentration trend;
+- varying number of variants $m$ для проверки concentration trend;
 - fixed candidate pool quality и oracle ceiling.
 
 ### 9.5 Go/no-go gates
@@ -523,8 +523,8 @@ FIRE пытается занять незаполненное пересечен
 5. **«Candidate generator определяет результат».**  
    Одинаковые frozen candidate sets, oracle ceiling и отдельная recall metric.
 
-6. **«Entropic risk очень чувствителен к \(\beta\) и samples».**  
-   Theory bound, fixed preregistered \(\beta\), sensitivity curve и comparison с CVaR.
+6. **«Entropic risk очень чувствителен к $\beta$ и samples».**
+   Theory bound, fixed preregistered $\beta$, sensitivity curve и comparison с CVaR.
 
 7. **«Force-closure metric не равен реальному lift success».**  
    Perturbation-averaged terminal utility, calibration subset и real minimal-lift trials.
@@ -589,4 +589,3 @@ FIRE пытается занять незаполненное пересечен
 Самая короткая testable claim:
 
 > При одинаковом candidate recall и training shape prior прямое обучение tail hindsight regret на observation fibers даст меньший worst-bin physical grasp failure и меньшую latency, чем deterministic completion, MC completion и direct expected-success scoring, особенно когда скрытые стороны объектов неоднозначны, но их видимые RGB-D проекции совпадают.
-

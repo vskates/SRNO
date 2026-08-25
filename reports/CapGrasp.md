@@ -22,7 +22,7 @@ certified by keyword search.
 This is a conditional go, not a SOTA claim.  First run an oracle pilot using
 mesh-derived hit signatures and no visual network.  Stop if a signature of at
 most 40 bits cannot predict small-lift success within 2--3 points of a full-
-mesh oracle, or if correlated rank \(\chi>1\) fails to beat both independent
+mesh oracle, or if correlated rank $\chi>1$ fails to beat both independent
 occupancy and direct BCE on deliberately ambiguous hidden-shape pairs.  Only
 after those gates pass is implementation of the evidence encoder justified.
 
@@ -81,7 +81,7 @@ that models mistake incomplete surfaces for graspable edges:
 https://arxiv.org/html/2312.11243
 
 Grasp Diffusion Network directly learns
-\(p(g\mid\text{partial PCD})\), and GraspGen uses a Diffusion Transformer plus
+$p(g\mid\text{partial PCD})$, and GraspGen uses a Diffusion Transformer plus
 an on-generator discriminator.  Therefore a new diffusion sampler, by itself,
 does not address the scientific gap:
 
@@ -145,11 +145,11 @@ at inference, often repeatedly.
 FFHFlow is especially close to any proposal that merely says “represent shape
 uncertainty in a latent and generate grasps.”  It learns
 
-\[
+$$
  p_\theta(g\mid x)
  =
  \int p_\theta(g\mid x,z)p_\theta(z\mid x)\,dz
-\]
+$$
 
 from partial point clouds, uses normalizing-flow likelihoods as view/object
 uncertainty, and combines them with a discriminative evaluator:
@@ -239,16 +239,16 @@ different events:
    continue behind it.
 
 The third event is a censored measurement, not an empty target sample.  Let
-\(T_u\) be the first target-surface depth on camera ray \(u\), and \(C_u\) the
+$T_u$ be the first target-surface depth on camera ray $u$, and $C_u$ the
 first foreground-occluder depth.  The sensor observes
 
-\[
+$$
  Y_u=\min(T_u,C_u),\qquad
  \delta_u=\mathbf 1[T_u\le C_u].
-\]
+$$
 
-Target-only PCD methods retain \(Y_u\) only when \(\delta_u=1\).  The proposed
-observation retains \((u,Y_u,\delta_u)\), sensor uncertainty, the visible
+Target-only PCD methods retain $Y_u$ only when $\delta_u=1$.  The proposed
+observation retains $(u,Y_u,\delta_u)$, sensor uncertainty, the visible
 target points, and only the foreground rays inside a detector/target proposal
 region.  It is substantially smaller than a scene SDF and does not assert a
 hidden surface.
@@ -260,48 +260,48 @@ This distinguishes two questions that point dropout conflates:
 
 ### Statistical foundation
 
-Under conditionally independent censoring given visible context \(X\), the
+Under conditionally independent censoring given visible context $X$, the
 proper ray likelihood is
 
-\[
+$$
  \ell(\theta)
  =
  -\delta\log f_\theta(Y\mid X)
  -(1-\delta)\log S_\theta(Y\mid X),
-\]
+$$
 
-where \(S_\theta(t\mid X)=\Pr_\theta(T>t\mid X)\).  The right-censored
+where $S_\theta(t\mid X)=\Pr_\theta(T>t\mid X)$.  The right-censored
 log-likelihood is a proper score; deleting censored rays instead estimates the
-biased conditional law \(T\mid T\le C,X\):
+biased conditional law $T\mid T\le C,X$:
 
 https://proceedings.mlr.press/v151/rindt22a.html
 
 Real depth noise can be represented as interval censoring.  For a hit known
-only within \([a,b]\), its contribution is
-\(-\log(F_\theta(b)-F_\theta(a))\), rather than supervision at one noisy 3-D
+only within $[a,b]$, its contribution is
+$-\log(F_\theta(b)-F_\theta(a))$, rather than supervision at one noisy 3-D
 point.
 
 If occluder placement depends on the hidden target after conditioning on
-\(X\), ordinary independent-censor likelihood is inconsistent.  The method
+$X$, ordinary independent-censor likelihood is inconsistent.  The method
 must either condition on sufficient occluder/placement variables or explicitly
 model informative censoring.  This is a kill condition, not a detail.
 
 ### Why the representation can contain strictly more decision information
 
-The censored-ray observation \(E\) deterministically yields the cropped target
-cloud \(P\), so \(E\) Blackwell-dominates \(P\).  The dominance is strict
+The censored-ray observation $E$ deterministically yields the cropped target
+cloud $P$, so $E$ Blackwell-dominates $P$.  The dominance is strict
 whenever two latent shape/occluder cases yield the same target points but
 different censoring evidence and require different grasps.
 
-For two equiprobable cases \(h\in\{0,1\}\), two correct grasps \(g_h\), and
-wrong-grasp loss \(\Delta\), every target-PCD-only selector has regret
-\(\Delta/2\) if \(P_0=P_1\).  An enriched selector has Bayes regret
+For two equiprobable cases $h\in\{0,1\}$, two correct grasps $g_h$, and
+wrong-grasp loss $\Delta$, every target-PCD-only selector has regret
+$\Delta/2$ if $P_0=P_1$.  An enriched selector has Bayes regret
 
-\[
+$$
  \frac{\Delta}{2}
  \left(1-\operatorname{TV}(\mathcal L(E\mid h=0),
                             \mathcal L(E\mid h=1))\right).
-\]
+$$
 
 This is an information separation from target-only PCD, not from TARGO's full
 scene input.  Against TARGO, the argument must instead be statistical and
@@ -327,7 +327,7 @@ single-view parallel-jaw setting.
 2. **Shared ray-set encoder.**  A sparse point/ray transformer encodes the
    target proposal once.  No dense 3-D completion is decoded.
 3. **Continuous gripper-frame query.**  For a queried
-   \(g\in SE(3)\), a fixed small collection of pad/closing-volume witness
+   $g\in SE(3)$, a fixed small collection of pad/closing-volume witness
    queries is transformed into camera coordinates and cross-attends to nearby
    evidence tokens.
 4. **Monotone marked-hitting head.**  It predicts cumulative hazards for
@@ -342,7 +342,7 @@ single-view parallel-jaw setting.
 
 The initial implementation should rerank candidates from a fixed strong
 sampler so candidate recall is controlled.  Only after representation gains
-are established should the same query field guide an \(SE(3)\) flow/diffusion
+are established should the same query field guide an $SE(3)$ flow/diffusion
 generator.  Generator novelty must not be claimed.
 
 ### Training signals
@@ -387,12 +387,12 @@ Relevant collision checks:
 ### Initial attraction
 
 Let a full-state teacher expose a diffusion score
-\(s_\phi(g_t,S,t)\) for successful grasps on complete target state \(S\), and
-train a student on censored evidence \(E\) using
+$s_\phi(g_t,S,t)$ for successful grasps on complete target state $S$, and
+train a student on censored evidence $E$ using
 
-\[
+$$
   \mathbb E\|s_\theta(g_t,E,t)-s_\phi(g_t,S,t)\|^2.
-\]
+$$
 
 The population minimizer is the conditional projection of the teacher score.
 By the Fisher/tower identity it is the score of a grasp distribution in which
@@ -425,35 +425,35 @@ grasps from each object in every minibatch:
 
 https://arxiv.org/html/2412.08398
 
-For full state \(S\), let \(q(g,S)\in[0,1]\) be terminal success under a fixed
-base proposal \(\mu\),
+For full state $S$, let $q(g,S)\in[0,1]$ be terminal success under a fixed
+base proposal $\mu$,
 
-\[
+$$
  Z_S=\int q(g,S)\,\mu(dg),\qquad
  \pi_S(g)=\frac{q(g,S)\mu(g)}{Z_S}.
-\]
+$$
 
 Equal-object positive sampling learns
-\(\mathbb E[\pi_S(g)\mid E]\), whereas the modes appropriate for Bayes
+$\mathbb E[\pi_S(g)\mid E]$, whereas the modes appropriate for Bayes
 selection are those of
 
-\[
+$$
  \bar\nu_E(g)=\mu(g)\mathbb E[q(g,S)\mid E]
               =\mathbb E[Z_S\pi_S(g)\mid E].
-\]
+$$
 
 Thus an occluded observation compatible with several shapes can overweight a
-low-\(Z_S\) shape.  The correction is a \(Z_S\)-weighted conditional DSM or
-teacher-score loss.  At noise time \(t\),
+low-$Z_S$ shape.  The correction is a $Z_S$-weighted conditional DSM or
+teacher-score loss.  At noise time $t$,
 
-\[
+$$
  \arg\min_s\mathbb E\!left[
  Z_S\|s(g_t,E,t)-s_{S,t}(g_t)\|^2\right]
  =\nabla_{g_t}\log\mathbb E[Z_S\pi_{S,t}(g_t)\mid E].
-\]
+$$
 
 GraspGen's data construction makes this testable: it uniformly proposes 2,000
-poses per object and retains binary simulator labels, so \(Z_S\) can be
+poses per object and retains binary simulator labels, so $Z_S$ can be
 estimated as an acceptance fraction:
 
 https://arxiv.org/html/2507.13097
@@ -470,7 +470,7 @@ enough for the requested paper, even with a new name.
 ## Cycle 13: conditional kernel/Fourier embedding of the successful-grasp set
 
 For each full state, one can embed the unnormalized successful-grasp measure
-\(q(g,S)\mu(dg)\) in an RKHS and regress its conditional mean from \(E\).  This
+$q(g,S)\mu(dg)$ in an RKHS and regress its conditional mean from $E$.  This
 commutes exactly with hidden-shape marginalization and avoids partition bias.
 A finite random-feature or harmonic expansion gives cheap evaluation of many
 grasps.
@@ -492,7 +492,7 @@ by GIGA/TARGO.
 The useful part of Candidate A is not “predict hidden surface points.”  It is
 that a parallel-jaw action interrogates hidden geometry through a small,
 structured family of lines in the *gripper* frame.  For a queried pose
-\(g\in SE(3)\), define \(\Xi_g(S)\) to contain:
+$g\in SE(3)$, define $\Xi_g(S)$ to contain:
 
 - bidirectional extreme target depths along a sparse pad-covering set of jaw
   closing lines;
@@ -500,22 +500,22 @@ structured family of lines in the *gripper* frame.  For a queried pose
 - first-hit clearances on a sparse cover of the palm/finger approach shell;
 - existence and sensor-noise marks, rather than a deterministic point.
 
-Two complete shapes are equivalent for query \(g\) whenever they have the same
-\(\Xi_g\).  The learner should estimate
+Two complete shapes are equivalent for query $g$ whenever they have the same
+$\Xi_g$.  The learner should estimate
 
-\[
+$$
   p(\Xi_g\mid E),
-\]
+$$
 
-not \(p(S\mid E)\).  A differentiable mechanics head then computes
+not $p(S\mid E)$.  A differentiable mechanics head then computes
 
-\[
+$$
   Q(g,E)=
   \mathbb E_{\Xi_g\mid E}
   [\tilde q(g,\Xi_g)],
-\]
+$$
 
-where \(\tilde q\) is an antipodal-contact, jaw-width, and local-clearance
+where $\tilde q$ is an antipodal-contact, jaw-width, and local-clearance
 functional plus a learned residual calibrated to terminal simulator labels.
 The output dimension scales with the queried gripper, not with the shelf
 volume or target surface area.
@@ -529,17 +529,17 @@ a reusable complete object.
 Camera evidence and gripper evidence live on two different ray families.  The
 new learning object is a conditional operator
 
-\[
+$$
   \mathcal T_\theta:
   \{\text{typed, censored camera rays}\}
   \times \{\text{gripper query rays at }g\}
   \longmapsto p_\theta(\Xi_g\mid E).
-\]
+$$
 
 This suggests a sparse ray-space architecture rather than a voxel/SDF model.
-Pluecker coordinates provide an \(SE(3)\)-compatible representation of both
+Pluecker coordinates provide an $SE(3)$-compatible representation of both
 ray sets; relative line angle, shortest distance, and directed depth ordering
-are invariant cross-attention features.  General \(SE(3)\)-equivariant
+are invariant cross-attention features.  General $SE(3)$-equivariant
 convolution and attention on ray space already have a mathematical basis:
 
 https://proceedings.neurips.cc/paper_files/paper/2023/hash/075b2875e2b671ddd74aeec0ac9f0357-Abstract-Conference.html
@@ -555,8 +555,8 @@ https://proceedings.neurips.cc/paper_files/paper/2023/hash/075b2875e2b671ddd74ae
    optional detector logits.  Class dropout trains one model for class-known
    and class-unknown use.
 3. **Gripper query constructor.**  Each candidate pose creates a fixed
-   \(h\)-net of closing lines over the pads and approach rays over the rigid
-   gripper shell.  All are transformed by \(g\) and represented in the same
+   $h$-net of closing lines over the pads and approach rays over the rigid
+   gripper shell.  All are transformed by $g$ and represented in the same
    Pluecker ray space.
 4. **Cross-ray transport blocks.**  Query rays cross-attend to sensor rays
    using equivariant line geometry.  A low-rank shared latent couples all query
@@ -573,11 +573,11 @@ https://proceedings.neurips.cc/paper_files/paper/2023/hash/075b2875e2b671ddd74ae
 
 The exact success of an arbitrary compliant grasp is not finite-ray
 sufficient.  The paper must state a margin-qualified approximation instead.
-For targets with reach at least \(\rho\), Lipschitz surface normals, and a
+For targets with reach at least $\rho$, Lipschitz surface normals, and a
 rigid parallel-jaw gripper, let the pad and approach shell be covered at
-spacing \(h\).  If all extreme-depth/normal estimates have error at most
-\(\epsilon\), then geometric clearance and antipodal margins change by at most
-\(C_1h+C_2\epsilon\).  Therefore any grasp whose true margins exceed that
+spacing $h$.  If all extreme-depth/normal estimates have error at most
+$\epsilon$, then geometric clearance and antipodal margins change by at most
+$C_1h+C_2\epsilon$.  Therefore any grasp whose true margins exceed that
 quantity retains its feasibility label.  Boundary grasps remain intrinsically
 uncertain and should be down-ranked, not falsely certified.
 
@@ -591,7 +591,7 @@ Not novel separately:
 - point/ray transformers;
 - entry/exit or ray occupancy prediction;
 - task/contact-region completion;
-- a grasp scorer or an \(SE(3)\) sampler;
+- a grasp scorer or an $SE(3)$ sampler;
 - synthetic foreground augmentation.
 
 Potentially novel as one learning object:
@@ -612,7 +612,7 @@ search is not yet proof of novelty.
 Candidate B survives deeper than the earlier candidates, but remains
 provisional.  It must pass three kill tests:
 
-1. **Oracle sufficiency:** ground-truth \(\Xi_g(S)\) must predict simulator
+1. **Oracle sufficiency:** ground-truth $\Xi_g(S)$ must predict simulator
    small-lift success nearly as well as the complete mesh.  If the gap exceeds
    roughly 2--3 percentage points after controlling collision filtering, the
    quotient is too lossy.
@@ -641,8 +641,8 @@ The grasp problem is a harder and not-yet-covered variant:
 
 1. the latent parameter is a nonlinear 3-D target and physical properties;
 2. observations are irregular ray events with external censoring;
-3. the QoI is not fixed--every new \(g\in SE(3)\) induces a new certificate
-   \(\Xi_g\);
+3. the QoI is not fixed--every new $g\in SE(3)$ induces a new certificate
+   $\Xi_g$;
 4. the output is a posterior over that certificate, not only its mean;
 5. the operator must be amortized and equivariant.
 
@@ -667,11 +667,11 @@ close general framework, not silently rediscovered:
 A single compact state representation sufficient for *all* actions may need to
 retain the full latent state.  A query-specific certificate can be much
 smaller.  A simple lower-bound construction makes this precise.  Let
-\(S=(B_1,\ldots,B_d)\) contain independent bits and let action \(i\) have
-success \(q(i,S)=B_i\).  Any deterministic representation sufficient to answer
-all \(d\) actions must distinguish all \(2^d\) states and hence carry at least
-\(d\) bits.  After action \(i\) is supplied, the sufficient certificate is the
-single bit \(B_i\).
+$S=(B_1,\ldots,B_d)$ contain independent bits and let action $i$ have
+success $q(i,S)=B_i$.  Any deterministic representation sufficient to answer
+all $d$ actions must distinguish all $2^d$ states and hence carry at least
+$d$ bits.  After action $i$ is supplied, the sufficient certificate is the
+single bit $B_i$.
 
 The example does not prove that a particular gripper certificate is small; it
 does show why an on-demand query operator can have an asymptotic advantage over
@@ -683,71 +683,71 @@ https://proceedings.mlr.press/v162/huang22f.html
 
 ## Formal problem
 
-Let \(S\sim p_{\mathrm{shape}}(S\mid c)\) be target geometry/physical state,
-\(O\) a foreground object, and \(r_u(t)=o+t d_u\) a camera ray.  Define first
+Let $S\sim p_{\mathrm{shape}}(S\mid c)$ be target geometry/physical state,
+$O$ a foreground object, and $r_u(t)=o+t d_u$ a camera ray.  Define first
 target and foreground depths
 
-\[
+$$
  T_u(S)=\inf\{t:r_u(t)\in\partial S\},\qquad
  C_u(O)=\inf\{t:r_u(t)\in\partial O\}.
-\]
+$$
 
-The RGB-D event is a noisy version of \(\min(T_u,C_u)\), together with a
+The RGB-D event is a noisy version of $\min(T_u,C_u)$, together with a
 probabilistic semantic mark.  The evidence set is
 
-\[
+$$
  E=\{(r_u,I_u,\tau_u,a_u,\sigma_u)\}_{u\in\mathcal U},
-\]
+$$
 
-where \(I_u\) is a hit interval or free/censor threshold, \(\tau_u\) is the
-event type, \(a_u\) is soft target-association probability, and \(\sigma_u\)
+where $I_u$ is a hit interval or free/censor threshold, $\tau_u$ is the
+event type, $a_u$ is soft target-association probability, and $\sigma_u$
 describes depth uncertainty.  A hard YOLO class is never assumed.  Detector
-logits are part of \(E\); class-token dropout yields the generic-prior mode.
+logits are part of $E$; class-token dropout yields the generic-prior mode.
 
-For a pose \(g\), let \(\Xi_g(S)\in\mathcal X_g\) be the finite gripper support
+For a pose $g$, let $\Xi_g(S)\in\mathcal X_g$ be the finite gripper support
 certificate.  The desired posterior is the push-forward
 
-\[
+$$
  p(\xi\mid E,g)
  =\int \delta(\xi-\Xi_g(S))p(S\mid E)\,dS.
-\]
+$$
 
 With observed-foreground collision handling held fixed, the Bayes score and
 action are
 
-\[
+$$
  Q^*(g,E)=\int \tilde q_\psi(g,\xi)
                     p(\xi\mid E,g)d\xi,
  \qquad
  g^*(E)=\arg\max_{g\in\mathcal G_{\rm obs-free}}Q^*(g,E).
-\]
+$$
 
 This expression explicitly answers the training-prior question: known class
-changes \(p(S\mid E)\); unknown class marginalizes the training shape mixture.
+changes $p(S\mid E)$; unknown class marginalizes the training shape mixture.
 Neither condition identifies geometry outside the support of that prior.  No
 one-view method can guarantee correct hidden contacts for two out-of-support
-shapes with identical \(E\).  The method should expose high certificate
+shapes with identical $E$.  The method should expose high certificate
 uncertainty there rather than claim prior-free amodal perception.
 
 ## Certificate construction for a parallel-jaw gripper
 
-Use the gripper frame axes \(e_a\) (approach), \(e_c\) (closing), and \(e_z\).
-Choose an \(h\)-net \(\{z_j\}_{j=1}^{J}\) over the inner pad footprint.  Each
+Use the gripper frame axes $e_a$ (approach), $e_c$ (closing), and $e_z$.
+Choose an $h$-net $\{z_j\}_{j=1}^{J}$ over the inner pad footprint.  Each
 query closing line is
 
-\[
+$$
  \ell_{g,j}(s)=t+R(z_j+s e_c).
-\]
+$$
 
 The first surfaces encountered by pads closing from opposite sides depend on
 the extreme occupied coordinates
 
-\[
+$$
  L_j(S)=\inf\{s:\ell_{g,j}(s)\in S\},\qquad
  R_j(S)=\sup\{s:\ell_{g,j}(s)\in S\},
-\]
+$$
 
-plus their outward normals.  Separate approach rays form an \(h\)-net over the
+plus their outward normals.  Separate approach rays form an $h$-net over the
 finger/palm shell and return first-hit clearance.  Multiple internal object
 intervals do not have to be reconstructed: for rigid parallel pads, the two
 directional extremes are the first potential contacts.  Nonexistence is an
@@ -755,11 +755,11 @@ explicit event.
 
 A compact certificate is
 
-\[
+$$
  \Xi_g=
  \{L_j,R_j,n_j^L,n_j^R,e_j\}_{j=1}^{J}
  \cup\{d_k^{\rm clear},e_k^{\rm clear}\}_{k=1}^{J_c}.
-\]
+$$
 
 It contains no target mesh, global SDF, or reusable completed point cloud.
 The physics layer derives aperture, pad coverage, antipodal/friction-cone
@@ -772,52 +772,52 @@ exact.
 
 ### Evidence and query streams
 
-- Subsample \(N_E\approx256\) high-information camera rays: target interior,
+- Subsample $N_E\approx256$ high-information camera rays: target interior,
   target boundary, foreground-overlap, and invalid-depth strata.
-- For each of \(K_g\) pose queries construct \(J\approx16\) bidirectional
-  closing lines and \(J_c\approx16\) approach-shell rays.
+- For each of $K_g$ pose queries construct $J\approx16$ bidirectional
+  closing lines and $J_c\approx16$ approach-shell rays.
 - Encode both with Pluecker coordinates.  Cross-attention uses line angle,
   reciprocal product/closest distance, and directed interval order.  Outputs
-  are expressed in the gripper frame, giving joint \(SE(3)\) invariance when
+  are expressed in the gripper frame, giving joint $SE(3)$ invariance when
   the scene and query are transformed together.
 
 ### Joint uncertainty without a full shape latent
 
 A single factorized Gaussian would assert incompatible pad contacts.  Use a
-small shared mixture latent \(k\in\{1,\ldots,M\}\):
+small shared mixture latent $k\in\{1,\ldots,M\}$:
 
-\[
+$$
  p_\theta(\Xi_g\mid E,g)
  =\sum_{m=1}^{M}\alpha_m(E,g)
    \prod_j p_\theta(\xi_j\mid m,E,g),
-\]
+$$
 
-with \(M=4\) or \(8\).  Ordered support depths use bounded logistic mixtures;
+with $M=4$ or $8$.  Ordered support depths use bounded logistic mixtures;
 normal marks use von Mises--Fisher factors; existence uses Bernoulli factors.
 The shared component couples all query lines and permits several mutually
 exclusive hidden-shape hypotheses.  The NLL is tractable and the certificate
-has only \(O(J+J_c)\) variables per queried pose.
+has only $O(J+J_c)$ variables per queried pose.
 
 ### Supervision
 
 Synthetic full meshes are privileged *label generators*, not inference
 outputs.  For every rendered censored observation and candidate pose, ray
-casting returns the exact \(\Xi_g(S)\), while the physics simulator returns a
-small-lift label \(y\).  Train with
+casting returns the exact $\Xi_g(S)$, while the physics simulator returns a
+small-lift label $y$.  Train with
 
-\[
+$$
  \mathcal L=
  -\log p_\theta(\Xi_g(S)\mid E,g)
  +\lambda_{\rm mech}\operatorname{BCE}
        (\tilde q_\psi(g,\Xi_g(S)),y)
  +\lambda_{\rm dec}\operatorname{BCE}(\hat Q_\theta(g,E),y),
-\]
+$$
 
-where \(\hat Q_\theta\) integrates the mechanics head over the predicted
+where $\hat Q_\theta$ integrates the mechanics head over the predicted
 mixture.  The direct decision term protects against certificate
 misspecification; it does not excuse a large oracle-certificate gap.
 
-Paired clean/occluded renders share \(S,g,\Xi_g\), giving dense supervision
+Paired clean/occluded renders share $S,g,\Xi_g$, giving dense supervision
 across censoring patterns.  Real grasp labels can calibrate only the final
 decision/residual head.  This is supervised sim-to-real adaptation, not RL.
 
@@ -826,11 +826,11 @@ decision/residual head.  This is supervised sim-to-real adaptation, not RL.
 The first scientific experiment must rerank an identical high-recall candidate
 set for every method.  This separates certificate quality from generator
 recall.  A complete system can share the ray encoder with a conventional
-\(SE(3)\) proposal diffuser and query the certificate only on its final
+$SE(3)$ proposal diffuser and query the certificate only on its final
 candidates.  Diffusion is a replaceable proposal mechanism and is not a claim.
 
-For \(N_E=256\), \(K_g=64\), and \(J+J_c=32\), local top-\(k\) cross-attention
-requires roughly \(K_g(J+J_c)k\) interactions and is independent of a dense
+For $N_E=256$, $K_g=64$, and $J+J_c=32$, local top-$k$ cross-attention
+requires roughly $K_g(J+J_c)k$ interactions and is independent of a dense
 voxel resolution.  Runtime/memory claims must be measured; this count is only
 the architectural reason to expect efficiency.
 
@@ -847,23 +847,23 @@ is inductive bias and efficiency.
 ### 2. Query-compression separation
 
 The independent-bit construction above proves that a uniformly sufficient
-state code can require \(\Omega(d)\) bits while each query certificate requires
+state code can require $\Omega(d)$ bits while each query certificate requires
 one.  This is a general separation result, not a grasp-performance theorem.
 
 ### 3. Margin-qualified certificate approximation
 
-Under positive reach \(\rho\), Lipschitz normals, rigid pads, and an \(h\)-net,
-depth/normal error \(\epsilon\) perturbs geometric clearance and antipodal
-margins by at most \(C_1h+C_2\epsilon\).  Any grasp with true margin larger
+Under positive reach $\rho$, Lipschitz normals, rigid pads, and an $h$-net,
+depth/normal error $\epsilon$ perturbs geometric clearance and antipodal
+margins by at most $C_1h+C_2\epsilon$.  Any grasp with true margin larger
 than that bound keeps its feasibility label.  The formal proof must specify
 the gripper shell, contact model, and excluded nonsmooth shapes.
 
 ### 4. Decision regret
 
-If \(\sup_g|\hat Q(g,E)-Q^*(g,E)|\le\delta\), selecting the maximum of
-\(\hat Q\) has Bayes utility regret at most \(2\delta\).  If a finite proposal
-set has oracle recall loss \(\epsilon_K\), total regret is bounded by
-\(2\delta+\epsilon_K\).  This cleanly separates proposal failure from posterior
+If $\sup_g|\hat Q(g,E)-Q^*(g,E)|\le\delta$, selecting the maximum of
+$\hat Q$ has Bayes utility regret at most $2\delta$.  If a finite proposal
+set has oracle recall loss $\epsilon_K$, total regret is bounded by
+$2\delta+\epsilon_K$.  This cleanly separates proposal failure from posterior
 certificate error.
 
 None of these results proves that the learned operator reaches the assumed
@@ -892,14 +892,14 @@ its output.
 
 ### The object being learned
 
-Let \(X\subset\mathbb R^3\) be the *solid* target, treated under the posterior
-\(p(X\mid E)\) as a random regular closed set.  For a compact test region
-\(K\subset\mathbb R^3\), define the conditional hit and avoidance functionals
+Let $X\subset\mathbb R^3$ be the *solid* target, treated under the posterior
+$p(X\mid E)$ as a random regular closed set.  For a compact test region
+$K\subset\mathbb R^3$, define the conditional hit and avoidance functionals
 
-\[
+$$
  T_E(K)=\Pr[X\cap K\ne\varnothing\mid E],\qquad
  V_E(K)=1-T_E(K).
-\]
+$$
 
 This is neither pointwise occupancy nor a reconstructed shape.  A query is an
 entire geometrical region: an approach-swept finger volume, a left or right
@@ -914,21 +914,21 @@ closed set (Choquet's theorem).
 Learning the capacity on *all* compact sets would be equivalent to learning
 the full shape law and would violate the intended scope.  The proposal learns
 only its restriction to a gripper-induced query family
-\(\mathcal K_{\rm grip}\).  It never evaluates a global voxel lattice or
+$\mathcal K_{\rm grip}$.  It never evaluates a global voxel lattice or
 decodes a reusable surface.
 
 ### Why pointwise occupancy is not enough
 
-Suppose two hidden-shape posteriors induce hit bits \(H_L,H_R\) for left and
-right contact slabs.  Posterior A assigns probability \(1/2\) to each of
-\((0,0)\) and \((1,1)\); posterior B assigns probability \(1/2\) to each of
-\((1,0)\) and \((0,1)\).  Both have identical point/slab marginals,
+Suppose two hidden-shape posteriors induce hit bits $H_L,H_R$ for left and
+right contact slabs.  Posterior A assigns probability $1/2$ to each of
+$(0,0)$ and $(1,1)$; posterior B assigns probability $1/2$ to each of
+$(1,0)$ and $(0,1)$.  Both have identical point/slab marginals,
 
-\[
+$$
  \Pr(H_L=1)=\Pr(H_R=1)=1/2,
-\]
+$$
 
-but the probability of bilateral contact is \(1/2\) under A and zero under B.
+but the probability of bilateral contact is $1/2$ under A and zero under B.
 No decision rule receiving only the two marginal occupancies can distinguish
 them.  A full joint shape generator can, but at the cost the project wishes to
 avoid.  A restricted capacity can also distinguish them because it answers
@@ -948,36 +948,36 @@ methods transfer directly to grasping.
 
 ### Exact Boolean gripper probabilities from avoidance queries
 
-For one candidate grasp, let \(K_0\) be its forbidden approach/palm/finger
-shell, and \(K_L,K_R\) be positive-volume capture slabs for the two intended
-contacts.  Define \(H_i=\mathbf 1[X\cap K_i\ne\varnothing]\).  The geometric
+For one candidate grasp, let $K_0$ be its forbidden approach/palm/finger
+shell, and $K_L,K_R$ be positive-volume capture slabs for the two intended
+contacts.  Define $H_i=\mathbf 1[X\cap K_i\ne\varnothing]$.  The geometric
 event "shell clear and both contacts exist" is
 
-\[
+$$
  A_g=\{H_0=0,H_L=1,H_R=1\}.
-\]
+$$
 
 Inclusion--exclusion gives
 
-\[
+$$
  \Pr(A_g\mid E)=
  V_E(K_0)-V_E(K_0\cup K_L)-V_E(K_0\cup K_R)
  +V_E(K_0\cup K_L\cup K_R).
-\]
+$$
 
 Thus one coherent set functional represents correlations needed by contact
 and collision simultaneously.  If every one of the four avoidance queries is
-estimated within \(\epsilon\), this event probability is estimated within
-\(4\epsilon\).  More detailed friction/contact predicates use a finite lattice
+estimated within $\epsilon$, this event probability is estimated within
+$4\epsilon$.  More detailed friction/contact predicates use a finite lattice
 of nested, asymmetric micro-slabs; their error constant is the number of
 Möbius terms actually used, not the resolution of a scene grid.
 
 There is also a useful distance interpretation.  For a closed ball
-\(B(x,r)\),
+$B(x,r)$,
 
-\[
+$$
  T_E(B(x,r))=\Pr[d(x,X)\le r\mid E].
-\]
+$$
 
 Nested capacity queries therefore yield a distance *distribution* without an
 SDF.  Directional or wedge-shaped nested sets analogously probe local contact
@@ -986,39 +986,39 @@ surface depths.
 
 ### Finite-lattice parameterization that is coherent by construction
 
-An unconstrained MLP \(K\mapsto T_E(K)\) can violate monotonicity and produce
+An unconstrained MLP $K\mapsto T_E(K)$ can violate monotonicity and produce
 negative inclusion--exclusion probabilities.  For each grasp, partition its
-relevant volume into \(r\) semantic binary hit regions and predict the joint
+relevant volume into $r$ semantic binary hit regions and predict the joint
 law
 
-\[
+$$
  p_\theta(h_1,\ldots,h_r\mid E,g),\qquad h_i\in\{0,1\}.
-\]
+$$
 
 Use a non-negative conditional tensor-train probability circuit:
 
-\[
+$$
  p_\theta(h\mid E,g)
  =\frac{G_1(h_1;E,g)G_2(h_2;E,g)\cdots G_r(h_r;E,g)}
         {Z_\theta(E,g)},
-\]
+$$
 
-where endpoint cores have shape \(1\times\chi\) and \(\chi\times1\), internal
-cores are \(\chi\times\chi\), and all entries are positive.  Forward
-contraction computes \(Z_\theta\), marginals, and any avoidance query in
-\(O(r\chi^2)\).  Then
+where endpoint cores have shape $1\times\chi$ and $\chi\times1$, internal
+cores are $\chi\times\chi$, and all entries are positive.  Forward
+contraction computes $Z_\theta$, marginals, and any avoidance query in
+$O(r\chi^2)$.  Then
 
-\[
+$$
  \widehat V_E\!\left(\bigcup_{i\in A}K_i\right)
  =\sum_h p_\theta(h\mid E,g)\prod_{i\in A}(1-h_i)
-\]
+$$
 
 is automatically normalized, monotone, and completely monotone on the finite
-union lattice.  Its dual \(1-\widehat V_E\) is a valid finite capacity.  This
+union lattice.  Its dual $1-\widehat V_E$ is a valid finite capacity.  This
 is stronger than adding a consistency penalty after prediction.
 
-The tensor rank \(\chi\) controls correlation capacity.  \(\chi=1\) is the
-independent-occupancy baseline; increasing \(\chi\) captures mutually
+The tensor rank $\chi$ controls correlation capacity.  $\chi=1$ is the
+independent-occupancy baseline; increasing $\chi$ captures mutually
 exclusive hidden-shape hypotheses without a volumetric latent.  A fixed
 geometric ordering of the regions (approach shell, left pad hierarchy, right
 pad hierarchy) makes contraction deterministic.  A tree tensor network is a
@@ -1028,27 +1028,27 @@ unless the rank ablation demands it.
 ### Architecture: CapGrasp
 
 1. **Censored evidence encoder.**  Encode the same typed camera-ray evidence
-   \(E\) defined earlier: target hit, foreground hit/censor, free/invalid,
+   $E$ defined earlier: target hit, foreground hit/censor, free/invalid,
    depth interval, RGB feature, soft association, and detector class logits.
    This input design is inherited from the rejected Candidate A and is not a
    standalone novelty claim.
-2. **Set-query encoder.**  Represent each gripper region \(K_i(g)\) by its
+2. **Set-query encoder.**  Represent each gripper region $K_i(g)$ by its
    analytic primitive type, pose, dimensions, nesting parent, and a small
    boundary/interior quadrature.  Cross-attend only to the nearest and
    projectively relevant evidence rays.  All relative geometry is expressed
    in the gripper frame.
-3. **Capacity circuit.**  Convert the \(r\) region embeddings and one shared
+3. **Capacity circuit.**  Convert the $r$ region embeddings and one shared
    evidence token into the non-negative tensor-train cores above.  This is the
    conditional law of the joint hit signature, not an occupancy field.
 4. **Mechanics decoder.**  A small calibrated model maps each hit signature,
    visible local normals, aperture, and gripper parameters to a small-lift
    success probability.  The final score marginalizes this decoder exactly or
-   by low-variance circuit sampling under \(p_\theta(h\mid E,g)\).
+   by low-variance circuit sampling under $p_\theta(h\mid E,g)$.
 
-Use a multiresolution gripper partition with, initially, \(r=24\text{--}40\)
+Use a multiresolution gripper partition with, initially, $r=24\text{--}40$
 regions: coarse forbidden shell cells, nested bilateral contact slabs, and a
 few asymmetric probes for normal/friction compatibility.  With tensor rank
-\(\chi=8\), the capacity computation is \(O(r\chi^2)\) per grasp; evidence
+$\chi=8$, the capacity computation is $O(r\chi^2)$ per grasp; evidence
 cross-attention, not the circuit, is likely to dominate runtime.
 
 ### Training without shape reconstruction or RL
@@ -1056,20 +1056,20 @@ cross-attention, not the circuit, is likely to dominate runtime.
 From a full synthetic mesh, binary hit signatures for millions of gripper
 queries are cheap exact collision/intersection labels.  Train
 
-\[
+$$
  \mathcal L_{\rm cap}=-\log p_\theta(H_g(X)\mid E,g).
-\]
+$$
 
 Only the low-dimensional mechanics decoder needs simulator small-lift labels:
 
-\[
+$$
  \mathcal L_{\rm mech}=\operatorname{BCE}
        (q_\psi(H_g(X),g),y),
-\]
+$$
 
 and an optional end decision loss trains the marginalized score.  Mesh
 occupancy is never a network target on a global grid.  Paired unobstructed and
-foreground-occluded renders share the exact same \(X,g,H_g(X)\), isolating the
+foreground-occluded renders share the exact same $X,g,H_g(X)$, isolating the
 information removed by the occluder.  Equal weighting per object prevents
 objects with many successful grasps from silently changing the shape prior.
 
@@ -1110,11 +1110,11 @@ Candidate C is rejected immediately if any of the following fail:
 1. **Signature sufficiency.**  With ground-truth hit signatures, the mechanics
    decoder must come within 2--3 percentage points of a full-mesh oracle on
    small-lift success.  Otherwise the finite lattice omits essential physics.
-2. **Correlation necessity.**  Rank \(\chi>1\) must beat the rank-one
+2. **Correlation necessity.**  Rank $\chi>1$ must beat the rank-one
    independent model by at least 3 points on ambiguity pairs and improve NLL/
    calibration.  Otherwise random-set machinery is ornamental.
 3. **Structured-supervision value.**  At equal parameters and candidate set,
-   CapGrasp must beat a direct \(p(y\mid E,g)\) BCE scorer, especially with
+   CapGrasp must beat a direct $p(y\mid E,g)$ BCE scorer, especially with
    only 1%, 5%, and 10% of simulator labels.  Otherwise the capacity is merely
    an interpretable detour.
 4. **No hidden reconstruction cost.**  Runtime and peak memory must scale with
@@ -1134,7 +1134,7 @@ Create a paired benchmark with exactly one target on a shelf and zero or one
 foreground obstacle.  Do not import TARGO's multi-object clutter as an
 unspoken change of task.  For every tuple of target mesh, pose, wrist-camera
 pose, and grasp candidates, render several controlled foreground occluders at
-occlusion levels \(0,0.2,0.4,0.6,0.8\).  Measure occlusion against the target-
+occlusion levels $0,0.2,0.4,0.6,0.8$.  Measure occlusion against the target-
 alone silhouette, not against the visible bounding box.
 
 Use two evaluation tracks:
@@ -1198,17 +1198,17 @@ answer.
 ### Stage 1: oracle signature sufficiency
 
 Before implementing an evidence encoder, compute exact hit patterns from full
-meshes for \(r\in\{8,16,24,40\}\).  Train only the small mechanics decoder and
+meshes for $r\in\{8,16,24,40\}$.  Train only the small mechanics decoder and
 compare:
 
 - full-mesh simulator/analytic oracle;
 - exact local SDF samples around the gripper;
 - exact CapGrasp hit signature;
 - an independent-bit version of that signature;
-- direct \(g\mapsto y\) using the same low-dimensional gripper features.
+- direct $g\mapsto y$ using the same low-dimensional gripper features.
 
-Plot the accuracy gap versus \(r\), tensor rank, object family, and grasp
-margin.  Stop if \(r\le40\) cannot reach the 2--3 point oracle-gap threshold.
+Plot the accuracy gap versus $r$, tensor rank, object family, and grasp
+margin.  Stop if $r\le40$ cannot reach the 2--3 point oracle-gap threshold.
 This pilot is cheap and prevents months of work on an insufficient quotient.
 
 ### Stage 2: construct ambiguity pairs
@@ -1221,7 +1221,7 @@ separation rather than relying only on average success.
 
 Primary metrics are joint-pattern NLL, bilateral-event Brier score, ECE,
 coverage-versus-risk under abstention, and accuracy of the four-term capacity
-identity.  Rank one must fail on the designed dependence while \(\chi>1\)
+identity.  Rank one must fail on the designed dependence while $\chi>1$
 recovers it.  If a direct BCE scorer is equally calibrated and sample-efficient,
 the proposed representation has no empirical reason to exist.
 
@@ -1237,7 +1237,7 @@ candidate oracle recall separately.  Baselines are:
 5. a parameter-matched full-scene cross-attention BCE scorer;
 6. a PartialBiGrasp-style deterministic local-occupancy head at the same
    gripper probes;
-7. CapGrasp with rank \(\chi=1\), which is the independent joint law;
+7. CapGrasp with rank $\chi=1$, which is the independent joint law;
 8. CapGrasp without censor-ray types, without class logits, and without paired
    occlusion training.
 
@@ -1357,7 +1357,7 @@ baselines are therefore headline experiments, not appendix ablations.
    generalization, exact coherence advantages, and lower simulator-label
    complexity.  The Choquet vocabulary alone adds no value.
 2. **"PartialBiGrasp already queries hidden occupancy at the gripper."**  This
-   wins unless rank \(\chi>1\) beats its deterministic/marginal analogue on real
+   wins unless rank $\chi>1$ beats its deterministic/marginal analogue on real
    ambiguity, not just on a toy construction.
 3. **"A direct success critic is all that is needed."**  This wins unless the
    capacity labels confer clear sample efficiency, calibration, or transfer to
@@ -1391,7 +1391,7 @@ ICLR case is approximately 6/10: plausible weak accept if the mathematical
 construction is clear, but reject without the three decisive empirical gaps.
 It can become an 8/10-level submission only if:
 
-1. the \(r\le40\) oracle signature is nearly sufficient;
+1. the $r\le40$ oracle signature is nearly sufficient;
 2. correlated capacity decisively beats rank-one occupancy and direct BCE on
    ambiguity and scarce simulator labels;
 3. the fixed-candidate and end-to-end system sets a statistically significant

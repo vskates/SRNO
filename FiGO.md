@@ -19,9 +19,9 @@
 
 Предлагаемый statistical target — не полная форма и не scalar confidence, а условное **grasp-outcome field**; в минимальной версии это семейство калиброванных marginals, а в расширенной — распределение целой функции исходов
 
-\[
+$$
 F_S:\mathcal G\to\mathbb R,\qquad g\mapsto m(S,g),
-\]
+$$
 
 индуцированное posterior’ом скрытой формы $S\mid X$. Здесь $m$ — локальный signed grasp-stability margin для parallel-jaw gripper, а $\mathcal G=(SE(3)\times W)/C_2$ учитывает диапазон ширины и симметрию перестановки губок.
 
@@ -98,7 +98,7 @@ TARGO намеренно изучает совместный эффект. Дл�
 - [NeuGraspNet](https://sites.google.com/view/neugraspnet/home) строит implicit feature volume из одного random-view depth;
 - [GraspLDM](https://arxiv.org/abs/2312.11243), [Grasp Diffusion Network](https://arxiv.org/abs/2412.08398), [Implicit Grasp Diffusion](https://proceedings.mlr.press/v270/song25b.html) и [GraspGen](https://arxiv.org/abs/2507.13097) моделируют multimodal grasp distributions.
 
-Эти методы в основном учат (p(g\mid X)), pointwise quality (q(g,X)), либо dense grasp map. Они не представляют posterior distribution функции (g\mapsto m(S,g)), индуцированную скрытой формой.
+Эти методы в основном учат $p(g\mid X)$, pointwise quality $q(g,X)$, либо dense grasp map. Они не представляют posterior distribution функции $g\mapsto m(S,g)$, индуцированную скрытой формой.
 
 ### 2.2 Evidence: partial и externally occluded observation действительно вредят
 
@@ -124,7 +124,7 @@ TARGO намеренно изучает совместный эффект. Дл�
 
 ### 2.4 Direct uncertainty in grasp models
 
-[FFHFlow](https://proceedings.mlr.press/v305/feng25a.html) — важнейший сосед. Он учит flow-based latent grasp distribution для dexterous hand на partial PCD и использует exact flow likelihood вместе с discriminative evaluator. Но его view uncertainty — типичность generated grasp под (p(g\mid X)), а не posterior distribution физического margin (p(m\mid X,g)). Высокая плотность хороших training grasps не равна высокой вероятности success across shapes, совместимых с observation. Модель также не задаёт joint outcome correlations между разными grasp queries и не требует Bayesian consistency между уровнями окклюзии.
+[FFHFlow](https://proceedings.mlr.press/v305/feng25a.html) — важнейший сосед. Он учит flow-based latent grasp distribution для dexterous hand на partial PCD и использует exact flow likelihood вместе с discriminative evaluator. Но его view uncertainty — типичность generated grasp под $p(g\mid X)$, а не posterior distribution физического margin $p(m\mid X,g)$. Высокая плотность хороших training grasps не равна высокой вероятности success across shapes, совместимых с observation. Модель также не задаёт joint outcome correlations между разными grasp queries и не требует Bayesian consistency между уровнями окклюзии.
 
 [PUGS](https://arxiv.org/abs/2502.09824) моделирует multi-view reconstruction/pose uncertainty в underwater setting и делит pre-trained grasp confidence на occupancy variance. Это полезное доказательство того, что uncertainty-aware selection помогает, но не posterior hidden-shape outcomes из single view.
 
@@ -176,7 +176,7 @@ TARGO намеренно изучает совместный эффект. Дл�
 
 ### Вариант C: worst-case certified grasp set по всем совместимым формам
 
-**Идея.** (\underline m(X,g)=\inf_{S\in\mathcal C(X)}m(S,g)), выбирать grasp с наибольшей гарантией. При добавлении evidence set (\mathcal C(X)) сужается, поэтому certificate monotone.
+**Идея.** $\underline m(X,g)=\inf_{S\in\mathcal C(X)}m(S,g)$, выбирать grasp с наибольшей гарантией. При добавлении evidence set $\mathcal C(X)$ сужается, поэтому certificate monotone.
 
 **Почему привлекательно.** Сильная теорема и безопасная интерпретация.
 
@@ -211,27 +211,27 @@ Joint часть сохраняется условно, потому что он
 
 ### 4.1 Latent world и observation fiber
 
-Пусть (S\sim P_S) — полная rigid surface target object вместе с фиксированными для эксперимента contact parameters. При известном class (c) используется (P_S(\cdot\mid c)); при неизвестном — unconditional/mixed prior. Classifier-free conditioning во время training позволяет одному model работать в обоих режимах.
+Пусть $S\sim P_S$ — полная rigid surface target object вместе с фиксированными для эксперимента contact parameters. При известном class $c$ используется $P_S(\cdot\mid c)$; при неизвестном — unconditional/mixed prior. Classifier-free conditioning во время training позволяет одному model работать в обоих режимах.
 
-Камера (v), single occluder (B), sensor noise (\epsilon) задают оператор видимости
+Камера $v$, single occluder $B$, sensor noise $\epsilon$ задают оператор видимости
 
-\[
+$$
 X=\mathcal V(S;v,B,\epsilon).
-\]
+$$
 
 Практический input не является SDF сцены:
 
-\[
+$$
 X=(P_{\mathrm{target}},R_{\mathrm{occ}},v[,c]),
-\]
+$$
 
 где $P_{\mathrm{target}}$ — segmented target PCD, а $R_{\mathrm{occ}}$ — опциональный небольшой subsample лучей первого возврата от obstacle около видимого контура target. Эти лучи оцениваются только из доступных depth/segmentation и **не требуют oracle amodal silhouette**; версия без них обязательна как baseline. Геометрия shelf/obstacle отдельно поступает в deterministic collision checker. Ray tokens могут различать missingness mechanisms при почти одинаковых target points, не превращая input в full-scene SDF.
 
 Observation fiber
 
-\[
+$$
 \mathcal S_X=\{S:\mathcal V(S;v,B,\epsilon)\approx X\}
-\]
+$$
 
 содержит множество несовместимых скрытых форм. Point completion выбирает/сэмплирует элементы этого fiber. FiGO сразу отображает fiber в task space.
 
@@ -239,66 +239,66 @@ Observation fiber
 
 Parallel-jaw grasp:
 
-\[
+$$
 g=(R,t,w)\in SE(3)\times [w_{\min},w_{\max}].
-\]
+$$
 
 Перестановка губок создаёт физически тот же grasp, поэтому domain лучше считать quotient space
 
-\[
+$$
 \mathcal G=(SE(3)\times W)/C_2.
-\]
+$$
 
 Эта симметрия реализуется либо canonicalization, либо $C_2$-symmetrization decoder’а.
 
 ### 4.3 Локальный outcome, а не whole-cycle feasibility
 
-Для complete (S) и grasp (g) вычисляется signed robust margin
+Для complete $S$ и grasp $g$ вычисляется signed robust margin
 
-\[
+$$
 m(S,g)=\inf_{\delta\in\Delta_{\text{calib}}}
 \Big[\mu_0-\mu_{\min}(S,g\oplus\delta)\Big],
-\]
+$$
 
-с отрицательным значением для jaw/object penetration или отсутствия допустимой contact pair. (\mu_{\min}) — минимальный coefficient of friction, при котором contact pair antipodal/force-closure; (\Delta_{\text{calib}}) — малое множество pose perturbations, соответствующее hand-eye и механической погрешности. Альтернатива — нормированный Ferrari–Canny (\epsilon)-margin. Оба label’а вычисляются по **полной target mesh**, но model её не предсказывает.
+с отрицательным значением для jaw/object penetration или отсутствия допустимой contact pair. $\mu_{\min}$ — минимальный coefficient of friction, при котором contact pair antipodal/force-closure; $\Delta_{\text{calib}}$ — малое множество pose perturbations, соответствующее hand-eye и механической погрешности. Альтернатива — нормированный Ferrari–Canny $\epsilon$-margin. Оба label’а вычисляются по **полной target mesh**, но model её не предсказывает.
 
 Такой label:
 
 - локален к gripper interaction volume;
 - непрерывен почти всюду и информативнее binary success;
 - не включает motion planning и длинный lift cycle;
-- позволяет binary success (Y=\mathbf 1[m>0]) для evaluation.
+- позволяет binary success $Y=\mathbf 1[m>0]$ для evaluation.
 
 ### 4.4 Task-induced random function
 
 Каждая полная форма задаёт функцию
 
-\[
+$$
 F_S(g)=m(S,g),\qquad F_S\in\mathbb R^{\mathcal G}.
-\]
+$$
 
 Partial observation индуцирует posterior stochastic process
 
-\[
+$$
 \Pi_X=\mathcal L(F_S\mid X).
-\]
+$$
 
-Для конечного query basket (G=(g_1,\ldots,g_K)) модель возвращает joint distribution
+Для конечного query basket $G=(g_1,\ldots,g_K)$ модель возвращает joint distribution
 
-\[
+$$
 \Pi_X^G=\mathcal L\big(F_S(g_1),\ldots,F_S(g_K)\mid X\big).
-\]
+$$
 
 Именно конечномерные distributions нужны для обучения и выбора; по Kolmogorov consistency они определяют process при согласованной модели.
 
 ### 4.5 Proposition 1: task sufficiency — и её важное ограничение
 
-Пусть любая downstream grasp decision использует (S) только через значения (F_S(g)). Тогда для любого bounded utility (u) и grasp (g)
+Пусть любая downstream grasp decision использует $S$ только через значения $F_S(g)$. Тогда для любого bounded utility $u$ и grasp $g$
 
-\[
+$$
 \mathbb E[u(F_S(g))\mid X]
 =\int u(f(g))\,d\Pi_X(f).
-\]
+$$
 
 Следовательно, $\Pi_X$ достаточен для любой Bayes-optimal grasp decision в этом классе; posterior $P(S\mid X)$ содержит task-irrelevant information. Два shape posterior’а, имеющие одинаковый pushforward $\Pi_X$, неразличимы для всех таких grasp decisions.
 
@@ -310,43 +310,43 @@ Partial observation индуцирует posterior stochastic process
 
 Строим physically nested observations одного latent object:
 
-\[
+$$
 X_0\preceq X_1\preceq\cdots\preceq X_L,
-\]
+$$
 
 где $X_0$ наиболее закрыт, $X_L$ — unoccluded single-view observation (его backside всё ещё self-occluded). Формально coarse view должен быть **measurable garbling** fine view: shared rays используют один и тот же coupled sensor-noise draw, mask/occluder descriptor входит в observation, а $X_\ell=C_\ell(X_{\ell+1},U_\ell)$ для известного/сэмплированного garbling kernel. Тогда можно определить $\mathcal F_\ell=\sigma(X_0,\ldots,X_\ell)$ и получить $\mathcal F_\ell\subseteq\mathcal F_{\ell+1}$. Просто независимо перерендеренные noisy кадры этого свойства не имеют и не годятся для теоремы без расширения probability space.
 
 Posterior measure
 
-\[
+$$
 \Pi_\ell(A)=P(F_S\in A\mid\mathcal F_\ell)
-\]
+$$
 
-является **measure-valued martingale**: для любого measurable (A)
+является **measure-valued martingale**: для любого measurable $A$
 
-\[
+$$
 \mathbb E[\Pi_{\ell+1}(A)\mid\mathcal F_\ell]=\Pi_\ell(A).
-\]
+$$
 
-Эквивалентно, для любого bounded test functional (\phi)
+Эквивалентно, для любого bounded test functional $\phi$
 
-\[
+$$
 M_\ell^\phi=\int\phi(f)\,d\Pi_\ell(f)
-\]
+$$
 
 выполняет
 
-\[
+$$
 \mathbb E[M_{\ell+1}^\phi\mid\mathcal F_\ell]=M_\ell^\phi.
-\]
+$$
 
 Для mean margin это обычная tower property. Для variance:
 
-\[
+$$
 \mathrm{Var}(F(g)\mid\mathcal F_\ell)=
 \mathbb E[\mathrm{Var}(F(g)\mid\mathcal F_{\ell+1})\mid\mathcal F_\ell]
 +\mathrm{Var}(\mathbb E[F(g)\mid\mathcal F_{\ell+1}]\mid\mathcal F_\ell).
-\]
+$$
 
 Поэтому uncertainty с большей видимостью уменьшается **в среднем**, но не обязана pointwise монотонно уменьшаться для каждого конкретного кадра. Это важная защита от ложной regularization.
 
@@ -356,15 +356,15 @@ M_\ell^\phi=\int\phi(f)\,d\Pi_\ell(f)
 
 Нельзя минимизировать
 
-\[
+$$
 D_{KL}(\Pi_{X_0}\|\Pi_{X_L})
-\]
+$$
 
-для пар одного latent object. (X_L) раскрывает именно истинную форму этого sample и его posterior уже; (X_0) должен быть смесью posterior’ов всех fine observations, совместимых с coarse observation:
+для пар одного latent object. $X_L$ раскрывает именно истинную форму этого sample и его posterior уже; $X_0$ должен быть смесью posterior’ов всех fine observations, совместимых с coarse observation:
 
-\[
+$$
 \Pi_{X_0}=\int \Pi_{X_L}\,dP(X_L\mid X_0).
-\]
+$$
 
 Pairwise matching заменяет условную смесь одной компонентой и искусственно схлопывает ambiguity.
 
@@ -376,24 +376,24 @@ Pairwise matching заменяет условную смесь одной ком
 
 Encoder получает target points и небольшой набор occlusion-ray tokens. Он выдаёт:
 
-- global invariant context (h_X);
-- equivariant per-point features (h_i);
-- локальные признаки в gripper-aligned crop для каждого query (g).
+- global invariant context $h_X$;
+- equivariant per-point features $h_i$;
+- локальные признаки в gripper-aligned crop для каждого query $g$.
 
 Для query grasp точки преобразуются в gripper frame:
 
-\[
+$$
 u_i=R_g^\top(x_i-t_g).
-\]
+$$
 
 Cross-attention выполняется только по points/rays около closing и contact volume. Это не dense SDF и не вся shelf scene.
 
 Желаемая equivariance для любого конечного query basket $G$:
 
-\[
+$$
 \mathcal L\!\left((F_{HS}(Hg))_{g\in G}\mid HX\right)
 =\mathcal L\!\left((F_S(g))_{g\in G}\mid X\right),\qquad H\in SE(3).
-\]
+$$
 
 OrbitGrasp и EquiGraspFlow дают косвенное evidence, что explicit equivariance улучшает data efficiency и spatial generalization; здесь она является не novelty claim сама по себе, а необходимой структурой query field.
 
@@ -401,19 +401,19 @@ OrbitGrasp и EquiGraspFlow дают косвенное evidence, что explici
 
 Conditional prior:
 
-\[
+$$
 z\sim p_\theta(z\mid h_X[,c]),
-\]
+$$
 
-где (p_\theta) — компактный conditional normalizing flow или mixture prior. Один sampled (z) используется для **всех** (g_j\in G):
+где $p_\theta$ — компактный conditional normalizing flow или mixture prior. Один sampled $z$ используется для **всех** $g_j\in G$:
 
-\[
+$$
 \hat m_j=d_\psi(h_X,h_{G_j},z,g_j)+\eta_j.
-\]
+$$
 
 Это conditional latent field над $\mathcal G$; latent neural process является одной реализацией. Shared $z$ кодирует глобальную hidden-shape hypothesis только в task space. Модель не обязана уметь вывести mesh, backside points или SDF.
 
-[Conditional Neural Processes](https://proceedings.mlr.press/v80/garnelo18a.html) показывают, что function distributions можно моделировать с permutation-invariant context и (O(n+m)) inference по числу context/target points. [Rényi Neural Processes](https://openreview.net/forum?id=qMt4KikFJg) дают современную robust variational alternative при misspecified conditional prior. Эти работы — general-ML inspiration, не robotics pipeline source.
+[Conditional Neural Processes](https://proceedings.mlr.press/v80/garnelo18a.html) показывают, что function distributions можно моделировать с permutation-invariant context и $O(n+m)$ inference по числу context/target points. [Rényi Neural Processes](https://openreview.net/forum?id=qMt4KikFJg) дают современную robust variational alternative при misspecified conditional prior. Эти работы — general-ML inspiration, не robotics pipeline source.
 
 GNP уже реализует object-level latent action-feasibility function в grasping. Поэтому эта секция — **implementation hypothesis**, не самостоятельный contribution. Если KCM/visual-filtration часть удалить, архитектурная novelty недостаточна.
 
@@ -421,17 +421,17 @@ GNP уже реализует object-level latent action-feasibility function в
 
 Во время training доступен query basket с ground-truth margins
 
-\[
+$$
 D_G=\{(g_j,m(S,g_j))\}_{j=1}^K.
-\]
+$$
 
-Permutation-invariant posterior encoder (q_\varphi(z\mid X,D_G)) используется только при обучении:
+Permutation-invariant posterior encoder $q_\varphi(z\mid X,D_G)$ используется только при обучении:
 
-\[
+$$
 \mathcal L_{NP}=
 -\mathbb E_{q_\varphi}\sum_{j=1}^K\log p_\psi(m_j\mid X,g_j,z)
 +\beta D\big(q_\varphi(z\mid X,D_G)\|p_\theta(z\mid X)\big).
-\]
+$$
 
 Можно начать с KL; если conditional-prior misspecification заметна, заменить на Rényi divergence. Не следует добавлять diffusion только ради модности: latent flow достаточен, быстрее и даёт tractable sampling.
 
@@ -439,67 +439,67 @@ Permutation-invariant posterior encoder (q_\varphi(z\mid X,D_G)) использ�
 
 Для nested pair $X^-\preceq X^+$ и общего query basket $G$ берём characteristic feature map $\phi(F_G)$ (например, random Fourier features Gaussian kernel на joint margin vector). Важно: $G$ должен быть фиксирован, сэмплирован независимо или зависеть только от $X^-$; если candidates строятся из дополнительной информации $X^+$, tower equation ниже уже не следует. Модельные conditional mean embeddings:
 
-\[
+$$
 \mu_\theta(X,G)=
 \mathbb E_{F_G\sim\hat\Pi_\theta(\cdot\mid X)}[\phi(F_G)].
-\]
+$$
 
 Tower property требует
 
-\[
+$$
 \mathbb E[\mu_\theta(X^+,G)-\mu_\theta(X^-,G)\mid X^-]=0.
-\]
+$$
 
-Пусть (r_i=\mu_\theta(X_i^+,G_i)-\mu_\theta(X_i^-,G_i)), (k_X) — universal kernel на coarse observation embeddings. Практический maximum-moment penalty:
+Пусть $r_i=\mu_\theta(X_i^+,G_i)-\mu_\theta(X_i^-,G_i)$, $k_X$ — universal kernel на coarse observation embeddings. Практический maximum-moment penalty:
 
-\[
+$$
 \mathcal L_{KCM}=
 \frac1{B^2}\sum_{i,j=1}^B
 k_X(e_i^-,e_j^-)\langle r_i,r_j\rangle.
-\]
+$$
 
 При characteristic outcome kernel, universal observation kernel, корректном sampling и достаточном query support нулевой population loss идентифицирует нужное conditional distribution relation для рассматриваемых finite-dimensional marginals. Конечный набор baskets сам по себе не доказывает равенство бесконечномерных процессов. [Kernel Conditional Moment Test](https://proceedings.mlr.press/v124/muandet20a.html) показывает, как RKHS maximum moment restriction характеризует conditional moment restriction и даёт вычислимый statistic. [Functional GEL](https://proceedings.mlr.press/v162/kremer22a.html) даёт практические kernel/neural реализации и consistency results для своего setting; перенос их guarantees на FiGO потребует отдельного доказательства assumptions.
 
-Для scale используется random-feature approximation: (O(BD_\phi)), а не явная (O(B^2)) Gram matrix.
+Для scale используется random-feature approximation: $O(BD_\phi)$, а не явная $O(B^2)$ Gram matrix.
 
 ### 5.5 Полный objective
 
-\[
+$$
 \mathcal L=
 \mathcal L_{NP}
 +\lambda_{mart}\mathcal L_{KCM}
 +\lambda_{eq}\mathcal L_{SE(3)/C_2}
 +\lambda_{cal}\mathcal L_{margin-cal}.
-\]
+$$
 
 Последний term — proper scoring rule (CRPS или energy score) для calibration finite-dimensional distributions. Никакого reconstruction loss нет.
 
 ### 5.6 Risk-sensitive inference: marginal core и joint extension
 
-Для каждого candidate (g) сэмплируем (M) shared latents (z^{(1:M)}) и получаем margins (m^{(1:M)}(g)). Основной score:
+Для каждого candidate $g$ сэмплируем $M$ shared latents $z^{(1:M)}$ и получаем margins $m^{(1:M)}(g)$. Основной score:
 
-\[
+$$
 R_\alpha(g\mid X)=\operatorname{CVaR}_{\alpha}
 \big(F_S(g)\mid X\big),
-\]
+$$
 
-то есть среднее худших (\alpha)-долей posterior outcomes. Затем
+то есть среднее худших $\alpha$-долей posterior outcomes. Затем
 
-\[
+$$
 g^*=\arg\max_{g\in\mathcal C(X)}R_\alpha(g\mid X),
-\]
+$$
 
-где (\mathcal C(X)) уже отфильтрован observed obstacle/shelf collision checker’ом.
+где $\mathcal C(X)$ уже отфильтрован observed obstacle/shelf collision checker’ом.
 
 CVaR — design choice, не novelty. Ablation обязана сравнить mean, lower quantile, worst sample и CVaR. Этот selector использует только marginals и поэтому не является evidence пользы joint process.
 
 Чтобы проверить именно joint structure, вводится отдельный posterior-regret score на **фиксированном общем** candidate pool $\mathcal C$:
 
-\[
+$$
 \rho_\alpha(g\mid X)=
 \operatorname{CVaR}^{\mathrm{upper}}_{1-\alpha}
 \left(\max_{h\in\mathcal C}F_S(h)-F_S(g)\mid X\right).
-\]
+$$
 
 Joint selector минимизирует $\rho_\alpha$ при ограничении на lower-tail absolute margin. В отличие от marginal CVaR, regret требует outcomes всех candidates под одним sample скрытого мира. Это не гарантированно лучший практический objective; его задача — честно установить, несут ли learned correlations decision value.
 
@@ -507,7 +507,7 @@ Joint selector минимизирует $\rho_\alpha$ при ограничен�
 
 FiGO лучше позиционировать как **proposal-agnostic posterior evaluator/selector**, потому что это чистая подзадача и позволяет честное сравнение при одинаковом candidate recall. Основные эксперименты используют candidates от двух сильных, существенно разных generators (например, GraspGen и TARGO/Contact-GraspNet-style), плюс oracle candidate pool с full mesh.
 
-Опционально differentiable decoder позволяет 3–5 Riemannian gradient steps на (SE(3)) для refinement (R_\alpha). Это расширение, а не центральный contribution.
+Опционально differentiable decoder позволяет 3–5 Riemannian gradient steps на $SE(3)$ для refinement $R_\alpha$. Это расширение, а не центральный contribution.
 
 ### 5.8 Calibration после selection
 
@@ -536,7 +536,7 @@ FiGO лучше позиционировать как **proposal-agnostic poster
 
 Для каждой (S,v):
 
-1. рендерится clean single-view depth (X_L);
+1. рендерится clean single-view depth $X_L$;
 2. перед target перемещается один box/cylinder/held-out household occluder;
 3. маски строятся вложенно по target pixel coverage;
 4. levels: 0, 0.15, 0.30, 0.45, 0.60, 0.75, 0.90;
@@ -554,7 +554,7 @@ Random point dropout — отдельный weak baseline, не основной
 - 25% hard negatives, которые выглядят хорошими на partial PCD, но плохи на full mesh;
 - 15% broad proposals для coverage.
 
-Особенно важны pairs (g_a,g_b), где две hidden-shape hypotheses меняют их ranking местами. Без таких baskets joint process может выродиться в независимые marginal scores.
+Особенно важны pairs $g_a,g_b$, где две hidden-shape hypotheses меняют их ranking местами. Без таких baskets joint process может выродиться в независимые marginal scores.
 
 ### 6.4 Class-known и class-free режимы
 
@@ -584,7 +584,7 @@ Splits:
 - unseen instances;
 - unseen categories;
 - unseen occluder geometry/material;
-- train levels (0,0.3,0.6,0.9), test intermediate levels;
+- train levels $0,0.3,0.6,0.9$, test intermediate levels;
 - sensor-noise shift;
 - candidate-generator transfer.
 
@@ -629,7 +629,7 @@ Efficiency:
 - end-to-end latency;
 - peak memory;
 - число full-geometry queries (у FiGO ноль);
-- scaling по (K) grasp queries и (M) latent samples.
+- scaling по $K$ grasp queries и $M$ latent samples.
 
 ### 7.4 Обязательные baselines
 
@@ -640,8 +640,8 @@ Efficiency:
 5. Deterministic completion + planner.
 6. Probabilistic completion + mean/LCB/CVaR planning (UNCLE-style generalized beyond strawberries).
 7. Pointwise Bernoulli success critic.
-8. Independent quantile/flow (p(m\mid X,g)).
-9. FiGO without (\mathcal L_{KCM}).
+8. Independent quantile/flow $p(m\mid X,g)$.
+9. FiGO without $\mathcal L_{KCM}$.
 10. FiGO with **wrong pairwise KL consistency**.
 11. Full-PCD oracle и best-in-candidate oracle.
 
@@ -657,8 +657,8 @@ FFHFlow — conceptual comparison, но не прямой apples-to-apples basel
 - with/without occlusion-ray tokens;
 - class-free vs class-conditioned;
 - equivariant vs augmentation-only encoder;
-- (M\in\{1,4,8,16,32\});
-- different risk function (E,q_{0.1},CVaR_{0.1},\min);
+- $M\in\{1,4,8,16,32\}$;
+- different risk function $E,q_{0.1},CVaR_{0.1},\min$;
 - analytic margin labels vs short-lift simulation labels;
 - fixed candidate pool vs two proposal generators.
 
@@ -691,7 +691,7 @@ FiGO: no completion; posterior random function of target-grasp margin; joint can
 
 ### 9.3 Отличие от FFHFlow
 
-FFHFlow моделирует (p(g\mid X)) и использует grasp likelihood как uncertainty proxy. FiGO моделирует (\mathcal L(m(S,\cdot)\mid X)). «Частый хороший grasp в training data» и «grasp с хорошим worst-tail outcome по всем plausible hidden shapes» — разные quantities.
+FFHFlow моделирует $p(g\mid X)$ и использует grasp likelihood как uncertainty proxy. FiGO моделирует $\mathcal L(m(S,\cdot)\mid X)$. «Частый хороший grasp в training data» и «grasp с хорошим worst-tail outcome по всем plausible hidden shapes» — разные quantities.
 
 ### 9.4 Отличие от Neural Processes
 

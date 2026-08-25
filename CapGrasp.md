@@ -21,11 +21,11 @@
 
 Если `T_O(K)` — conditional hitting capacity, то вероятность геометрического grasp-сертификата получается **точным тождеством**, а не эвристическим произведением независимых вероятностей:
 
-\[
+$$
 p_{\mathrm{geo}}(g\mid O)
 =\Pr[H(A_g)\land \neg H(B_g)\mid O]
 =T_O(A_g\cup B_g)-T_O(B_g).
-\]
+$$
 
 Это сохраняет зависимость между скрытыми контактами и скрытой коллизией, потому что оба события порождены одной неизвестной формой. Полная mesh/voxel/SDF-реконструкция не нужна ни на обучении в качестве output, ни на inference. Модель учит лишь decision-relevant quotient распределения форм: какие формы неразличимы для заданного семейства запросов, считаются эквивалентными.
 
@@ -139,10 +139,10 @@ Robotics-работы здесь использованы только для у
 
 **Отказ.** Для ожидаемого regret член oracle quality не зависит от выбранного grasp и сокращается:
 
-\[
+$$
 \arg\min_g \mathbb E[Q(g^*(S),S)-Q(g,S)\mid O]
 =\arg\max_g \mathbb E[Q(g,S)\mid O].
-\]
+$$
 
 То есть objective маскирует обычный expected quality. Tail regret не даёт абсолютной надёжности и снова уходит в generic risk measure.
 
@@ -152,9 +152,9 @@ Robotics-работы здесь использованы только для у
 
 **Частичный отказ.** Survival formulation красива и даёт monotonicity по времени закрытия, но одна survival curve плохо выражает совместное существование двух допустимых контактов и отсутствие body collision. Она остаётся полезным **следствием** capacity operator:
 
-\[
+$$
 \Pr(\tau_g\le t\mid O)=T_O(K_g(t)),
-\]
+$$
 
 где `K_g(t)` — вложенные swept volumes. Основной framework должен быть богаче survival prediction.
 
@@ -180,32 +180,32 @@ Robotics-работы здесь использованы только для у
 
 Наблюдение:
 
-\[
+$$
 O=\operatorname{Render}(S,\xi_{cam},S_{occ})+\epsilon,
-\]
+$$
 
 где `S_occ` — foreground occluder, `ε` — depth noise/dropout. После наблюдения `S` остаётся случайным замкнутым множеством с conditional law `P(S|O)`.
 
 Ориентированный normal bundle:
 
-\[
+$$
 \widetilde S=\{(x,n(x)):x\in S\}.
-\]
+$$
 
 Для paired contacts нужен lifted pair space:
 
-\[
+$$
 P(S)=\widetilde S\times\widetilde S.
-\]
+$$
 
 Пара может нести marks: расстояние, opposing-normal angle, conservative friction-cone margin, analytical wrench/force-closure margin и устойчивость к малому pose perturbation.
 
 Вводим tagged latent random set:
 
-\[
+$$
 Z(S)=\big(\{+\}\times P(S)\big)\;\cup\;
       \big(\{-\}\times\widetilde S\big).
-\]
+$$
 
 Тег `+` относится к существованию допустимой пары контактов; тег `−` — к одиночной поверхности, которая может вызвать collision. Оба компонента детерминированы одной формой `S`, поэтому их зависимость сохраняется.
 
@@ -213,11 +213,11 @@ Z(S)=\big(\{+\}\times P(S)\big)\;\cup\;
 
 Для компактного query set `K`:
 
-\[
+$$
 H_Z(K)=\mathbf 1[Z\cap K\ne\varnothing],
 \qquad
 T_O(K)=\Pr[Z\cap K\ne\varnothing\mid O].
-\]
+$$
 
 `T_O` — условный capacity/hitting functional случайного замкнутого множества. В классической random-set theory распределение random closed set определяется его capacity functional; Choquet characterization связывает такие функции с normalized, upper-semicontinuous, completely alternating capacities. Практическая модель работает на task-restricted finite query algebra, поэтому не пытается идентифицировать закон на всех компактах пространства.
 
@@ -239,20 +239,20 @@ T_O(K)=\Pr[Z\cap K\ne\varnothing\mid O].
 
 ### 5.4. Геометрический сертификат
 
-\[
+$$
 C_g=H_Z(A_g)\land\neg H_Z(B_g).
-\]
+$$
 
 Тогда:
 
-\[
+$$
 \begin{aligned}
 p_{geo}(g\mid O)
 &=\Pr[C_g\mid O]\\
 &=\Pr[H(A_g)\lor H(B_g)\mid O]-\Pr[H(B_g)\mid O]\\
 &=T_O(A_g\cup B_g)-T_O(B_g).
 \end{aligned}
-\]
+$$
 
 Это ключевой результат. Нельзя заменять его на `P(H(A))·(1−P(H(B)))`: contact existence и collision обычно сильно зависимы через thickness, curvature и hidden backside geometry.
 
@@ -262,11 +262,11 @@ p_{geo}(g\mid O)
 
 Пусть `𝒬` — семейство используемых task queries. Определим эквивалентность форм:
 
-\[
+$$
 S\sim_{\mathcal Q}S'
 \iff
 \forall K\in\mathcal Q:\ H_{Z(S)}(K)=H_{Z(S')}(K).
-\]
+$$
 
 Модель должна учить posterior не в огромном пространстве meshes, а на quotient `𝒮/∼_𝒬`: различия формы, которые не меняют ни одного task predicate, намеренно забываются.
 
@@ -284,32 +284,32 @@ S\sim_{\mathcal Q}S'
 
 Из полного training mesh строятся разные partial observations:
 
-\[
+$$
 (S,O,\delta),
-\]
+$$
 
 где `δ` содержит sampled camera/gripper pose noise, depth corruption и при необходимости conservative nuisance friction. Для каждого observation выбирается batch compact queries `K_1,…,K_m` из task distribution `μ_Q`.
 
 Ground-truth hit label вычисляется offline exact/robust mesh predicates:
 
-\[
+$$
 y_K=\mathbf 1[Z(S,\delta)\cap K\ne\varnothing].
-\]
+$$
 
 Для union метка бесплатна:
 
-\[
+$$
 y_{K_1\cup\dots\cup K_r}=\max_i y_{K_i}.
-\]
+$$
 
 ### 6.2. Capacity proper loss
 
-\[
+$$
 \mathcal L_{cap}(\theta)=
 \mathbb E_{(O,S),K\sim\mu_Q}
 \left[-y_K\log\widehat T_\theta(K\mid O)
 -(1-y_K)\log(1-\widehat T_\theta(K\mid O))\right].
-\]
+$$
 
 Обучение должно включать:
 
@@ -356,35 +356,35 @@ Direct BCE по `y_good=C_g` — обязательный baseline, но не о
 
 Сначала зафиксируем конечное семейство физических запросов `𝒦_m={K_1,…,K_m}` и hit vector `Y_i=H_Z(K_i)`. Он индуцирует случайное множество индексов
 
-\[
+$$
 R_Z=\{i:Y_i=1\}\subseteq\{1,\ldots,m\}.
-\]
+$$
 
 Для `J⊆{1,…,m}` его hitting capacity точно совпадает с ограничением физической capacity:
 
-\[
+$$
 \Pr[R_Z\cap J\ne\varnothing\mid O]
 =\Pr\!\left[Z\cap\left(\bigcup_{j\in J}K_j\right)\ne\varnothing\mid O\right]
 =T_O\!\left(\bigcup_{j\in J}K_j\right).
-\]
+$$
 
 Таким образом, finite head моделирует не метафорический set score, а joint law ответов физического hidden set на выбранную query family. Для union, канонически представленного списком query indices `J`, определим:
 
-\[
+$$
 \widehat T_\theta\left(\bigcup_{j\in J}K_j\mid O\right)
 =1-\sum_{h=1}^{H}\pi_h(O)
 \prod_{j\in J}\big(1-r_h(K_j,O)\big),
-\]
+$$
 
 где `π_h≥0` и `Σ_hπ_h=1`.
 
 Для grasp:
 
-\[
+$$
 \widehat p_{geo}(g\mid O)
 =\widehat T(A_g\cup B_g\mid O)-\widehat T(B_g\mid O)
 =\sum_h\pi_h\,r_h(A_g)\,[1-r_h(B_g)].
-\]
+$$
 
 Эта factorization предполагает conditional independence атомарных hit indicators внутри mode, но смесь modes восстанавливает произвольную finite joint distribution при достаточном `H`.
 
@@ -422,9 +422,9 @@ Capacity guarantee буквально действует на union конечн
 
 Observation кодируется один раз. После этого для `G` candidates и двух основных atoms на grasp стоимость головы примерно:
 
-\[
+$$
 O(GHd),
-\]
+$$
 
 с полностью batchable tensor operations. Нет online mesh decoding, volumetric grid или Monte Carlo shape completion. Целевой engineering budget: `H≤32`, 128–512 geometric samples на query только в encoder, latency ниже deterministic local-completion baseline при одинаковом backbone.
 
@@ -455,23 +455,23 @@ return argmax_g p_geo[g]
 
 Пусть конечный candidate set `𝒢(O)` фиксирован и для каждого `g` выполнено:
 
-\[
+$$
 |\widehat T(A_g\cup B_g)-T(A_g\cup B_g)|\le\varepsilon,
 \quad
 |\widehat T(B_g)-T(B_g)|\le\varepsilon.
-\]
+$$
 
 Тогда:
 
-\[
+$$
 |\widehat p_{geo}(g)-p_{geo}(g)|\le2\varepsilon.
-\]
+$$
 
 Если `ĝ=argmax_g p̂(g)`, `g*=argmax_g p(g)`, то:
 
-\[
+$$
 p(g^*)-p(\widehat g)\le4\varepsilon.
-\]
+$$
 
 Доказательство — triangle inequality и стандартный plug-in argmax decomposition. Это простой, но полезный мост от capacity calibration к selection regret.
 
@@ -485,9 +485,9 @@ p(g^*)-p(\widehat g)\le4\varepsilon.
 
 Для nested swept volumes `K_g(t₁)⊆K_g(t₂)` при `t₁≤t₂`:
 
-\[
+$$
 F_{\tau_g}(t\mid O)=\Pr(\tau_g\le t\mid O)=T_O(K_g(t)).
-\]
+$$
 
 Поэтому capacity head автоматически задаёт monotone first-contact CDF на canonical nested lattice. Это связывает framework с survival analysis, но не ограничивает его одномерным временем.
 
@@ -828,11 +828,11 @@ Unconstrained joint four-class head — особенно важный baseline: 
 
 CAPGrasp — редкий кандидат, который одновременно соответствует узкой лабораторной задаче и раскрывается в broad ML problem. Его сильная сторона не в новом backbone, а в смене prediction target:
 
-\[
+$$
 \text{hidden shape reconstruction}
 \quad\longrightarrow\quad
 \text{conditional law of task queries}.
-\]
+$$
 
 Capacity functional является естественным минимальным объектом для existential geometry predicates. Lifted pair space выражает два согласованных контакта; negative query — hidden collision; difference of capacities даёт joint event без independence approximation. Proper query loss и mixture-coverage head делают формулировку efficiently learnable и structurally valid на finite query algebra.
 

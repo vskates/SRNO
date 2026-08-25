@@ -58,22 +58,22 @@ off-manifold physical resolvent и (ii) stable nominal-shadowing predictor.
 
 Проверенная closed-graph formulation была
 
-\[
+$$
   \mathcal L_{\rm tube}(\theta)
   = \mathbb E_{(\phi,z,u)\sim\mu_\theta}
     d_X\!\left(R_{\theta,\phi}(z,u),
                R_{\rm PhysX,\phi}(z,u)\right)^2,
-\]
+$$
 
-где \(\mu_\theta\) — rollout-induced мера, а правая метка вычисляется solver
-именно из \(z\). Она физически корректна как graph identification, но
+где $\mu_\theta$ — rollout-induced мера, а правая метка вычисляется solver
+именно из $z$. Она физически корректна как graph identification, но
 экспериментально отвергнута как способ улучшить nominal H32.
 
 Математически иной **solution-path operator**
 
-\[
+$$
  S_\phi:(x_0,u_k)\mapsto x_k
-\]
+$$
 
 устраняет state feedback и соответствует solution map sweeping process при
 фиксированном monotone loading path. На той же сети и том же числе labels/steps
@@ -139,20 +139,20 @@ operator construction.
 
 Let
 
-\[
+$$
   F_{\phi,k}(x)=R_{\rm phys,\phi}(x,u_{k+1}),\qquad
   \widehat F_{\theta,\phi,k}(x)=R_{\theta,\phi}(x,u_{k+1}).
-\]
+$$
 
-The recorded trajectory obeys \(x^*_{k+1}=F_k(x^*_k)\). The learned rollout is
-\(\hat x_{k+1}=\widehat F_k(\hat x_k)\).
+The recorded trajectory obeys $x^*_{k+1}=F_k(x^*_k)$. The learned rollout is
+$\hat x_{k+1}=\widehat F_k(\hat x_k)$.
 
 ### 5.1 Error recursion
 
-**[Derivation]** If \(F_k\) is locally \(L_k\)-Lipschitz in a tube containing
+**[Derivation]** If $F_k$ is locally $L_k$-Lipschitz in a tube containing
 both paths, then
 
-\[
+$$
 \begin{aligned}
 e_{k+1}
 &=d(\widehat F_k(\hat x_k),F_k(x^*_k))\\
@@ -161,18 +161,18 @@ d(\widehat F_k(\hat x_k),F_k(\hat x_k))
 +L_k e_k\\
 &=\varepsilon_k(\hat x_k)+L_k e_k.
 \end{aligned}
-\]
+$$
 
-Teacher-forced local loss estimates \(\varepsilon_k(x^*_k)\), not
-\(\varepsilon_k(\hat x_k)\). Near a switching boundary there is no reason for
+Teacher-forced local loss estimates $\varepsilon_k(x^*_k)$, not
+$\varepsilon_k(\hat x_k)$. Near a switching boundary there is no reason for
 these values to be close; no global Lipschitz assumption is available.
 
 Conditional consequences:
 
-- if \(L_k\le1\) and \(\varepsilon_k\le\epsilon\) uniformly in the tube, then
-  \(e_H\le e_0+H\epsilon\);
-- if \(L_k\le\rho<1\), then
-  \(e_H\le\rho^H e_0+\epsilon(1-\rho^H)/(1-\rho)\);
+- if $L_k\le1$ and $\varepsilon_k\le\epsilon$ uniformly in the tube, then
+  $e_H\le e_0+H\epsilon$;
+- if $L_k\le\rho<1$, then
+  $e_H\le\rho^H e_0+\epsilon(1-\rho^H)/(1-\rho)$;
 - neither conclusion follows from nominal one-step error alone.
 
 These are conditional inequalities, not claims that frictional SRNO is globally
@@ -184,12 +184,12 @@ are not automatically satisfied by this nonconvex multicontact simulator.
 
 ### 5.2 Orbit-only non-identifiability
 
-Let \(M=\{(\phi_i,x^*_{i,k},u_{k+1})\}\) be the finite nominal training support.
+Let $M=\{(\phi_i,x^*_{i,k},u_{k+1})\}$ be the finite nominal training support.
 
-**[Derivation]** For any learned extension \(G\) agreeing with all labels on
-\(M\), and any point \(z\notin M\), one can add a continuous bump supported in a
-small neighborhood of \(z\) disjoint from \(M\). The modified operator agrees
-with every training label but can take an arbitrary different value at \(z\).
+**[Derivation]** For any learned extension $G$ agreeing with all labels on
+$M$, and any point $z\notin M$, one can add a continuous bump supported in a
+small neighborhood of $z$ disjoint from $M$. The modified operator agrees
+with every training label but can take an arbitrary different value at $z$.
 Thus finite orbit-only ERM does not identify the off-orbit extension required by
 recurrent composition. This is an elementary identifiability observation, not a
 new theorem about contact physics.
@@ -198,13 +198,13 @@ new theorem about contact physics.
 
 The current rollout objective evaluates
 
-\[
+$$
  d(\widehat F_k(\hat x_k),x^*_{k+1})^2
  =d(\widehat F_k(\hat x_k),F_k(x^*_k))^2.
-\]
+$$
 
-**[Derivation]** Unless \(\hat x_k=x^*_k\), this target is not
-\(F_k(\hat x_k)\). BPTT can optimize the final path as a sequence predictor, but
+**[Derivation]** Unless $\hat x_k=x^*_k$, this target is not
+$F_k(\hat x_k)$. BPTT can optimize the final path as a sequence predictor, but
 it does not reveal the physical resolvent graph at its queried inputs. Detached
 pushforward training has the same label mismatch. This explains why improving
 a rollout objective or algebraic consistency can leave H32 physics unchanged.
@@ -213,8 +213,8 @@ a rollout objective or algebraic consistency can leave H32 physics unchanged.
 
 ### H1. Learn an evolution family with cocycle consistency
 
-**[Hypothesis]** A finite-load propagator \(U_\theta(b,a)\) satisfying
-\(U(c,b)U(b,a)\approx U(c,a)\) should compose more coherently than a unit-step
+**[Hypothesis]** A finite-load propagator $U_\theta(b,a)$ satisfying
+$U(c,b)U(b,a)\approx U(c,a)$ should compose more coherently than a unit-step
 map.
 
 **[Experiment]** `scripts/run_evolution_family_experiment.py`, same L=1 cell;
@@ -247,7 +247,7 @@ a contraction in the model-induced neighborhood. Hypothesis rejected.
 ### H3. BV graph measure
 
 **[Hypothesis]** For a rate-independent path, loss should be integrated against
-\(d\sigma=d\lambda/L+d_X\), not uniformly in command index, so jumps receive
+$d\sigma=d\lambda/L+d_X$, not uniformly in command index, so jumps receive
 finite measure.
 
 **[Experiment]** `scripts/run_bv_measure_local_ablation.py`, paired clean
@@ -294,7 +294,7 @@ not the dominant H32 error. Hypothesis rejected.
 
 ### H6. Causal Volterra/BV path operator
 
-**[Hypothesis]** Learn increment atoms from \((x_0,u_k)\) and construct the path
+**[Hypothesis]** Learn increment atoms from $(x_0,u_k)$ and construct the path
 by causal cumulative quadrature, eliminating predicted-state feedback.
 
 **[Experiment]** `scripts/run_volterra_path_operator_ablation.py`, clean L=1
@@ -339,19 +339,19 @@ therefore local accuracy or internal solver depth is not sufficient evidence.
 
 Instead of identifying only the trace
 
-\[
+$$
  \Gamma_{\rm data}=\{(x^*_k,u_{k+1},x^*_{k+1})\},
-\]
+$$
 
 identify the restriction of the physical graph
 
-\[
+$$
  \Gamma_{\rm phys}=\{(x,u,F_\phi(x,u))\}
-\]
+$$
 
-to a tube that is reachable by the current learned operator. Round \(m\):
+to a tube that is reachable by the current learned operator. Round $m$:
 
-\[
+$$
 \begin{aligned}
 \hat x^{(m)}_{k+1} &= R_{\theta_m,\phi}(\hat x^{(m)}_k,u_{k+1}),\\
 y^{(m)}_{k+1} &= R_{\rm PhysX,\phi}(\hat x^{(m)}_k,u_{k+1}),\\
@@ -359,7 +359,7 @@ y^{(m)}_{k+1} &= R_{\rm PhysX,\phi}(\hat x^{(m)}_k,u_{k+1}),\\
  (1-\alpha)\mathcal L_{\rm nominal}(\theta)
  +\alpha\,\mathbb E d_X(R_{\theta,\phi}(\hat x^{(m)}_k,u_{k+1}),y^{(m)}_{k+1})^2.
 \end{aligned}
-\]
+$$
 
 The nominal term anchors accuracy on the original physical manifold. Repeating
 rounds grows the labelled graph only where the current model actually queries
@@ -520,9 +520,9 @@ the exact-library wrapper above.
 
 For the fixed monotone closure program `u_0,...,u_32`, define
 
-\[
+$$
   S_\phi(x_0,u_k)=x_k.
-\]
+$$
 
 **[Derivation]** This is a finite-evaluation form of the solution operator of
 the entire rate-independent loading path. Unlike `F_k o ... o F_0`, its
@@ -600,10 +600,10 @@ the continuation of the cycle after this negative intermediate result.
 For trajectory $n$, load index $k=0,\ldots,32$, and gripper SDF ray
 $r=1,\ldots,256$, define the free-loading clearance profile
 
-\[
+$$
   g_n(k,r)=\operatorname{SDF}_{\phi_n}
   \!\left(T(x_{0,n})p_r(u_k)\right).
-\]
+$$
 
 **[Derivation]** The entire array $g_n\in\mathbb R^{33\times256}$ is a
 function-valued description of how the commanded gripper would sweep through
@@ -611,10 +611,10 @@ the object if the object stayed at its initial pose. It exposes future
 geometric contact opportunities without feeding back a predicted state.
 Therefore a whole-path estimator
 
-\[
+$$
   \widehat S:g_n\longmapsto
   (\widehat x_{n,1},\ldots,\widehat x_{n,32})
-\]
+$$
 
 is mathematically different from the recurrent local resolvent
 $x_{k+1}=R_\theta(x_k,u_{k+1})$. Generic function-to-function learning is the
@@ -626,12 +626,12 @@ standard neural-operator setting, not a novelty claim; see the
 **[Experiment]** `scripts/evaluate_loading_profile_kernel_operator.py`
 compares complete train paths in profile metrics including
 
-\[
+$$
  d_{\tau}(g,g')^2=
  \frac1{33\cdot256}\sum_{k,r}
  \left[\max(0,-g_{kr}-\tau)-
        \max(0,-g'_{kr}-\tau)\right]^2.
-\]
+$$
 
 The target trajectory is never used to find neighbors. It is used only after
 the candidate set has been constructed, to audit approximation headroom.
@@ -716,11 +716,11 @@ path deterministic. Let $q=\pi(\xi)$ be the currently observed contract and
 $Y(\xi)=(x_1,\ldots,x_{32})$ the physical solution path. Marginalizing the
 unobserved variables produces the multifunction
 
-\[
+$$
   \mathcal S(q)=
   \{Y(\xi):\pi(\xi)=q\}\subset
   \bigl(SE(3)\times\mathbb R^6\bigr)^{32}.
-\]
+$$
 
 **[Derivation]** If two compatible full instances share $q$ but have
 different paths, no deterministic point map $f(q)$ can reproduce both. A
@@ -730,20 +730,20 @@ separate inference problem requiring an additional observation or prior.
 
 The finite data estimator is
 
-\[
+$$
  \widehat{\mathcal S}_K(g)=
  \left\{A_{x_0}Y_i:\ i\in N_K(g;d_{\tau})\right\},
-\]
+$$
 
 where $N_K$ are the $K$ nearest train loading profiles and $A_{x_0}$
 expresses each complete physical train path relative to the query initial
 pose. It has no learned-state recurrence. Its empirical point-to-set risk is
 
-\[
+$$
  \widehat{\mathcal R}_K=
  \frac1N\sum_{n=1}^N
  \min_{y\in\widehat{\mathcal S}_K(g_n)}D(y,Y_n).
-\]
+$$
 
 The target $Y_n$ appears only in evaluation of the minimum, never in the
 construction of $\widehat{\mathcal S}_K(g_n)$. Validation chooses the profile
@@ -833,19 +833,19 @@ multimodal baselines. None is claimed complete here.
 
 The current observation contract does not support the original premise
 
-\[
+$$
   (\phi,x_k,u_{k+1})\longmapsto x_{k+1}
-\]
+$$
 
 as a globally smooth, stable and uniquely identifiable operator. The correct
 object supported by the experiments is instead
 
-\[
+$$
   g_{\phi,x_0}(\cdot,\cdot)
   \longmapsto
   \mathcal S(g)\subset
   \bigl(SE(3)\times\mathbb R^6\bigr)^{32},
-\]
+$$
 
 the conditional solution relation over whole loading paths. This formulation
 removes learned-state composition and keeps separated contact branches

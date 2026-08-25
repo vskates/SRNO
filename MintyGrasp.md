@@ -16,31 +16,31 @@
 
 Роботическая модель называется **MintyGrasp**. Для полного объекта `S` и parallel-jaw candidate `g` offline contact oracle строит не mesh target для сети, а низкоразмерную convex contact-residual energy
 
-\[
+$$
 \Phi_{S,g}:\mathbb R^d\rightarrow\mathbb R_+\cup\{+\infty\},
 \qquad d\approx 7\text{--}10,
-\]
+$$
 
 на локальных terminal perturbations. Для virtual probe `u` определяются
 
-\[
+$$
 P^\lambda_{S,g}(u)
 =\operatorname{prox}_{\lambda\Phi_{S,g}}(u),
-\]
+$$
 
-\[
+$$
 M^\lambda_{S,g}(u)
 =\min_z\left\{
 \Phi_{S,g}(z)+\frac{1}{2\lambda}\lVert z-u\rVert^2
 \right\}.
-\]
+$$
 
 Новая статистическая цель:
 
-\[
+$$
 \bar M^\lambda(x,g,u)
 =\mathbb E\!\left[M^\lambda_{S,g}(u)\mid X=x\right].
-\]
+$$
 
 Это ожидаемая минимальная local correction/work energy для данного grasp под всеми hidden geometries, согласующимися с одним noisy occluded RGB-D observation через обучающее распределение.
 
@@ -240,36 +240,36 @@ CPEL ставит другой вопрос:
 
 Для `lambda > 0`:
 
-\[
+$$
 M^\lambda_{S,q}(u)
 =\inf_z\left[
 \Phi_{S,q}(z)+\frac{1}{2\lambda}\lVert z-u\rVert^2
 \right],
-\]
+$$
 
-\[
+$$
 P^\lambda_{S,q}(u)
 =\arg\min_z\left[
 \Phi_{S,q}(z)+\frac{1}{2\lambda}\lVert z-u\rVert^2
 \right].
-\]
+$$
 
 Bayes target:
 
-\[
+$$
 \bar M^\lambda(x,q,u)
 =\mathbb E[M^\lambda_{S,q}(u)\mid X=x].
-\]
+$$
 
 При стандартных integrability/differentiation assumptions:
 
-\[
+$$
 \nabla_u\bar M^\lambda(x,q,u)
 =\frac{1}{\lambda}
 \left(u-
 \mathbb E[P^\lambda_{S,q}(u)\mid X=x]
 \right).
-\]
+$$
 
 `bar M` одновременно содержит:
 
@@ -289,19 +289,19 @@ Bayes target:
 
 Grasp candidate:
 
-\[
+$$
 g=(t,R,w)\in (SE(3)\times W)/C_2,
-\]
+$$
 
 где `C2` — symmetry of jaw swap.
 
 Используется dimensionless local variable
 
-\[
+$$
 z=(\delta t_x,\delta t_y,\delta t_z,
 \delta\omega_x,\delta\omega_y,\delta\omega_z,
 \delta w)\in\mathbb R^7.
-\]
+$$
 
 Scaling задаётся measured calibration tolerances, чтобы translation, rotation и width имели сопоставимый metric. Это не arm trajectory; `z` описывает только terminal neighborhood.
 
@@ -322,7 +322,7 @@ Scaling задаётся measured calibration tolerances, чтобы translation
 
 Один реализуемый oracle template:
 
-\[
+$$
 \Phi_{S,g}(z)
 =c_{S,g}
 +\frac12
@@ -330,7 +330,7 @@ Scaling задаётся measured calibration tolerances, чтобы translation
 \left(A_{S,g}z-b_{S,g},\;\mathcal K_\mu\right)
 +\frac{\gamma}{2}\lVert B_{S,g}z-r_{S,g}\rVert^2
 +\iota_{\mathcal Z}(z).
-\]
+$$
 
 Здесь:
 
@@ -346,10 +346,10 @@ Squared distance to a closed convex cone after an affine map is convex; quadrati
 
 If a hidden shape has no valid opposing contact, its local correction directions can look similar to another shape after regularization, while its absolute feasibility cost must remain higher. A response-only prox learner is blind to any additive `c_{S,g}` because
 
-\[
+$$
 \operatorname{prox}_{\lambda(\Phi+c)}
 =\operatorname{prox}_{\lambda\Phi}.
-\]
+$$
 
 The envelope value changes by `c`. CoPES therefore learns the anchored value and the response; removing the value term is not a mild ablation but deletes one class of occlusion evidence.
 
@@ -374,34 +374,34 @@ Use `B=8--24` probes per grasp during training and deterministic quadrature at i
 
 For a training tuple `(S,x,g,u)`, small convex solve returns
 
-\[
+$$
 z^*=P^\lambda_{S,g}(u)
-\]
+$$
 
 and
 
-\[
+$$
 m^*=M^\lambda_{S,g}(u).
-\]
+$$
 
 The oracle gradient is free from the same solve:
 
-\[
+$$
 r^*=\nabla_uM^\lambda_{S,g}(u)
 =\lambda^{-1}(u-z^*).
-\]
+$$
 
 ### 7.2 Value-gradient score
 
 MintyGrasp predicts `hat M_theta(x,g,u)`. Define
 
-\[
+$$
 \widehat r_\theta(x,g,u)=\nabla_u\widehat M_\theta(x,g,u).
-\]
+$$
 
 Основной objective:
 
-\[
+$$
 \mathcal L_{\mathrm{CoPES}}
 =\mathbb E_{S,x,g,u}
 \left[
@@ -409,7 +409,7 @@ w_v\,\rho_v(\widehat M_\theta-m^*)
 +w_r\,\rho_r
 \left(\lambda\widehat r_\theta-(u-z^*)\right)
 \right].
-\]
+$$
 
 Для теории `rho_v(a)=a^2`, `rho_r(v)=||v||^2`. В реальном noisy oracle Huber versions допустимы, но strict propriety claim тогда надо формулировать аккуратно.
 
@@ -417,17 +417,17 @@ w_v\,\rho_v(\widehat M_\theta-m^*)
 
 При squared terms population minimizer удовлетворяет
 
-\[
+$$
 \widehat M^*(x,g,u)=
 \mathbb E[M^\lambda_{S,g}(u)\mid x,g,u],
-\]
+$$
 
 и
 
-\[
+$$
 \nabla_u\widehat M^*(x,g,u)
 =\mathbb E[\nabla_uM^\lambda_{S,g}(u)\mid x,g,u].
-\]
+$$
 
 Value term фиксирует additive constant; gradient term даёт dense local response supervision и снижает число oracle probes, нужное для восстановления формы envelope.
 
@@ -435,9 +435,9 @@ Value term фиксирует additive constant; gradient term даёт dense lo
 
 Сеть не имеет двух независимых heads. Архитектура принуждает value и response быть одной функцией:
 
-\[
+$$
 \widehat r_\theta=\nabla_u\widehat M_\theta,
-\]
+$$
 
 а Hessian удовлетворять envelope geometry. Невозможны циклические/non-integrable response predictions, которые дают низкую pointwise ошибку, но не соответствуют ни одной variational problem.
 
@@ -445,14 +445,14 @@ Value term фиксирует additive constant; gradient term даёт dense lo
 
 Если oracle permits stable implicit differentiation, можно добавить Hutchinson directional curvature matching:
 
-\[
+$$
 \mathcal L_{\mathrm{curv}}
 =\mathbb E_{v}
 \left\|
 v^\top\nabla_u^2\widehat M_\theta
 -v^\top\nabla_u^2 M^\lambda_{S,g}
 \right\|^2.
-\]
+$$
 
 Это extension, не core. Paper должен сначала показать independent gain value+gradient над value-only и response-only.
 
@@ -460,20 +460,20 @@ v^\top\nabla_u^2\widehat M_\theta
 
 Для calibrated probe distribution `nu_hw`:
 
-\[
+$$
 R^*(x,g)=
 \mathbb E_{u\sim\nu_{\rm hw}}
 [\bar M^\lambda(x,g,u)].
-\]
+$$
 
 Выбор:
 
-\[
+$$
 \hat g(x)=
 \arg\min_{g\in\mathcal C(x)}
 \sum_{b=1}^{B_q}\omega_b
 \widehat M_\theta(x,g,u_b),
-\]
+$$
 
 после observed collision gate. Это Bayes rule **для expected local correction/work risk**, а не для binary success probability. Binary grasp success остаётся внешним physical evaluation. Нельзя в abstract незаметно подменять одно другим.
 
@@ -517,11 +517,11 @@ Encoder can be `SE(3)`-equivariant or use a strictly gripper-relative coordinate
 
 For candidate `g`, transform relevant evidence into left-pad and right-pad frames. Shared weights process both pads; swap is handled by exact symmetrization:
 
-\[
+$$
 h^{\rm sym}(x,g)=
 \operatorname{Pool}
 \{h_L(x,g),h_R(x,g)\}.
-\]
+$$
 
 Cross-attention is from pad footprint/query tokens to observed point tokens, not camera rays to hypothetical jaw-line measures. This distinction matters relative to RJPN/JILT.
 
@@ -529,10 +529,10 @@ Cross-attention is from pad footprint/query tokens to observed point tokens, not
 
 `Phi_theta(h,z)` is arbitrary in context `h` but convex in the small variable `z`. One implementation is a partially input-convex network:
 
-\[
+$$
 a_{k+1}=\sigma_k(W_k^+a_k+U_k z+V_k h+b_k),
 \qquad W_k^+\ge 0,
-\]
+$$
 
 with convex non-decreasing activations. A nonnegative context-dependent offset `c_theta(h)` is explicit. It is essential for ambiguity, not a disposable bias.
 
@@ -540,29 +540,29 @@ with convex non-decreasing activations. A nonnegative context-dependent offset `
 
 For each probe:
 
-\[
+$$
 \hat z(u)=
 \arg\min_z
 \left[
 \Phi_\theta(h,z)
 +\frac{1}{2\lambda}\lVert z-u\rVert^2
 \right].
-\]
+$$
 
 Strong convexity from the quadratic makes the solution unique. Because `d` is small, batched unrolled proximal Newton/FISTA or an implicit differentiable solver is feasible. Core experiments should use a solver tolerance tight enough that structural claims are numerical facts, not wishful regularization.
 
 Value and response:
 
-\[
+$$
 \widehat M_\theta(u)=
 \Phi_\theta(h,\hat z)
 +\frac{1}{2\lambda}\lVert\hat z-u\rVert^2,
-\]
+$$
 
-\[
+$$
 \nabla_u\widehat M_\theta(u)
 =\lambda^{-1}(u-\hat z).
-\]
+$$
 
 ### 8.5 Faster LPN variant
 
@@ -607,10 +607,10 @@ Report:
 
 For fixed `(x,g)`, assume `Phi_{S,g}` are proper closed convex and envelopes are integrable. Then
 
-\[
+$$
 \bar M^\lambda(x,g,\cdot)
 =\mathbb E[M^\lambda_{S,g}(\cdot)\mid X=x]
-\]
+$$
 
 is convex and `1/lambda`-smooth. It is the Moreau envelope of an integral proximal average/proximal expectation under the appropriate regularity conditions.
 
@@ -620,11 +620,11 @@ This is an application/corollary of known proximal-average mathematics, not clai
 
 Under dominated differentiation:
 
-\[
+$$
 \nabla\bar M^\lambda(u)
 =\lambda^{-1}
 \left(u-\mathbb E[P^\lambda_{S,g}(u)\mid X=x]\right).
-\]
+$$
 
 Thus the conditional mean proximal response is consistent with one smooth convex value function.
 
@@ -647,17 +647,17 @@ An unconstrained MLP response head has none of these properties.
 
 For finite candidate pool and normalized probe weights, if
 
-\[
+$$
 \sup_{g,u}
 |\widehat M(x,g,u)-\bar M(x,g,u)|\le\epsilon
-\]
+$$
 
 and quadrature error is at most `delta`, then
 
-\[
+$$
 R^*(x,\hat g)-\min_g R^*(x,g)
 \le 2(\epsilon+\delta).
-\]
+$$
 
 This connects the learned value error to the exact decision objective. It does **not** upper-bound binary physical failure without an additional calibration theorem.
 
@@ -675,24 +675,24 @@ If context encoder is `L_h`-Lipschitz and conditional energy parameters vary Lip
 
 Consider scalar hidden worlds with equal posterior probability and `lambda=1`:
 
-\[
+$$
 \Phi_-(z)=\iota_{\{-a\}}(z),
 \qquad
 \Phi_+(z)=\iota_{\{+a\}}(z).
-\]
+$$
 
 Their prox maps are constants:
 
-\[
+$$
 P_-(u)=-a,
 \qquad P_+(u)=a.
-\]
+$$
 
 Conditional mean response:
 
-\[
+$$
 \bar P(u)=0.
-\]
+$$
 
 Это тот же response, что у certain world `Phi_0=iota_{\{0\}}`. Любой response-only learner полностью смешивает:
 
@@ -701,21 +701,21 @@ Conditional mean response:
 
 Но envelopes различаются:
 
-\[
+$$
 M_-(u)=\tfrac12(u+a)^2,
 \qquad
 M_+(u)=\tfrac12(u-a)^2,
-\]
+$$
 
-\[
+$$
 \bar M_{\pm}(u)=\tfrac12u^2+\tfrac12a^2,
-\]
+$$
 
 тогда как
 
-\[
+$$
 M_0(u)=\tfrac12u^2.
-\]
+$$
 
 Gradients одинаковы; absolute values отличаются на `a^2/2`. Это даёт точный тезис:
 
@@ -812,9 +812,9 @@ The full method must win specifically on these pairs. Otherwise the central ambi
 
 Generate random low-dimensional convex programs
 
-\[
+$$
 \Phi_S(z)=\tfrac12z^TQ_Sz+c_S^Tz+\iota_{A_Sz\le b_S}(z),
-\]
+$$
 
 where observation reveals a noisy subset/sketch of coefficients and query gives `u`. Evaluate:
 
@@ -1181,9 +1181,9 @@ Exact thresholds should be adjusted once baseline variance and feasible trial co
 1. `Phi_theta(h,z)` passes random Jensen convexity tests in `z`.
 2. Prox solve residual below fixed tolerance for every reported query.
 3. Firm non-expansiveness:
-   \[
+   $$
    \|P(u)-P(v)\|^2\le\langle P(u)-P(v),u-v\rangle.
-   \]
+   $$
 4. Envelope gradient identity matches autodiff and finite differences.
 5. Jaw-swap gives identical risk after probe permutation.
 6. Rigid transform of scene/grasp preserves risk within numerical tolerance.

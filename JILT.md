@@ -194,35 +194,35 @@ This corrected branch survives as JILT.
 
 ## 5. General ML formulation: task-transform learning under coarsening
 
-Let \(Z\in\mathcal Z\) be a latent physical state, \(X=M_\omega(Z)+\varepsilon\) a coarsened/noisy observation, \(a\in\mathcal A\) an action, and \(U(Z,a)\) its downstream utility.
+Let $Z\in\mathcal Z$ be a latent physical state, $X=M_\omega(Z)+\varepsilon$ a coarsened/noisy observation, $a\in\mathcal A$ an action, and $U(Z,a)$ its downstream utility.
 
-Reconstruction-first learning estimates \(\hat Z(X)\) and evaluates \(U(\hat Z,a)\). Direct decision learning estimates \(q(X,a)\) with no structured intermediate object. JILT studies an intermediate regime.
+Reconstruction-first learning estimates $\hat Z(X)$ and evaluates $U(\hat Z,a)$. Direct decision learning estimates $q(X,a)$ with no structured intermediate object. JILT studies an intermediate regime.
 
 Assume there is an action-indexed forward transform
 
-\[
+$$
 \Phi_a:\mathcal Z\rightarrow\mathcal K_a
-\]
+$$
 
-and a small decoder \(D_a\) such that, on the declared physical regime,
+and a small decoder $D_a$ such that, on the declared physical regime,
 
-\[
+$$
 U(Z,a)\approx D_a(\Phi_a(Z)).
-\]
+$$
 
-The family \(\Phi(Z)=\{\Phi_a(Z):a\in\mathcal A\}\) is highly redundant and obeys known range constraints
+The family $\Phi(Z)=\{\Phi_a(Z):a\in\mathcal A\}$ is highly redundant and obeys known range constraints
 
-\[
+$$
 \Phi(Z)\in\mathfrak R\subsetneq\prod_a\mathcal K_a.
-\]
+$$
 
 The proposed problem is to learn
 
-\[
+$$
 F_\theta:X\mapsto \widehat\Phi_X
-\]
+$$
 
-subject to \(\widehat\Phi_X\in\mathfrak R_Q\), where \(\mathfrak R_Q\) is a finite-query relaxation of the true transform range, while never constructing \(\hat Z\).
+subject to $\widehat\Phi_X\in\mathfrak R_Q$, where $\mathfrak R_Q$ is a finite-query relaxation of the true transform range, while never constructing $\hat Z$.
 
 This is not generic end-to-end task-adapted reconstruction because the latent state is never decoded. It is not a scalar critic because the intermediate transform has explicit algebra, exact consistency tests, a controllable bandwidth, and transfer across candidate sets.
 
@@ -234,21 +234,21 @@ The broad scientific hypothesis is:
 
 ### 6.1 Geometry and action
 
-Let \(S\subset\mathbb R^3\) be the closed rigid target solid with boundary \(\partial S\). A grasp is
+Let $S\subset\mathbb R^3$ be the closed rigid target solid with boundary $\partial S$. A grasp is
 
-\[
+$$
 g=(R_g,t_g,w)\in (SE(3)/C_2)\times [w_{\min},w_{\max}],
-\]
+$$
 
-where \(C_2\) quotients the exchange of the two identical jaws. In the gripper frame let
+where $C_2$ quotients the exchange of the two identical jaws. In the gripper frame let
 
-- \(e_c\): closing axis;
-- \(e_a\): approach axis;
-- \(e_h=e_c\times e_a\): pad-height axis.
+- $e_c$: closing axis;
+- $e_a$: approach axis;
+- $e_h=e_c\times e_a$: pad-height axis.
 
-The hardware defines a fixed line bundle \(\mathcal L(g)\):
+The hardware defines a fixed line bundle $\mathcal L(g)$:
 
-- a \(3\times3\) or \(4\times4\) grid of lines parallel to \(e_c\) through the two pad footprints;
+- a $3\times3$ or $4\times4$ grid of lines parallel to $e_c$ through the two pad footprints;
 - a few lines through finger-body and palm clearance regions;
 - optional lines along a short pre-contact retraction, not the whole arm path.
 
@@ -258,14 +258,14 @@ The bundle size is hardware-fixed and does not grow with scene resolution.
 
 For a canonical line
 
-\[
+$$
 \ell_{g,j}(s)=t_g+R_g(\xi_j+s e_c),
 \qquad s\in I=[-W/2,W/2],
-\]
+$$
 
-define a soft tube kernel \(k_\sigma\) with radius tied to pad resolution. The occupancy line measure is
+define a soft tube kernel $k_\sigma$ with radius tied to pad resolution. The occupancy line measure is
 
-\[
+$$
 d\mu^{\mathrm{occ}}_{S,g,j}(s)
 =
 \left[
@@ -273,51 +273,51 @@ d\mu^{\mathrm{occ}}_{S,g,j}(s)
 k_\sigma(y-\xi_j)
 \mathbf 1_S\!\left(t_g+R_g(y+s e_c)\right)dy
 \right]ds.
-\]
+$$
 
-It is a finite non-negative measure on the physical aperture interval \(I\).
+It is a finite non-negative measure on the physical aperture interval $I$.
 
 For contact orientation, define positive left/right normal-flux measures on the surface:
 
-\[
+$$
 d\mu^{\pm}_{S,g,j}(s)
 =
 \int_{\partial S}
 k_\sigma(P_\perp R_g^\top(x-t_g)-\xi_j)
 [\pm n(x)^\top R_g e_c]_+
 \delta\!\left(s-e_c^\top R_g^\top(x-t_g)\right)dA(x).
-\]
+$$
 
 These measures preserve only pad-scale mass and orientation evidence along the closing line. They do not retain texture, backside geometry outside the interaction tubes, or a globally renderable object.
 
 ### 6.3 Truncated Fourier moments
 
-For frequencies \(\omega_m=2\pi m/W\), \(m=-M,\ldots,M\), define
+For frequencies $\omega_m=2\pi m/W$, $m=-M,\ldots,M$, define
 
-\[
+$$
 z^{c}_{S,g,j,m}
 =
 \int_I e^{-i\omega_m s}\,d\mu^{c}_{S,g,j}(s),
 \qquad
 c\in\{\mathrm{occ},+,-\}.
-\]
+$$
 
-The per-line target is a small complex vector \(z_{-M:M}\), with \(M=4,8,16\) tested explicitly. The zero-frequency term is total tube mass. Low frequencies encode center, spread, and coarse multi-interval structure; higher frequencies recover sharper entry/exit structure but are less stable under depth noise.
+The per-line target is a small complex vector $z_{-M:M}$, with $M=4,8,16$ tested explicitly. The zero-frequency term is total tube mass. Low frequencies encode center, spread, and coarse multi-interval structure; higher frequencies recover sharper entry/exit structure but are less stable under depth noise.
 
 This representation connects naturally to the finite trigonometric moment problem. For every non-negative measure,
 
-\[
+$$
 z_{-m}=\overline{z_m},
-\]
+$$
 
 and the Toeplitz moment matrix
 
-\[
+$$
 T_M(z)_{pq}=z_{p-q},
 \qquad p,q=0,\ldots,M,
-\]
+$$
 
-is positive semidefinite. With an additional interval-localizing matrix, the representing measure is constrained to the known physical aperture \(I\).
+is positive semidefinite. With an additional interval-localizing matrix, the representing measure is constrained to the known physical aperture $I$.
 
 An arbitrary neural vector does not satisfy these conditions. JILT does by construction.
 
@@ -335,27 +335,27 @@ JILT uses these signals as follows:
 
 Crucially, the observed surface contribution is not treated as a known coefficient of the complete transform. Every Fourier coefficient mixes visible and hidden mass. The consistent parameterization is additive:
 
-\[
+$$
 \widehat z^c=z^c_{\mathrm{anchor}}+\widehat z^c_{\mathrm{res}},
 \qquad
 \widehat\mu^c_{\mathrm{res}}\ge 0,
 \qquad
 \operatorname{supp}\widehat\mu^c_{\mathrm{res}}\subseteq I^c_{\mathrm{admissible}}.
-\]
+$$
 
-For occupancy, \(z^{\mathrm{occ}}_{\mathrm{anchor}}=0\) in the conservative main model. For normal flux, the anchor is the splatted visible surface measure. This preserves observed evidence without pretending that RGB-D observes hidden volume.
+For occupancy, $z^{\mathrm{occ}}_{\mathrm{anchor}}=0$ in the conservative main model. For normal flux, the anchor is the splatted visible surface measure. This preserves observed evidence without pretending that RGB-D observes hidden volume.
 
 Unlike RJPN, the network does not cross-attend each jaw primitive to individual camera rays. The camera observation is first lifted to sparse coefficients and constraints in the same oriented-line coordinate system; the neural operator then acts within that transform space.
 
 ### 6.5 Why this is not full reconstruction
 
-Let \(Q(X)=\{g_1,\ldots,g_K\}\) be the frozen candidate bank and let
+Let $Q(X)=\{g_1,\ldots,g_K\}$ be the frozen candidate bank and let
 
-\[
+$$
 \Phi_Q(S)=\{z_{S,g_k,j,m}:k\le K,j\le J,|m|\le M\}.
-\]
+$$
 
-For finite \(K,J,M\), \(\Phi_Q\) has an infinite-dimensional null space: changes to \(S\) outside all interaction tubes leave every coefficient unchanged. Even within a tube, distinct high-frequency occupancy patterns share the same truncated moments. Therefore \(\Phi_Q\) is non-injective by design.
+For finite $K,J,M$, $\Phi_Q$ has an infinite-dimensional null space: changes to $S$ outside all interaction tubes leave every coefficient unchanged. Even within a tube, distinct high-frequency occupancy patterns share the same truncated moments. Therefore $\Phi_Q$ is non-injective by design.
 
 The paper must demonstrate this empirically:
 
@@ -364,17 +364,17 @@ The paper must demonstrate this empirically:
 - simultaneously show high grasp-margin recovery;
 - report sketch dimension and queried spatial support.
 
-If a dense candidate bank and large \(M\) make full-shape recovery easy, the claimed non-reconstruction advantage has disappeared.
+If a dense candidate bank and large $M$ make full-shape recovery easy, the claimed non-reconstruction advantage has disappeared.
 
 ### 6.6 Critical conditional-mean limitation
 
 The mean interaction sketch is not automatically sufficient for Bayes-optimal physical success. For a nonlinear mechanics decoder,
 
-\[
+$$
 D_g\!\left(\mathbb E[Z_g\mid X]\right)
 \ne
 \mathbb E[D_g(Z_g)\mid X]
-\]
+$$
 
 in general. A posterior method can retain distinctions that a conditional mean destroys. JILT deliberately does not solve this by adding a stochastic latent, because that would return to today's posterior/process family.
 
@@ -394,17 +394,17 @@ The paper must report which regime the data supports. It may not call a conditio
 
 One training item contains
 
-\[
+$$
 (S,X,G,\mathcal P, Z),
-\]
+$$
 
 where
 
-- \(S\) is available only to the offline label generator;
-- \(X\) is an occluded noisy RGB-D observation;
-- \(G=(g_1,\ldots,g_B)\) is a random bundle of candidate grasps;
-- \(\mathcal P\) contains random pad-line refinement relations;
-- \(Z=\Phi_G(S)\) contains exact or high-resolution numerical moment targets.
+- $S$ is available only to the offline label generator;
+- $X$ is an occluded noisy RGB-D observation;
+- $G=(g_1,\ldots,g_B)$ is a random bundle of candidate grasps;
+- $\mathcal P$ contains random pad-line refinement relations;
+- $Z=\Phi_G(S)$ contains exact or high-resolution numerical moment targets.
 
 Grasp bundles mix:
 
@@ -417,9 +417,9 @@ Sampling probabilities are logged and reused by every baseline. Otherwise a bett
 
 ### 7.2 Cone score
 
-Let \(\widehat z_\theta(X,g,j,c)\) be the predicted moment sequence after projection to the feasible truncated-moment cone \(\mathcal K_{M,I}\). The base score is
+Let $\widehat z_\theta(X,g,j,c)$ be the predicted moment sequence after projection to the feasible truncated-moment cone $\mathcal K_{M,I}$. The base score is
 
-\[
+$$
 \mathcal L_{\mathrm{cone}}
 =
 \mathbb E
@@ -433,7 +433,7 @@ T_M(\widehat z)-T_M(z)
 W_{g,j,c}^{1/2}
 \right\|_F^2
 \right].
-\]
+$$
 
 Weights emphasize frequencies resolvable at the measured sensor/pad scale and candidates close to a mechanics boundary. They must be fixed from training/calibration data, not tuned on test success.
 
@@ -441,19 +441,19 @@ Squared Toeplitz-matrix error is a weighted squared error on the moments. Its po
 
 ### 7.3 Projection residual
 
-The learned update produces an unconstrained sequence \(\widetilde z\); the architecture applies
+The learned update produces an unconstrained sequence $\widetilde z$; the architecture applies
 
-\[
+$$
 \widehat z=\Pi_{\mathcal K_{M,I}}(\widetilde z).
-\]
+$$
 
 Training includes
 
-\[
+$$
 \mathcal L_{\mathrm{proj}}
 =
 \|\widetilde z-\widehat z\|_2^2,
-\]
+$$
 
 so the learned operator approaches the cone rather than relying on a large corrective projection at every layer. A PSD Toeplitz projection can be implemented by alternating affine Toeplitz projection, eigenvalue clipping, Hermitian symmetry, and an aperture localizing LMI. Exact differentiability is not required at the first prototype; implicit differentiation or a fixed number of differentiable projection steps is sufficient.
 
@@ -461,13 +461,13 @@ so the learned operator approaches the cone rather than relying on a large corre
 
 If a pad tube is partitioned into children with kernels summing to the parent kernel, the measures and all their moments add exactly:
 
-\[
+$$
 z_{\mathrm{parent}}=\sum_{r=1}^{R}z_{\mathrm{child},r}.
-\]
+$$
 
-For random refinement tree \(\mathcal P\),
+For random refinement tree $\mathcal P$,
 
-\[
+$$
 \mathcal L_{\mathrm{ref}}
 =
 \sum_{(p,\mathrm{ch}(p))\in\mathcal P}
@@ -475,7 +475,7 @@ For random refinement tree \(\mathcal P\),
 \widehat z_p-
 \sum_{r\in\mathrm{ch}(p)}\widehat z_r
 \right\|_2^2.
-\]
+$$
 
 This prevents a coarse pad from predicting high occupancy while every sub-pad predicts empty space.
 
@@ -483,30 +483,30 @@ This prevents a coarse pad from predicting high occupancy while every sub-pad pr
 
 The same physical line can appear in multiple nearby candidates or with reversed jaw orientation. Canonical line hashing during training supplies equivalence pairs. For line reversal,
 
-\[
+$$
 z_m(-e_c)=e^{-i\omega_m\Delta}\overline{z_m(e_c)},
-\]
+$$
 
-where \(\Delta\) is the known origin shift. Let \(P_{\ell\to\ell'}\) denote this analytic phase/conjugation map. Then
+where $\Delta$ is the known origin shift. Let $P_{\ell\to\ell'}$ denote this analytic phase/conjugation map. Then
 
-\[
+$$
 \mathcal L_{\mathrm{same}}
 =
 \sum_{\ell\sim\ell'}
 \|\widehat z_{\ell'}-P_{\ell\to\ell'}\widehat z_\ell\|_2^2.
-\]
+$$
 
 This is a transform identity, not pairwise equality of grasp scores under different occlusion levels.
 
 ### 7.6 Decision term
 
-A separately trained differentiable decoder \(D_\psi\) maps the line sketches of one candidate to a local mechanics score:
+A separately trained differentiable decoder $D_\psi$ maps the line sketches of one candidate to a local mechanics score:
 
-\[
+$$
 \widehat q_g=D_\psi(\operatorname{sg}(\widehat Z_g)),
-\]
+$$
 
-where \(\operatorname{sg}\) is stop-gradient in the clean two-stage formulation. This keeps the moment operator an estimator of the conditional mean rather than allowing decision gradients to deform the purported moment prediction. Joint fine-tuning without stop-gradient is allowed only as a separately named ablation; in that version the conditional-mean elicitation theorem no longer describes the final network.
+where $\operatorname{sg}$ is stop-gradient in the clean two-stage formulation. This keeps the moment operator an estimator of the conditional mean rather than allowing decision gradients to deform the purported moment prediction. Joint fine-tuning without stop-gradient is allowed only as a separately named ablation; in that version the conditional-mean elicitation theorem no longer describes the final network.
 
 The first version should use a small monotone MLP plus analytic features:
 
@@ -520,7 +520,7 @@ The decoder does not model the full approach, causal failure types, object dynam
 
 A listwise decision loss is
 
-\[
+$$
 \mathcal L_{\mathrm{dec}}
 =
 -\sum_{g\in G}
@@ -533,13 +533,13 @@ A listwise decision loss is
 =
 \frac{\exp(q_g^\star/\tau_y)}
 {\sum_h\exp(q_h^\star/\tau_y)}.
-\]
+$$
 
 The decision term is deliberately secondary. If an unconstrained direct critic with the same encoder and this listwise loss matches JILT, the transform contribution is falsified.
 
 ### 7.7 Complete objective
 
-\[
+$$
 \boxed{
 \mathcal L_{\mathrm{RBCS}}
 =
@@ -548,16 +548,16 @@ The decision term is deliberately secondary. If an unconstrained direct critic w
 +\lambda_r\mathcal L_{\mathrm{ref}}
 +\lambda_s\mathcal L_{\mathrm{same}}
 }
-\]
+$$
 
 The decoder is trained in a second optimization
 
-\[
+$$
 \min_\psi\mathcal L_{\mathrm{dec}}
 \left(D_\psi(\operatorname{sg}(\widehat Z)),q^\star\right).
-\]
+$$
 
-An implementation may alternate the two optimizers, but \(\mathcal L_{\mathrm{dec}}\) must not update the moment operator in the theorem-bearing model.
+An implementation may alternate the two optimizers, but $\mathcal L_{\mathrm{dec}}$ must not update the moment operator in the theorem-bearing model.
 
 What is new is not squared loss, PSD projection, or listwise ranking in isolation. The proposed learning object is a random action-indexed family of truncated positive-measure moments, and RBCS elicits it while testing exact range identities across gripper queries. The separately trained decoder tests whether this object is decision-sufficient.
 
@@ -565,7 +565,7 @@ What is new is not squared loss, PSD projection, or listwise ranking in isolatio
 
 The finite constraint set guarantees that every line/channel has a non-negative supported representing measure and that explicitly linked refinement/reparameterization queries agree. It does **not** guarantee that all measures in a large arbitrary bundle are projections of one common three-dimensional solid. Enforcing that global condition would approach inverse rendering or object reconstruction and is neither claimed nor required here.
 
-Accordingly, the paper should call \(\mathfrak R_Q\) a **finite-bundle moment-consistency relaxation**, not “the exact 3-D transform range.” A stronger cross-line realizability constraint is allowed only if it remains non-injective, cheap, and independently ablated.
+Accordingly, the paper should call $\mathfrak R_Q$ a **finite-bundle moment-consistency relaxation**, not “the exact 3-D transform range.” A stronger cross-line realizability constraint is allowed only if it remains non-injective, cheap, and independently ablated.
 
 ## 8. New architecture: JILT
 
@@ -573,7 +573,7 @@ Accordingly, the paper should call \(\mathfrak R_Q\) a **finite-bundle moment-co
 
 JILT alternates learned completion in line space with nonlearned physical projections:
 
-\[
+$$
 X
 \xrightarrow{\text{analytic lift}}
 Z^{(0)}_{\mathrm{obs}},M_{\mathrm{known}}
@@ -581,7 +581,7 @@ Z^{(0)}_{\mathrm{obs}},M_{\mathrm{known}}
 \widehat Z
 \xrightarrow{D_\psi}
 \widehat q(G).
-\]
+$$
 
 No block outputs a voxel grid, point completion, mesh, SDF, object latent sample, random action set, or utility posterior.
 
@@ -603,7 +603,7 @@ For every queried physical line, NUFT-style kernel accumulation computes the con
 
 The lift yields:
 
-- visible normal-flux anchor moments \(z^\pm_{\mathrm{anchor}}\);
+- visible normal-flux anchor moments $z^\pm_{\mathrm{anchor}}$;
 - an occupancy support constraint, not fabricated visible-volume moments;
 - intervals excluded from residual-measure support by camera free space;
 - censored intervals behind target self-occlusion or the foreground blocker;
@@ -615,18 +615,18 @@ This is not a learned jaw-ray attention module. It is a fixed linear transform f
 
 Each token represents a physical line tube, not an RGB-D pixel or point. Its coordinates are
 
-\[
+$$
 (u,p,\rho),
 \qquad
 u\in\mathbb{RP}^2,
 \quad p\in u^\perp,
-\]
+$$
 
-where \(u\) is unoriented closing direction, \(p\) the closest point of the line to the target-frame origin, and \(\rho\) the tube/pad scale.
+where $u$ is unoriented closing direction, $p$ the closest point of the line to the target-frame origin, and $\rho$ the tube/pad scale.
 
 The learned update is a sparse neural operator
 
-\[
+$$
 \widetilde Z^{(k+1)}
 =
 Z^{(k)}
@@ -636,9 +636,9 @@ Z^{(k)},
 E_X,
 \Gamma_Q
 \right),
-\]
+$$
 
-where \(\Gamma_Q\) is a graph with three analytic edge types:
+where $\Gamma_Q$ is a graph with three analytic edge types:
 
 1. same-line / reversed-line equivalence;
 2. parent-child pad refinement;
@@ -652,7 +652,7 @@ The operator is permutation-equivariant over the queried candidate set. Adding a
 
 The learned state is the residual moment sequence, not the total sequence. After each learned update, project the residual onto the positive-measure cone supported only on intervals not ruled out by calibrated free space:
 
-\[
+$$
 Z_{\mathrm{res}}^{(k+1/3)}
 =
 \Pi_{\mathcal K_{M,I_{\mathrm{admissible}}}}
@@ -660,13 +660,13 @@ Z_{\mathrm{res}}^{(k+1/3)}
 \qquad
 Z^{(k+1/3)}
 =Z_{\mathrm{anchor}}+Z_{\mathrm{res}}^{(k+1/3)}.
-\]
+$$
 
 The support cone is implemented with interval-localizing constraints; for a union of admissible intervals, use a sum of interval-supported residual measures. Sensor uncertainty expands the admissible intervals rather than asserting exact empty space. The network cannot subtract visible target flux because the learned residual is non-negative, and it cannot put residual target mass into calibrated free space. No complete-transform coefficient is incorrectly treated as directly observed.
 
 ### 8.6 Moment-cone projection layer
 
-For every channel and line, construct \(T_M(z)\), then alternate:
+For every channel and line, construct $T_M(z)$, then alternate:
 
 1. Hermitian/Toeplitz averaging;
 2. PSD eigenvalue clipping;
@@ -674,9 +674,9 @@ For every channel and line, construct \(T_M(z)\), then alternate:
 4. restoration of hard observed constraints;
 5. a small number of Dykstra or Douglas–Rachford iterations.
 
-This gives \(Z^{(k+2/3)}\in\mathcal K_{M,I}\). Parent-child and same-line affine constraints are then projected jointly over each small bundle to obtain \(Z^{(k+1)}\).
+This gives $Z^{(k+2/3)}\in\mathcal K_{M,I}$. Parent-child and same-line affine constraints are then projected jointly over each small bundle to obtain $Z^{(k+1)}$.
 
-The projection is cheap because each moment matrix is only \(5\times5\), \(9\times9\), or \(17\times17\), and bundles are embarrassingly parallel.
+The projection is cheap because each moment matrix is only $5\times5$, $9\times9$, or $17\times17$, and bundles are embarrassingly parallel.
 
 ### 8.7 Decoder and selection
 
@@ -690,7 +690,7 @@ The main ablation must compare all three. Calling the first two “1-D reconstru
 
 Candidate score:
 
-\[
+$$
 \widehat q_g
 =
 D_\psi
@@ -699,13 +699,13 @@ D_\psi
 w_g,
 \text{visible obstacle clearance}(g)
 \right).
-\]
+$$
 
 Selection is ordinary
 
-\[
+$$
 \widehat g=\arg\max_{g\in Q(X):\,c_{\mathrm{obs}}(g)>0}\widehat q_g.
-\]
+$$
 
 There is no risk functional or abstention novelty claim. Selective prediction can be reported only as an optional calibrated operating point shared by all baselines.
 
@@ -721,10 +721,10 @@ End-to-end generation is a later experiment, not required to validate RBCS or JI
 
 ### 8.9 Complexity target
 
-For \(B=128\) candidates, \(J=16\) pad/body lines, \(M=8\), and \(K=4\) unrolled blocks:
+For $B=128$ candidates, $J=16$ pad/body lines, $M=8$, and $K=4$ unrolled blocks:
 
-- moment storage is on the order of \(B\times J\times(2M+1)\), not a \(128^3\) or octree volume;
-- cone projections act on matrices of size \(M+1=9\);
+- moment storage is on the order of $B\times J\times(2M+1)$, not a $128^3$ or octree volume;
+- cone projections act on matrices of size $M+1=9$;
 - visible lift is a sparse segmented reduction over points near queried tubes;
 - the observation encoder is cached once;
 - no diffusion, mesh extraction, marching cubes, or simulator rollout is used at inference.
@@ -737,69 +737,69 @@ All statements below are theorem targets, not established results of this propos
 
 ### Proposition 1 — cone validity
 
-For a finite Hermitian moment sequence \(z_{-M:M}\), PSD of its Toeplitz matrix plus the interval-localizing constraint is necessary and sufficient for existence of a non-negative representing measure supported on the declared jaw interval, under the selected trigonometric K-moment formulation.
+For a finite Hermitian moment sequence $z_{-M:M}$, PSD of its Toeplitz matrix plus the interval-localizing constraint is necessary and sufficient for existence of a non-negative representing measure supported on the declared jaw interval, under the selected trigonometric K-moment formulation.
 
 Consequence: every JILT line output has at least one physically non-negative 1-D occupancy interpretation. An unconstrained vector head does not.
 
 ### Proposition 2 — conditional-mean closure
 
-Let \(Z\mid X=x\) be a random valid moment matrix with finite second moment. Under squared Frobenius RBCS, the population minimizer is
+Let $Z\mid X=x$ be a random valid moment matrix with finite second moment. Under squared Frobenius RBCS, the population minimizer is
 
-\[
+$$
 \widehat T^*(x)=\mathbb E[T(Z)\mid X=x].
-\]
+$$
 
-Because the PSD cone and affine Toeplitz/refinement constraints are convex, \(\widehat T^*(x)\) remains feasible.
+Because the PSD cone and affine Toeplitz/refinement constraints are convex, $\widehat T^*(x)$ remains feasible.
 
 This establishes coherence only for the conditional mean sketch. It does not recover or claim the conditional law of hidden shapes.
 
 ### Proposition 3 — projection cannot worsen valid-target error
 
-If \(\mathfrak C\) is the closed convex finite-bundle constraint set and the true target \(Z\in\mathfrak C\), then Euclidean projection satisfies
+If $\mathfrak C$ is the closed convex finite-bundle constraint set and the true target $Z\in\mathfrak C$, then Euclidean projection satisfies
 
-\[
+$$
 \|\Pi_{\mathfrak C}(\widetilde Z)-Z\|_2
 \le
 \|\widetilde Z-Z\|_2.
-\]
+$$
 
 This is the cleanest indirect mathematical reason the range layer can help: for the same unconstrained prediction, projection cannot increase squared error to a valid label. It says nothing by itself about neural optimization or grasp success.
 
 ### Proposition 4 — finite-moment approximation for simple line sections
 
-Assume that, at pad resolution, occupancy along each queried closing line is a union of at most \(K_0\) intervals separated by at least \(\delta\), and depth noise is below a declared scale. A finite set of Fourier samples or moments can identify/approximate the interval endpoints with an error bound depending on \(M,K_0,\delta\), and noise.
+Assume that, at pad resolution, occupancy along each queried closing line is a union of at most $K_0$ intervals separated by at least $\delta$, and depth noise is below a declared scale. A finite set of Fourier samples or moments can identify/approximate the interval endpoints with an error bound depending on $M,K_0,\delta$, and noise.
 
 This proposition connects moment bandwidth to actual contact geometry. It must be stated only for the explicit simple-section class. Household handles and deep concavities violate it and become stress tests.
 
 ### Proposition 5 — decoder stability
 
-If the local mechanics decoder \(D_g\) is \(L_D\)-Lipschitz on the feasible moment set, then
+If the local mechanics decoder $D_g$ is $L_D$-Lipschitz on the feasible moment set, then
 
-\[
+$$
 |D_g(\widehat Z_g)-D_g(Z_g)|
 \le
 L_D\|\widehat Z_g-Z_g\|.
-\]
+$$
 
 If the oracle best candidate has margin
 
-\[
+$$
 \gamma
 =
 q_{g^*}-\max_{g\ne g^*}q_g,
-\]
+$$
 
-then uniform score error below \(\gamma/2\) preserves the selected action. Combining this with the previous proposition gives a bandwidth/noise condition for correct selection.
+then uniform score error below $\gamma/2$ preserves the selected action. Combining this with the previous proposition gives a bandwidth/noise condition for correct selection.
 
 ### Proposition 6 — deliberate non-injectivity
 
-For any finite queried bundle union \(U_Q\), construct two solids \(S_1,S_2\) that agree inside \(U_Q\) but differ on a positive-volume subset outside \(U_Q\). Then
+For any finite queried bundle union $U_Q$, construct two solids $S_1,S_2$ that agree inside $U_Q$ but differ on a positive-volume subset outside $U_Q$. Then
 
-\[
+$$
 \Phi_Q(S_1)=\Phi_Q(S_2)
-\]
+$$
 
-while \(S_1\ne S_2\). With truncated moments, additional within-tube non-identifiability exists.
+while $S_1\ne S_2$. With truncated moments, additional within-tube non-identifiability exists.
 
 This theorem prevents the paper from quietly claiming both “not reconstruction” and “all geometry is recoverable.”
 
@@ -853,16 +853,16 @@ This is the decisive first experiment.
 
 For complete meshes and a fixed candidate bank:
 
-1. compute exact local grasp margin \(q_S(g)\);
-2. compute JILT moments at \(M\in\{2,4,8,16,32\}\) and pad grids \(2^2,3^2,4^2,6^2\);
-3. train only the small decoder \(D_\psi\) with full moments;
+1. compute exact local grasp margin $q_S(g)$;
+2. compute JILT moments at $M\in\{2,4,8,16,32\}$ and pad grids $2^2,3^2,4^2,6^2$;
+3. train only the small decoder $D_\psi$ with full moments;
 4. compare against a local voxel/contact crop of equal byte size;
-5. measure score \(R^2\), top-one regret, sign accuracy near the boundary, and hidden-contact failure recall;
+5. measure score $R^2$, top-one regret, sign accuracy near the boundary, and hidden-contact failure recall;
 6. stratify by convexity, handles/holes, number of line intervals, pad size, and execution noise.
 
 Go criterion:
 
-- \(M\le8\), at most \(4\times4\) pad lines, and less than 256 real scalars per candidate retain at least 95% of the oracle top-one performance of the local high-resolution crop;
+- $M\le8$, at most $4\times4$ pad lines, and less than 256 real scalars per candidate retain at least 95% of the oracle top-one performance of the local high-resolution crop;
 - sign accuracy within the physically important margin band is at least 90%;
 - failures on multi-interval sections are localized and predictable.
 
@@ -873,8 +873,8 @@ If this gate fails, JILT is dead. Do not compensate by increasing bandwidth unti
 Gate 0 tests whether the sketch preserves mechanics for a known full object. It does **not** test whether the conditional mean sketch survives observational ambiguity. A second no-large-network experiment is mandatory.
 
 1. Construct small groups of different complete shapes rendered to the same quantized/noisy partial RGB-D observation within a calibrated tolerance. These groups are an evaluation device only; JILT is not trained with a metamer/fiber objective.
-2. For every common candidate, compute the group mean sketch \(\bar Z_g\), the mean oracle utility \(\bar q_g\), and the utility of the decoder applied to the mean sketch \(D_\psi(\bar Z_g)\).
-3. Compare the action selected from \(D_\psi(\bar Z_g)\) with the Bayes action from \(\bar q_g\).
+2. For every common candidate, compute the group mean sketch $\bar Z_g$, the mean oracle utility $\bar q_g$, and the utility of the decoder applied to the mean sketch $D_\psi(\bar Z_g)$.
+3. Compare the action selected from $D_\psi(\bar Z_g)$ with the Bayes action from $\bar q_g$.
 4. Compare linear, small nonlinear, direct scalar, and stochastic-completion decoders.
 5. Stratify by within-group hidden-contact disagreement.
 
@@ -954,7 +954,7 @@ Primary:
 - top-one simulated and physical short-lift success;
 - top-one oracle regret on a common candidate bank;
 - success versus target visibility;
-- worst visibility-bin success for visibility \(\le0.35\);
+- worst visibility-bin success for visibility $\le0.35$;
 - hidden-contact subset success;
 - latency, peak memory, and energy if measurable.
 
@@ -982,7 +982,7 @@ Non-reconstruction diagnostics:
 4. no same-line canonicalization;
 5. no global target code;
 6. no visible analytic lift;
-7. \(M=2,4,8,16,32\);
+7. $M=2,4,8,16,32$;
 8. pad grid resolution;
 9. moment-direct versus maximum-entropy versus Vandermonde decoder;
 10. RGB off / depth only;
@@ -1006,7 +1006,7 @@ Non-reconstruction diagnostics:
 
 ### Kill 1 — the sketch is not sufficient
 
-If Gate 0 requires \(M>16\), more than a \(4\times4\) line grid, or a near-dense candidate cover to match local geometry, the method has lost its compact advantage.
+If Gate 0 requires $M>16$, more than a $4\times4$ line grid, or a near-dense candidate cover to match local geometry, the method has lost its compact advantage.
 
 ### Kill 2 — cone projection is decorative
 
@@ -1080,13 +1080,13 @@ Do not claim:
 
 The transferable contribution is the middle layer between reconstruction and scalar prediction:
 
-\[
+$$
 \text{partial measurement}
 \rightarrow
 \text{constrained non-invertible task transform}
 \rightarrow
 \text{decision}.
-\]
+$$
 
 Other potential applications include collision queries from sparse scans, non-destructive-testing decisions from incomplete projections, tool-surface interaction, and direct measurement-domain diagnosis. The paper should demonstrate at least one small non-robotic synthetic inverse-decision task where range-constrained task-transform prediction beats source reconstruction and scalar regression. This is important for ICLR breadth and should not be a cosmetic appendix.
 
@@ -1141,12 +1141,12 @@ Potentially strong: the paper can establish when direct constrained task transfo
 - equal or better accuracy than completion at lower compute;
 - better sample efficiency;
 - better real transfer;
-- moment representation is sufficient at \(M\le8\);
+- moment representation is sufficient at $M\le8$;
 - cone structure, rather than encoder capacity, creates the gain.
 
 ### Suggested go thresholds
 
-- at least 5 percentage points absolute gain over the strongest shared-candidate direct baseline in visibility \(\le0.35\), with a paired 95% interval excluding zero;
+- at least 5 percentage points absolute gain over the strongest shared-candidate direct baseline in visibility $\le0.35$, with a paired 95% interval excluding zero;
 - parity or better than the strongest completion baseline with at most one third of its latency and peak memory;
 - at least 20% reduction in boundary-band decision regret from the full projection stack versus unconstrained moment regression;
 - less than 2% observed/free-space constraint violation after measured sensor corruption;
@@ -1211,7 +1211,7 @@ These are project management thresholds, not universal definitions of significan
 9. Duplicating an identical physical line across candidates gives identical predictions.
 10. Changing geometry outside all queried tubes leaves labels unchanged.
 11. Two different interval configurations with the same truncated moments demonstrate non-identifiability.
-12. Increasing \(M\) cannot reduce oracle information, although learned performance may worsen from variance.
+12. Increasing $M$ cannot reduce oracle information, although learned performance may worsen from variance.
 13. Turning off the global shape code makes hidden residual prediction collapse while observed contributions remain unchanged.
 14. The same visible lift evaluated at two point sampling densities converges to the same coefficients.
 15. The deterministic obstacle gate alone rejects a known collision even if JILT predicts a high target score.

@@ -18,49 +18,49 @@
 
 Для полного объекта $S$ и query grasp-а $g$ offline oracle строит малую, нормированную terminal-stability matrix
 
-\[
+$$
 K_{S,g}\in\mathbb S_+^p,
 \qquad p=6,
-\]
+$$
 
 где нулевые направления означают, что standardized compliant grasp не восстанавливает соответствующее малое смещение/вращение объекта, а большие eigenvalues означают быстро восстанавливаемые направления. Эта матрица не является reconstruction target: она имеет размер $6\times6$ и относится только к одному query grasp после локального замыкания jaws.
 
 Вместо регрессии $K$, её среднего или одного eigenvalue используется виртуальная overdamped relaxation
 
-\[
+$$
 H_{S,g}(t)=\exp(-tK_{S,g}),\qquad t\ge0.
-\]
+$$
 
 Если направление хорошо удерживается, его response быстро затухает. Если оно не удерживается, eigenvalue равен нулю и response не затухает. При occlusion скрытая геометрия случайна относительно наблюдения $X=x$, поэтому Bayes target
 
-\[
+$$
 \bar H(x,g,t)
 =
 \mathbb E\!\left[\exp(-tK_{S,g})\mid X=x\right]
-\]
+$$
 
 обычно **не является semigroup одного среднего оператора**. В общем случае не существует матрицы $\widehat K(x,g)$, для которой одновременно
 
-\[
+$$
 \bar H(x,g,t)=\exp(-t\widehat K(x,g))
 \quad\forall t.
-\]
+$$
 
 Это не косметическая тонкость. Например, две неразличимые hidden geometries могут иметь
 
-\[
+$$
 K_1=\begin{bmatrix}1&0\\0&0\end{bmatrix},
 \qquad
 K_2=\begin{bmatrix}0&0\\0&1\end{bmatrix}.
-\]
+$$
 
 Их средняя stiffness равна $\frac12I$ и ложно выглядит устойчивой во всех направлениях. Но правильная средняя relaxation
 
-\[
+$$
 \tfrac12e^{-tK_1}+\tfrac12e^{-tK_2}
 =
 \tfrac12(1+e^{-t})I
-\]
+$$
 
 не стремится к нулю: при $t\to\infty$ остаётся $\frac12I$. Тем самым representation сохраняет ambiguity-weighted weak modes, не создавая ни одной complete shape hypothesis.
 
@@ -72,14 +72,14 @@ K_2=\begin{bmatrix}0&0\\0&1\end{bmatrix}.
 
 PSRN представляет её конечной положительной quadrature:
 
-\[
+$$
 \widehat H_\theta(t\mid x,g)
 =
 \sum_{k=0}^{r-1}
 A_k(x,g)e^{-t\alpha_k(x,g)},
-\]
+$$
 
-\[
+$$
 A_k\succeq0,
 \qquad
 \sum_k A_k=I,
@@ -87,12 +87,12 @@ A_k\succeq0,
 \alpha_0=0,
 \quad
 \alpha_k>0\ (k>0).
-\]
+$$
 
 По конструкции output:
 
 - symmetric positive semidefinite;
-- равен (I) при (t=0);
+- равен (I) при $t=0$;
 - монотонно уменьшается в Loewner order;
 - имеет alternating-sign derivatives;
 - допускает ненулевой long-time residue $A_0$, соответствующий hidden weak modes;
@@ -179,17 +179,17 @@ Observed shelf/blocker geometry проходит один и тот же determi
 
 Первоначально рассматривался target
 
-\[
+$$
 \mathbb E[(K+\lambda I)^{-1}\mid x,g].
-\]
+$$
 
 Он отброшен. Для quadratic energy такой matrix resolvent является масштабированным родственником proximal response / Moreau gradient и слишком близок к MintyGrasp. Простая замена `prox` на слово `resolvent` не удовлетворяет non-intersection requirement.
 
 Выбранный target использует другую структуру:
 
-\[
+$$
 \mathbb E[e^{-tK}\mid x,g],
-\]
+$$
 
 то есть transient relaxation и matrix Laplace spectral measure. PSRN намеренно **не** является semigroup одного $K$, тогда как quadratic prox/resolvent head задаётся одним operator/energy. Conditional mixture, long-time null residue, CSLS и positive matrix-measure quadrature — независимое ядро.
 
@@ -204,7 +204,7 @@ Observed shelf/blocker geometry проходит один и тот же determi
 
 ### 2.2 Отличие от старой rejected heat-flow idea
 
-В `reports/EdgeFlux.md` была отклонена heat-flow smoothing binary grasp field **по grasp-pose manifold**. Там heat equation сглаживает success function в (SE(3)) и фактически обобщает pose-noise convolution Johns et al.
+В `reports/EdgeFlux.md` была отклонена heat-flow smoothing binary grasp field **по grasp-pose manifold**. Там heat equation сглаживает success function в $SE(3)$ и фактически обобщает pose-noise convolution Johns et al.
 
 RelaxGrasp не диффундирует по action space. Время $t$ индексирует виртуальную релаксацию **object-twist modes после конкретного terminal contact**, а generator — query-specific $6\times6$ stability operator. Нет convolution соседних grasp poses и нет semigroup consistency по $SE(3)$.
 
@@ -274,9 +274,9 @@ These works support the general mechanism `valid structure can reduce hypothesis
 
 For $K\succeq0$, spectral calculus gives
 
-\[
+$$
 e^{-tK}=\int_0^\infty e^{-t\kappa}\,dE_K(\kappa).
-\]
+$$
 
 Matrix-valued completely monotone kernels and their positive-measure representations are established mathematics; see, for example, [Hanyga, matrix-valued completely monotone kernels](https://arxiv.org/abs/2106.07946). Positive matrix-measure / rational-function structure is also studied in [Milton and Putinar](https://arxiv.org/abs/2206.02926). Scalar completely monotone neural parameterizations already occur in [Deep Archimedean Copulas, NeurIPS 2020](https://papers.nips.cc/paper_files/paper/2020/file/10eb6500bd1e4a3704818012a1593cc3-Paper.pdf).
 
@@ -328,13 +328,13 @@ Hence novelty is **not** Bernstein's theorem, matrix exponentials, positive resi
 
 ### Branch E — stiffness matrix regression
 
-Идея: предсказывать (\widehat K(x,g)) и ранжировать по minimum eigenvalue.
+Идея: предсказывать $\widehat K(x,g)$ и ранжировать по minimum eigenvalue.
 
-Отклонение: слишком близко к известным grasp stiffness metrics и обычной structured regression. Более того, (\mathbb E[K\mid x]) может быть full-rank, когда каждый compatible world имеет different zero mode. Средняя матрица создаёт `Frankenstein stability`.
+Отклонение: слишком близко к известным grasp stiffness metrics и обычной structured regression. Более того, $\mathbb E[K\mid x]$ может быть full-rank, когда каждый compatible world имеет different zero mode. Средняя матрица создаёт `Frankenstein stability`.
 
 ### Branch F — conditional matrix resolvent
 
-Идея: learn (\mathbb E[(K+\lambda I)^{-1}\mid x,g]).
+Идея: learn $\mathbb E[(K+\lambda I)^{-1}\mid x,g]$.
 
 Отклонение: математически интересно и risk-sensitive, но в quadratic case является близким родственником Moreau/proximal response. Это нарушает non-intersection с MintyGrasp.
 
@@ -358,56 +358,56 @@ Hence novelty is **not** Bernstein's theorem, matrix exponentials, positive resi
 
 Пусть:
 
-- (Z\in\mathcal Z) — полный hidden physical state;
-- (X=\mathcal O_\omega(Z)+\epsilon) — coarsened/noisy observation;
-- (a\in\mathcal A) — query/action/port configuration;
-- (K(Z,a)\in\mathbb S_+^p) — normalized local stability operator.
+- $Z\in\mathcal Z$ — полный hidden physical state;
+- $X=\mathcal O_\omega(Z)+\epsilon$ — coarsened/noisy observation;
+- $a\in\mathcal A$ — query/action/port configuration;
+- $K(Z,a)\in\mathbb S_+^p$ — normalized local stability operator.
 
 Full state induces relaxation
 
-\[
+$$
 H_{Z,a}(t)=e^{-tK(Z,a)}.
-\]
+$$
 
-Spectral theorem даёт unique projection-valued measure (E_{K}):
+Spectral theorem даёт unique projection-valued measure $E_{K}$:
 
-\[
+$$
 K=\int \kappa\,dE_K(\kappa),
 \qquad
 H(t)=\int e^{-t\kappa}\,dE_K(\kappa).
-\]
+$$
 
-При port projection (B_a\in\mathbb R^{p\times q}), (B_a^TB_a=I_q), используется positive matrix measure
+При port projection $B_a\in\mathbb R^{p\times q}$, $B_a^TB_a=I_q$, используется positive matrix measure
 
-\[
+$$
 d\Sigma_{Z,a}(\kappa)
 =
 B_a^T dE_{K(Z,a)}(\kappa)B_a.
-\]
+$$
 
-В grasping (q=p=6) и (B=I) — dimension уже мала. В general benchmark (B) позволяет query-local port reduction большого hidden system.
+В grasping $q=p=6$ и $B=I$ — dimension уже мала. В general benchmark $B$ позволяет query-local port reduction большого hidden system.
 
 ### 5.2 Target under coarsening
 
 Определим conditional mean spectral measure
 
-\[
+$$
 \bar\Sigma_{x,a}(A)
 =
 \mathbb E[\Sigma_{Z,a}(A)\mid X=x]
-\]
+$$
 
-для measurable spectral sets (A\subseteq[0,\kappa_{max}]).
+для measurable spectral sets $A\subseteq[0,\kappa_{max}]$.
 
 Её transform:
 
-\[
+$$
 \bar H(x,a,t)
 =
 \int e^{-t\kappa}\,d\bar\Sigma_{x,a}(\kappa)
 =
 \mathbb E[B_a^Te^{-tK(Z,a)}B_a\mid x].
-\]
+$$
 
 Это deterministic Bayes statistic. Она не является posterior над shapes, contacts или outcome functions. Она также не сохраняет coupling между разными actions. Это намеренное сжатие: downstream loss должен зависеть только от expected relaxation cost данного query.
 
@@ -415,55 +415,55 @@ B_a^T dE_{K(Z,a)}(\kappa)B_a.
 
 Naive structured model предсказывает
 
-\[
+$$
 \bar K(x,a)=\mathbb E[K(Z,a)\mid x]
-\]
+$$
 
-и использует (e^{-t\bar K}).
+и использует $e^{-t\bar K}$.
 
 Но generally
 
-\[
+$$
 e^{-t\mathbb E[K\mid x]}
 \ne
 \mathbb E[e^{-tK}\mid x].
-\]
+$$
 
 Правая часть — mixture of semigroups. Она выполняет normalization и complete monotonicity, но обычно не выполняет
 
-\[
+$$
 \bar H(t+s)=\bar H(t)\bar H(s).
-\]
+$$
 
-Следовательно, forcing one generator (\widehat K) — structural misspecification именно там, где coarsening оставляет несколько mechanically different worlds.
+Следовательно, forcing one generator $\widehat K$ — structural misspecification именно там, где coarsening оставляет несколько mechanically different worlds.
 
 ### 5.4 Decision-relevant long-time residue
 
-Для каждого PSD (K):
+Для каждого PSD $K$:
 
-\[
+$$
 \lim_{t\to\infty}e^{-tK}=P_{\ker K}.
-\]
+$$
 
 По dominated convergence:
 
-\[
+$$
 A_0^\star(x,a)
 :=
 \lim_{t\to\infty}\bar H(x,a,t)
 =
 \mathbb E[P_{\ker K(Z,a)}\mid x].
-\]
+$$
 
 Это expected projector non-restoring modes. В отличие от scalar failure probability он сохраняет **direction** слабости; в отличие от posterior он не разделяет hidden worlds.
 
-Для normalized disturbance covariance (Q\succeq0):
+Для normalized disturbance covariance $Q\succeq0$:
 
-\[
+$$
 r_0(x,a;Q)
 =
 \operatorname{tr}(QA_0^\star)
-\]
+$$
 
 измеряет ambiguity-weighted mass нереставрируемых directions, релевантных задаче.
 
@@ -471,36 +471,36 @@ r_0(x,a;Q)
 
 Zero-mode mass различает hard failure, но не positive near-zero modes. Поэтому основной cost:
 
-\[
+$$
 C^\star(x,a)
 =
 \beta_0\operatorname{tr}(Q_0A_0^\star)
 {}+
 \int_{t_{min}}^{t_{max}}
 w(t)\operatorname{tr}(Q(t)\bar H(x,a,t))dt.
-\]
+$$
 
-Большие (t) чувствительны к near-zero eigenvalues, малые (t) — к общей stiffness scale. (Q_0,Q(t),w(t)) фиксируются из hardware disturbance model до test evaluation.
+Большие $t$ чувствительны к near-zero eigenvalues, малые $t$ — к общей stiffness scale. $Q_0,Q(t),w(t)$ фиксируются из hardware disturbance model до test evaluation.
 
 Decision:
 
-\[
+$$
 a^*(x)=\arg\min_{a\in\mathcal C(x)}C^\star(x,a).
-\]
+$$
 
 Если все costs выше preregistered threshold, допускается `abstain`; forced-choice result всё равно сообщается отдельно.
 
 ### 5.6 Exact boundary of sufficiency
 
-(\bar\Sigma) sufficient только для losses линейных по expected relaxation curve:
+$\bar\Sigma$ sufficient только для losses линейных по expected relaxation curve:
 
-\[
+$$
 L(a,Z)
 =
 \beta_0\operatorname{tr}(Q_0P_{\ker K(Z,a)})
 {}+
 \int w(t)\operatorname{tr}(Q(t)e^{-tK(Z,a)})dt.
-\]
+$$
 
 Она не sufficient для:
 
@@ -520,53 +520,53 @@ Paper не должен объявлять universal decision sufficiency.
 
 Grasp
 
-\[
+$$
 g=(R,t,w)
 \in
 \mathcal G=(SE(3)/C_2)\times[w_{min},w_{max}],
-\]
+$$
 
-где (C_2) учитывает exchange identical jaws.
+где $C_2$ учитывает exchange identical jaws.
 
-Все terminal twists выражаются в gripper frame. Translation/rotation приводятся к совместимым units через fixed characteristic length (\ell_g):
+Все terminal twists выражаются в gripper frame. Translation/rotation приводятся к совместимым units через fixed characteristic length $\ell_g$:
 
-\[
+$$
 \xi=
 \begin{bmatrix}
 \Delta p/\ell_g\\
 \Delta\theta
 \end{bmatrix}\in\mathbb R^6.
-\]
+$$
 
 Это устраняет произвольность смешанных units в eigenvalue comparison.
 
 ### 6.2 Full-geometry compliant-contact oracle
 
-Для full mesh (S) и (g):
+Для full mesh $S$ и $g$:
 
 1. simulate/solve fixed short jaw closure with calibrated pad compliance and preload;
 2. identify terminal contacts and active stick/slide regime;
 3. linearize local object restoring wrench around terminal equilibrium;
-4. obtain symmetric tangent energy Hessian (H_{S,g}\in\mathbb S^6) in normalized twist coordinates;
+4. obtain symmetric tangent energy Hessian $H_{S,g}\in\mathbb S^6$ in normalized twist coordinates;
 5. mark invalid closure/no bilateral support explicitly.
 
-Если high-fidelity simulator не даёт trustworthy Hessian, finite-difference virtual perturbations (\pm\epsilon e_j) around equilibrium могут оценить symmetric work matrix. Symmetrization должна быть physical, а не просто post-hoc `(H+H.T)/2`: reciprocity error до symmetrization сообщается как oracle diagnostic.
+Если high-fidelity simulator не даёт trustworthy Hessian, finite-difference virtual perturbations $\pm\epsilon e_j$ around equilibrium могут оценить symmetric work matrix. Symmetrization должна быть physical, а не просто post-hoc `(H+H.T)/2`: reciprocity error до symmetrization сообщается как oracle diagnostic.
 
 ### 6.3 Rectified stability operator
 
-Tangent stiffness может иметь negative modes. Для stable-relaxation target вводится preregistered physical threshold (\tau\):
+Tangent stiffness может иметь negative modes. Для stable-relaxation target вводится preregistered physical threshold $\tau$:
 
-\[
+$$
 \widetilde H_{S,g}=M_g^{-1/2}H_{S,g}M_g^{-1/2},
-\]
+$$
 
-\[
+$$
 K_{S,g}
 =
 (\widetilde H_{S,g}-\tau I)_+.
-\]
+$$
 
-Здесь ((A)_+=V\operatorname{diag}(\max(\lambda_i,0))V^T). Для invalid closure устанавливается (K=0).
+Здесь $(A)_+=V\operatorname{diag}(\max(\lambda_i,0))V^T$. Для invalid closure устанавливается $K=0$.
 
 Интерпретация:
 
@@ -574,11 +574,11 @@ K_{S,g}
 - weak positive modes decay slowly;
 - strong stable modes decay rapidly.
 
-(\tau) определяется из controller repeatability / minimum restoring work, а не подбирается на test success.
+$\tau$ определяется из controller repeatability / minimum restoring work, а не подбирается на test success.
 
 ### 6.4 Why not regress raw stiffness
 
-Raw (H) имеет три проблемы:
+Raw $H$ имеет три проблемы:
 
 1. units и reference-frame dependence;
 2. negative eigenvalues делают heat response grow unbounded;
@@ -586,9 +586,9 @@ Raw (H) имеет три проблемы:
 
 Normalized rectification переводит local stability в bounded relaxation target
 
-\[
+$$
 0\preceq e^{-tK}\preceq I,
-\]
+$$
 
 который стабильно обучается и допускает exact long-time interpretation.
 
@@ -611,52 +611,52 @@ Normalized rectification переводит local stability в bounded relaxatio
 
 Model predicts positive normalized matrix measure
 
-\[
+$$
 \widehat\Sigma_\theta(\cdot\mid x,g)
 \quad\text{on}\quad[0,\kappa_{max}],
-\]
+$$
 
-\[
+$$
 \widehat\Sigma_\theta([0,\kappa_{max}])=I_p.
-\]
+$$
 
 Its transform:
 
-\[
+$$
 \widehat H_\theta(t\mid x,g)
 =
 \int e^{-t\kappa}d\widehat\Sigma_\theta(\kappa\mid x,g).
-\]
+$$
 
 ### 7.2 Per-sample oracle measure
 
 For eigendecomposition
 
-\[
+$$
 K_{S,g}=\sum_{j=1}^{p}\kappa_jv_jv_j^T,
-\]
+$$
 
 oracle spectral measure is
 
-\[
+$$
 \Sigma_{S,g}
 =
 \sum_{j=1}^{p}v_jv_j^T\delta_{\kappa_j},
-\]
+$$
 
 and
 
-\[
+$$
 H_{S,g}(t)=\sum_jv_jv_j^Te^{-t\kappa_j}.
-\]
+$$
 
-Labels are therefore only eigenpairs of a (6\times6) operator, not meshes/voxels.
+Labels are therefore only eigenpairs of a $6\times6$ operator, not meshes/voxels.
 
 ### 7.3 Population score
 
-Let (\nu_t) have positive density on ([t_{min},t_{max}]), preferably log-uniform, and let (\nu_u) be a disturbance-probe distribution with full-rank covariance. Define
+Let $\nu_t$ have positive density on $[t_{min},t_{max}]$, preferably log-uniform, and let $\nu_u$ be a disturbance-probe distribution with full-rank covariance. Define
 
-\[
+$$
 \mathcal L_{\mathrm{CSLS}}(\theta)
 =
 \mathbb E_{X,S,g}
@@ -669,86 +669,86 @@ Let (\nu_t) have positive density on ([t_{min},t_{max}]), preferably log-uniform
 \right)u
 \right\|_2^2
 \right].
-\]
+$$
 
 Optionally add a quadratic-work term
 
-\[
+$$
 \gamma
 \left(
 u^T\widehat H_\theta(t)u
 -u^Te^{-tK}u
 \right)^2,
-\]
+$$
 
 but it is not required for identifiability if vector probes have full covariance.
 
 ### 7.4 Why this is a measure score, not arbitrary time MSE
 
-For scalar measures (\mu,\eta), integrated transform distance expands into an MMD with kernel
+For scalar measures $\mu,\eta$, integrated transform distance expands into an MMD with kernel
 
-\[
+$$
 k_\nu(\kappa,\kappa')
 =
 \int e^{-t(\kappa+\kappa')}d\nu_t(t).
-\]
+$$
 
-The matrix version applies this kernel to every bilinear projection (u^Td\Sigma v). Because Laplace transforms of finite measures on a compact interval are injective, a sufficiently rich time interval distinguishes measures.
+The matrix version applies this kernel to every bilinear projection $u^Td\Sigma v$. Because Laplace transforms of finite measures on a compact interval are injective, a sufficiently rich time interval distinguishes measures.
 
 Thus CSLS learns an entire conditional spectral statistic while evaluating only random (t,u) queries.
 
 ### 7.5 Properness statement
 
-Conditioned on (X=x,g), squared-loss decomposition gives
+Conditioned on $X=x,g$, squared-loss decomposition gives
 
-\[
+$$
 \mathbb E\|\widehat H(t)u-H_{S,g}(t)u\|^2
 =
 \|\widehat H(t)u-\bar H(t)u\|^2
 {}+\operatorname{Var}(H_{S,g}(t)u\mid x,g).
-\]
+$$
 
 Therefore the unique population minimizer in transform space is
 
-\[
+$$
 \widehat H^\star(t\mid x,g)=\bar H(x,g,t)
-\]
+$$
 
-almost everywhere in (t). Analytic continuation/injectivity of the Laplace transform then identifies (\bar\Sigma_{x,g}).
+almost everywhere in $t$. Analytic continuation/injectivity of the Laplace transform then identifies $\bar\Sigma_{x,g}$.
 
 Claims should say `strictly proper for the conditional mean spectral measure under stated support and integrability assumptions`, not `proper for the full posterior of K`.
 
 ### 7.6 Long-time emphasis without numerical explosion
 
-Use (t\sim\operatorname{LogUniform}(t_{min},t_{max})) with normalized spectrum (\kappa\in[0,\kappa_{max}]). Add explicit residue supervision
+Use $t\sim\operatorname{LogUniform}(t_{min},t_{max})$ with normalized spectrum $\kappa\in[0,\kappa_{max}]$. Add explicit residue supervision
 
-\[
+$$
 \mathcal L_0
 =
 \left\|A_0-P_{\ker K_{S,g}}\right\|_F^2
-\]
+$$
 
-only if exact zero modes are stable under oracle tolerances. Otherwise supervise a finite large-(t) target and call it `slow-mode mass`, not exact null probability.
+only if exact zero modes are stable under oracle tolerances. Otherwise supervise a finite large-$t$ target and call it `slow-mode mass`, not exact null probability.
 
 Total objective:
 
-\[
+$$
 \mathcal L
 =
 \mathcal L_{\mathrm{CSLS}}
 {}+\lambda_0\mathcal L_0
 {}+\lambda_{rank}\mathcal L_{decision},
-\]
+$$
 
-where (\mathcal L_{decision}) is optional pairwise ranking by oracle relaxation cost. The headline contribution must survive with (\lambda_{rank}=0); otherwise CSLS is only an auxiliary regularizer for ordinary ranking.
+where $\mathcal L_{decision}$ is optional pairwise ranking by oracle relaxation cost. The headline contribution must survive with $\lambda_{rank}=0$; otherwise CSLS is only an auxiliary regularizer for ordinary ranking.
 
 ### 7.7 Efficient stochastic estimator
 
 Per `(x,g)` training step:
 
-1. sample 2–4 log-times (t);
-2. sample 2–4 hardware-weighted directions (u);
-3. compute (e^{-tK}u) from cached six-dimensional eigenpairs;
+1. sample 2–4 log-times $t$;
+2. sample 2–4 hardware-weighted directions $u$;
+3. compute $e^{-tK}u$ from cached six-dimensional eigenpairs;
 4. evaluate PSRN analytical sum of exponentials;
 5. backpropagate CSLS.
 
@@ -760,19 +760,19 @@ No ODE solve, shape sample, convex optimization or matrix exponential is require
 
 ### 8.1 Interface
 
-\[
+$$
 (x,g,t)
 \mapsto
 \widehat H_\theta(t\mid x,g)\in\mathbb S_+^6.
-\]
+$$
 
-Internally the network outputs (r\) spectral atoms and PSD residues:
+Internally the network outputs $r$ spectral atoms and PSD residues:
 
-\[
+$$
 \{\alpha_k(x,g),A_k(x,g)\}_{k=0}^{r-1}.
-\]
+$$
 
-Recommended (r=8) initially; ablate (r\in\{1,2,4,8,16\}).
+Recommended $r=8$ initially; ablate $r\in\{1,2,4,8,16\}$.
 
 ### 8.2 Observation encoder
 
@@ -803,26 +803,26 @@ These are deterministic query coordinates, not a predicted line transform. The h
 
 Concatenate observation context and grasp token:
 
-\[
+$$
 h_{x,g}=\operatorname{MLP}([h_x,h_g,h_{local}]).
-\]
+$$
 
 Small heads output:
 
-- raw pole logits (b_k);
-- raw residue factors (B_k\in\mathbb R^{6\times r_k});
-- optional scale (s(x,g)) bounded around a global physical normalization.
+- raw pole logits $b_k$;
+- raw residue factors $B_k\in\mathbb R^{6\times r_k}$;
+- optional scale $s(x,g)$ bounded around a global physical normalization.
 
 Poles:
 
-\[
+$$
 \alpha_0=0,
 \qquad
 \alpha_k
 =
 \alpha_{min}
 {}+(\alpha_{max}-\alpha_{min})\sigma(b_k),\quad k>0.
-\]
+$$
 
 For interpretability poles can be sorted, but ordering is not required for validity.
 
@@ -830,62 +830,62 @@ For interpretability poles can be sorted, but ordering is not required for valid
 
 Raw residues:
 
-\[
+$$
 C_k=B_kB_k^T\succeq0.
-\]
+$$
 
 Let
 
-\[
+$$
 S=\sum_{k=0}^{r-1}C_k+\epsilon I.
-\]
+$$
 
 Define
 
-\[
+$$
 A_k=S^{-1/2}C_kS^{-1/2},
-\]
+$$
 
 and an additional fixed residual atom
 
-\[
+$$
 A_{res}=\epsilon S^{-1}
-\]
+$$
 
-at a fixed high pole (\alpha_{res}=\alpha_{max}). Then exactly
+at a fixed high pole $\alpha_{res}=\alpha_{max}$. Then exactly
 
-\[
+$$
 \sum_kA_k+A_{res}=I.
-\]
+$$
 
-For (6\times6) matrices eigendecomposition/Cholesky of (S) is cheap and stable.
+For $6\times6$ matrices eigendecomposition/Cholesky of $S$ is cheap and stable.
 
 ### 8.6 Relaxation decoder
 
-\[
+$$
 \widehat H_\theta(t\mid x,g)
 =
 A_0
 {}+\sum_{k=1}^{r-1}A_ke^{-t\alpha_k}
 {}+A_{res}e^{-t\alpha_{max}}.
-\]
+$$
 
 This gives exact identities:
 
-\[
+$$
 \widehat H(0)=I,
-\]
+$$
 
-\[
+$$
 (-1)^n\frac{d^n}{dt^n}\widehat H(t)
 =
 \sum_{k>0}A_k\alpha_k^ne^{-t\alpha_k}
 \succeq0,
-\]
+$$
 
-\[
+$$
 \lim_{t\to\infty}\widehat H(t)=A_0.
-\]
+$$
 
 No soft regularizer is needed for PSD, normalization or complete monotonicity.
 
@@ -893,22 +893,22 @@ No soft regularizer is needed for PSD, normalization or complete monotonicity.
 
 Generally
 
-\[
+$$
 \widehat H(t+s)\ne\widehat H(t)\widehat H(s).
-\]
+$$
 
 This is a feature. Enforcing equality would collapse all atoms into the spectral projectors of one operator and remove precisely the conditional mixture required by occlusion ambiguity.
 
 The model should report **semigroup defect**
 
-\[
+$$
 D_{sg}(x,g)
 =
 \mathbb E_{t,s}
 \left\|
 \widehat H(t+s)-\widehat H(t)\widehat H(s)
 \right\|_F^2
-\]
+$$
 
 as a diagnostic, not as a loss to minimize.
 
@@ -916,26 +916,26 @@ as a diagnostic, not as a loss to minimize.
 
 Compute analytically
 
-\[
+$$
 \widehat C(x,g)
 =
 \beta_0\operatorname{tr}(Q_0A_0)
 {}+\sum_k
 \operatorname{tr}(Q_kA_k)
 \int_{t_{min}}^{t_{max}}w(t)e^{-t\alpha_k}dt.
-\]
+$$
 
-For log-uniform (w), integral can be tabulated or evaluated with 8–16 fixed quadrature nodes. Candidate with minimum cost is selected after the common collision gate.
+For log-uniform $w$, integral can be tabulated or evaluated with 8–16 fixed quadrature nodes. Candidate with minimum cost is selected after the common collision gate.
 
 No learned scalar quality head is used in the main model. A monotone one-dimensional calibration from cost to success probability may be fitted on held-out data for reporting, but it is not the representation.
 
 ### 8.9 Complexity target
 
-For (B) candidates and (r) atoms:
+For $B$ candidates and $r$ atoms:
 
 - encoder: once per scene;
-- local query pooling: (O(Bm_qd)) over a small neighbor set;
-- spectral head: (O(Brp^2)), (p=6);
+- local query pooling: $O(Bm_qd)$ over a small neighbor set;
+- spectral head: $O(Brp^2)$, $p=6$;
 - no 3-D decoder;
 - no shape sampling;
 - no ODE/prox solver at inference.
@@ -948,64 +948,64 @@ Target: rerank 256 candidates in under 50 ms after encoder on a current GPU, wit
 
 ### Proposition 1 — conditional closure
 
-For every (Z,a), (H_{Z,a}(t)=B^Te^{-tK(Z,a)}B) is matrix completely monotone and (H(0)=I). If entries are integrable, conditional expectation preserves these properties:
+For every (Z,a), $H_{Z,a}(t)=B^Te^{-tK(Z,a)}B$ is matrix completely monotone and $H(0)=I$. If entries are integrable, conditional expectation preserves these properties:
 
-\[
+$$
 (-1)^n\bar H^{(n)}(t)\succeq0.
-\]
+$$
 
 Therefore the Bayes target stays inside the class represented by a positive matrix measure, even though it generally leaves the smaller class of single semigroups.
 
 ### Proposition 2 — semigroup misspecification
 
-There exist conditional distributions of (K\mid x,a) for which no deterministic (\widehat K\) satisfies
+There exist conditional distributions of $K\mid x,a$ for which no deterministic $\widehat K$ satisfies
 
-\[
+$$
 e^{-t\widehat K}=\mathbb E[e^{-tK}\mid x,a]
 \quad\forall t\ge0.
-\]
+$$
 
-The diagonal twin example in Section 10 is an exact proof. More generally, equality for all (t) imposes moment identities such as
+The diagonal twin example in Section 10 is an exact proof. More generally, equality for all $t$ imposes moment identities such as
 
-\[
+$$
 \mathbb E[K^2\mid x]=\mathbb E[K\mid x]^2,
-\]
+$$
 
 which fail under nonzero operator variance.
 
 ### Proposition 3 — zero-mode preservation
 
-\[
+$$
 \lim_{t\to\infty}\bar H(x,a,t)
 =
 \mathbb E[B^TP_{\ker K}B\mid x,a].
-\]
+$$
 
 Thus long-time residue does not vanish merely because different hidden worlds fail in different directions.
 
 ### Proposition 4 — CSLS propriety
 
-If (\operatorname{Cov}(u)\succ0), (\nu_t) has support with an accumulation point and measures have bounded mass/support, the unique population minimizer of CSLS is (\bar H), and injectivity of the Laplace transform identifies (\bar\Sigma).
+If $\operatorname{Cov}(u)\succ0$, $\nu_t$ has support with an accumulation point and measures have bounded mass/support, the unique population minimizer of CSLS is $\bar H$, and injectivity of the Laplace transform identifies $\bar\Sigma$.
 
 ### Proposition 5 — finite-atom approximation
 
-Every bounded positive matrix measure on compact ([0,\kappa_{max}]) can be approximated weakly by finite atomic positive matrix measures with the same total mass. Their Laplace transforms converge uniformly on compact time intervals. Hence PSRN can approximate the target as (r\to\infty).
+Every bounded positive matrix measure on compact $[0,\kappa_{max}]$ can be approximated weakly by finite atomic positive matrix measures with the same total mass. Their Laplace transforms converge uniformly on compact time intervals. Hence PSRN can approximate the target as $r\to\infty$.
 
-This is an approximation result, not a claim that (r=8) always suffices.
+This is an approximation result, not a claim that $r=8$ always suffices.
 
 ### Proposition 6 — decision regret
 
 Suppose for all candidates
 
-\[
+$$
 |\widehat C(x,g)-C^\star(x,g)|\le\epsilon.
-\]
+$$
 
-Then for (\hat g=\arg\min_g\widehat C(x,g)):
+Then for $\hat g=\arg\min_g\widehat C(x,g)$:
 
-\[
+$$
 C^\star(x,\hat g)-\min_gC^\star(x,g)\le2\epsilon.
-\]
+$$
 
 A corresponding bound follows from integrated operator error and norms of (Q,w).
 
@@ -1013,20 +1013,20 @@ A corresponding bound follows from integrated operator error and norms of (Q,w).
 
 Full geometry enters the model only through
 
-\[
+$$
 S\mapsto K_{S,g}\mapsto\Sigma_{S,g}
-\]
+$$
 
-for sampled queries. Infinitely many shapes/contact arrangements can induce the same local (6\times6) stability operator. Therefore exact shape recovery from this target is impossible without additional information.
+for sampled queries. Infinitely many shapes/contact arrangements can induce the same local $6\times6$ stability operator. Therefore exact shape recovery from this target is impossible without additional information.
 
 This does not prove statistical sample-efficiency; it only establishes quotienting.
 
 ### What must not be claimed without further proof
 
-- that (A_0) equals binary failure probability;
+- that $A_0$ equals binary failure probability;
 - that complete monotonicity alone ensures physical realizability by one grasp;
 - that conditional mean relaxation is sufficient for arbitrary risk measures;
-- that finite (r) recovers the exact spectral measure;
+- that finite $r$ recovers the exact spectral measure;
 - that full-rank stiffness is equivalent to nonlinear force closure in every contact model;
 - distribution-free safety guarantees;
 - superiority over scalar critic or completion before experiments.
@@ -1037,56 +1037,56 @@ This does not prove statistical sample-efficiency; it only establishes quotienti
 
 ### 10.1 Two hidden worlds
 
-Observation (x) is compatible with two equiprobable worlds. A given query grasp has two normalized stability operators:
+Observation $x$ is compatible with two equiprobable worlds. A given query grasp has two normalized stability operators:
 
-\[
+$$
 K_1=\operatorname{diag}(1,0),
 \qquad
 K_2=\operatorname{diag}(0,1).
-\]
+$$
 
 Each world has one non-restoring direction.
 
 ### 10.2 Mean-operator failure
 
-\[
+$$
 \bar K=\tfrac12(K_1+K_2)=\tfrac12I.
-\]
+$$
 
 Single-operator relaxation predicts
 
-\[
+$$
 e^{-t\bar K}=e^{-t/2}I\to0.
-\]
+$$
 
 It declares that every direction eventually relaxes.
 
 ### 10.3 Correct conditional relaxation
 
-\[
+$$
 \bar H(t)
 =
 \tfrac12e^{-tK_1}+\tfrac12e^{-tK_2}
 =
 \tfrac12(1+e^{-t})I.
-\]
+$$
 
-\[
+$$
 \lim_{t\to\infty}\bar H(t)=\tfrac12I.
-\]
+$$
 
-PSRN represents this exactly with poles (0,1) and residues (\frac12I,\frac12I).
+PSRN represents this exactly with poles $0,1$ and residues $\frac12I,\frac12I$.
 
 ### 10.4 Semigroup defect
 
-For (t,s>0):
+For $t,s>0$:
 
-\[
+$$
 \bar H(t+s)
 -\bar H(t)\bar H(s)
 =
 \tfrac14(1-e^{-t})(1-e^{-s})I\succ0.
-\]
+$$
 
 Thus the failure of semigroup composition is not numerical error; it is an observable signature of unresolved hidden modes.
 
@@ -1114,7 +1114,7 @@ Classical and modern stiffness analyses use eigenvalue signs/minima to diagnose 
 
 ### 11.4 Structured physical models often improve data efficiency/generalization
 
-INO, port-Hamiltonian networks and differentiable contact models show that exact structural constraints can improve physical learning or preserve validity. PSRN similarly removes impossible outputs: increasing relaxation, non-PSD response, wrong (H(0)), negative residues and arbitrary cross-time inconsistency.
+INO, port-Hamiltonian networks and differentiable contact models show that exact structural constraints can improve physical learning or preserve validity. PSRN similarly removes impossible outputs: increasing relaxation, non-PSD response, wrong $H(0)$, negative residues and arbitrary cross-time inconsistency.
 
 ### 11.5 The main advantage has an exact counterexample
 
@@ -1122,7 +1122,7 @@ The twin example proves a specific failure of `predict average operator`. This i
 
 ### 11.6 Computation is plausibly smaller
 
-PSRN outputs (r) six-dimensional PSD residues/poles per query. Completion methods output thousands to millions of geometric variables, sometimes multiple samples. At matched encoder/candidate bank, lower head latency and memory are plausible by construction.
+PSRN outputs $r$ six-dimensional PSD residues/poles per query. Completion methods output thousands to millions of geometric variables, sometimes multiple samples. At matched encoder/candidate bank, lower head latency and memory are plausible by construction.
 
 ### 11.7 Exact limit of the superiority hypothesis
 
@@ -1150,13 +1150,13 @@ For every candidate compute:
 - Ferrari–Canny-style epsilon where available;
 - minimum normalized tangent-stiffness eigenvalue;
 - binary simulated short-lift outcome under small perturbations;
-- RelaxGrasp oracle cost from (K).
+- RelaxGrasp oracle cost from $K$.
 
 Questions:
 
 1. Does relaxation cost rank physical success better than minimum eigenvalue and standard analytic scalar?
 2. Is long-time slow-mode mass informative beyond one eigenvalue?
-3. Is result stable across pad stiffness, friction and threshold (\tau)?
+3. Is result stable across pad stiffness, friction and threshold $\tau$?
 
 **Go:** relaxation cost improves top-1 success/AUROC or worst-decile failure materially (preregister, e.g. at least 3 pp top-1 or 0.03 AUROC) over the best simple stiffness scalar on held-out object families.
 
@@ -1164,23 +1164,23 @@ Questions:
 
 ### Gate 1 — general ML benchmark: MaskedPort
 
-Create latent spring/truss/graph systems with PSD generator (L_Z), port query (B_a), and connected structured masking of internal elements.
+Create latent spring/truss/graph systems with PSD generator $L_Z$, port query $B_a$, and connected structured masking of internal elements.
 
 Target:
 
-\[
+$$
 B_a^Te^{-tL_Z}B_a.
-\]
+$$
 
 Construct ambiguity pairs where the same visible subgraph has different hidden weak modes.
 
 Baselines:
 
 1. reconstruct hidden graph, then simulate;
-2. predict (\mathbb E[L\mid x]), then exponentiate;
-3. unconstrained (f(x,a,t)) MLP;
+2. predict $\mathbb E[L\mid x]$, then exponentiate;
+3. unconstrained $f(x,a,t)$ MLP;
 4. monotone scalar exponential mixture independently per matrix entry;
-5. conditional diffusion over hidden (L);
+5. conditional diffusion over hidden $L$;
 6. PSRN + CSLS.
 
 Metrics:
@@ -1201,7 +1201,7 @@ Freeze one high-recall candidate generator. For each full object:
 
 - render same target/camera with connected foreground blockers;
 - use visibility bins 0–0.2, 0.2–0.4, 0.4–0.6, 0.6–0.8, 0.8–0.9;
-- store complete-geometry (K_{S,g}) and lift outcomes for a shared candidate bank;
+- store complete-geometry $K_{S,g}$ and lift outcomes for a shared candidate bank;
 - include unseen instances, category-held-out and shape-family-shift splits;
 - separate information-only and combined regimes.
 
@@ -1255,7 +1255,7 @@ Secondary:
 1. same candidate generator + direct BCE success critic;
 2. same encoder + signed margin regression;
 3. same encoder + minimum-eigenvalue regression;
-4. same encoder + full (K) regression followed by (e^{-tK});
+4. same encoder + full $K$ regression followed by $e^{-tK}$;
 5. same encoder + unconstrained time-conditioned matrix head;
 6. TARGO-Net or closest reproducible completion-based external-occlusion model;
 7. ZeroGrasp / NeuGraspNet / Local Occupancy where protocol permits;
@@ -1282,7 +1282,7 @@ Secondary:
 
 ### Estimand
 
-- (K) regression vs (e^{-tK}) transform supervision;
+- $K$ regression vs $e^{-tK}$ transform supervision;
 - one scalar eigenvalue vs full directional matrix measure;
 - short-time only vs log-time range;
 - no explicit zero atom;
@@ -1293,21 +1293,21 @@ Secondary:
 
 - unconstrained residues;
 - PSD residues without identity partition;
-- single-generator semigroup (e^{-t\widehat K});
+- single-generator semigroup $e^{-t\widehat K}$;
 - PSRN mixture;
-- (r=1,2,4,8,16);
+- $r=1,2,4,8,16$;
 - fixed vs learned poles;
 - diagonal vs full matrix residues;
-- generic MLP over (t) with matched parameters.
+- generic MLP over $t$ with matched parameters.
 
 ### Physics
 
 - different pad stiffness;
 - friction randomization;
-- threshold (\tau);
+- threshold $\tau$;
 - stiffness oracle vs contact-wrench metric;
 - finite-difference vs analytic Hessian;
-- gravity-only (Q) vs isotropic perturbations;
+- gravity-only $Q$ vs isotropic perturbations;
 - terminal collision included/excluded consistently.
 
 ### Observation
@@ -1364,7 +1364,7 @@ If predicted weak modes correlate in simulation but not with physical slips/lift
 
 ### Kill 9 — threshold fragility
 
-If rankings change radically under small defensible changes of (\tau), the rectified operator is not a stable scientific target.
+If rankings change radically under small defensible changes of $\tau$, the rectified operator is not a stable scientific target.
 
 ### Kill 10 — candidate recall dominates
 
@@ -1520,7 +1520,7 @@ Exact thresholds should be frozen after a pilot but before final benchmark evalu
 
 - PSRN produces zero structural violations by construction;
 - positive-mixture structure improves low-data/OOD relaxation error by at least 10% over parameter-matched unconstrained head;
-- (r\le8) reaches within 3% of (r=16) on decision regret.
+- $r\le8$ reaches within 3% of $r=16$ on decision regret.
 
 ### Grasping
 
@@ -1538,7 +1538,7 @@ These are project gates, not fabricated expected results.
 ### Phase 0 — 3–5 days: oracle audit
 
 1. implement/validate normalized tangent stiffness extraction;
-2. create (K=(\widetilde H-\tau I)_+);
+2. create $K=(\widetilde H-\tau I)_+$;
 3. compute relaxation cost analytically;
 4. compare with existing metrics and lift outcomes;
 5. stop if Gate 0 fails.
@@ -1554,7 +1554,7 @@ These are project gates, not fabricated expected results.
 ### Phase 2 — 1–2 weeks: frozen-feature grasp reranking
 
 1. cache scene encoder features/candidate banks;
-2. precompute (6\times6) oracle spectra;
+2. precompute $6\times6$ oracle spectra;
 3. train matched heads;
 4. evaluate severity and ambiguity strata;
 5. decide whether full visual training is justified.
@@ -1589,17 +1589,17 @@ These are project gates, not fabricated expected results.
 Before long training, PSRN must pass:
 
 1. `H(0) == I` to numerical tolerance;
-2. every (H(t)) symmetric PSD;
-3. (H(t_2)\preceq H(t_1)) for (t_2>t_1);
+2. every $H(t)$ symmetric PSD;
+3. $H(t_2)\preceq H(t_1)$ for $t_2>t_1$;
 4. alternating derivative signs through at least order 4;
-5. long-time limit equals (A_0);
+5. long-time limit equals $A_0$;
 6. residue sum equals identity;
 7. exact recovery of the 2-D ambiguity example with two atoms;
 8. inability of one-generator baseline to fit that example;
 9. equivariance/invariance under global scene/gripper transform after coordinate normalization;
-10. jaw-exchange (C_2) symmetry;
+10. jaw-exchange $C_2$ symmetry;
 11. decision integral agrees with dense numerical quadrature;
-12. gradients remain finite for (t_{max}) and near-zero poles;
+12. gradients remain finite for $t_{max}$ and near-zero poles;
 13. no performance change from candidate ordering;
 14. collision gate identical across all methods.
 
@@ -1639,7 +1639,7 @@ RelaxGrasp is genuinely separated from today's selected occlusion methods by est
 Its strongest qualities are:
 
 - exact ambiguity counterexample;
-- compact (6\times6) query-local target;
+- compact $6\times6$ query-local target;
 - hard structural validity;
 - plausible compute advantage over completion;
 - broad coarsened-physical-learning interpretation.

@@ -11,7 +11,7 @@
 
 ## 0. Итог в одном абзаце
 
-Вместо восстановления скрытой формы объекта или предсказания независимого confidence для каждого grasp предлагается учить условное распределение **всей механической utility-функции на множестве grasp-кандидатов**. Полная форма (Y) во время обучения используется только как privileged source дешёвых механических labels (U_Y(g)); модель никогда не обязана выдавать mesh, occupancy или SDF. Скрытые формы, которые дают одинаковую utility-функцию для всех parallel-jaw действий, отождествляются в *task-image quotient*. Один общий латентный sample задаёт согласованный вариант utility сразу для всех кандидатов, поэтому модель видит, какие grasps становятся хорошими и плохими **совместно** при одной и той же скрытой геометрии. Новый proper objective DTKS сопоставляет finite-dimensional distributions этого stochastic process и дополнительно — не теряя строгой propriety — сопоставляет распределение top-set, signed success boundary и statewise regret. На inference выбирается grasp с малым upper-tail regret и достаточной вероятностью положительного локального grasp certificate; если такого grasp нет, разрешается abstention. Это не reconstruction pipeline, не grasp generator, не RL/VLA, не causal failure model и не оценка полного approach-to-lift цикла.
+Вместо восстановления скрытой формы объекта или предсказания независимого confidence для каждого grasp предлагается учить условное распределение **всей механической utility-функции на множестве grasp-кандидатов**. Полная форма $Y$ во время обучения используется только как privileged source дешёвых механических labels $U_Y(g)$; модель никогда не обязана выдавать mesh, occupancy или SDF. Скрытые формы, которые дают одинаковую utility-функцию для всех parallel-jaw действий, отождествляются в *task-image quotient*. Один общий латентный sample задаёт согласованный вариант utility сразу для всех кандидатов, поэтому модель видит, какие grasps становятся хорошими и плохими **совместно** при одной и той же скрытой геометрии. Новый proper objective DTKS сопоставляет finite-dimensional distributions этого stochastic process и дополнительно — не теряя строгой propriety — сопоставляет распределение top-set, signed success boundary и statewise regret. На inference выбирается grasp с малым upper-tail regret и достаточной вероятностью положительного локального grasp certificate; если такого grasp нет, разрешается abstention. Это не reconstruction pipeline, не grasp generator, не RL/VLA, не causal failure model и не оценка полного approach-to-lift цикла.
 
 Главная проверяемая гипотеза: **при одинаковом candidate set и вычислительном бюджете joint posterior над task image даст лучший top-1 success, меньший tail regret и лучшую risk–coverage curve на visibility-equivalent, но grasp-conflicting shapes, чем deterministic scorers, independent uncertainty heads и completion-based Monte Carlo.** До эксперимента нельзя честно утверждать ни SOTA, ни принятие в ICLR.
 
@@ -22,20 +22,20 @@
 ### 1.1. Сцена
 
 - Один target-object на полке и один foreground occluder; общие cluttered scenes не рассматриваются.
-- Одно RGB-D наблюдение (O=(I,D,K,T_{cw})) с wrist camera; depth содержит пропуски, quantization, edge noise и outliers.
+- Одно RGB-D наблюдение $O=(I,D,K,T_{cw})$ с wrist camera; depth содержит пропуски, quantization, edge noise и outliers.
 - Target mask и occluder mask считаются доступными от существующего perception front-end. Их качество надо отдельно стресс-тестировать, но segmentation не является научным вкладом.
-- Gripper — parallel jaw. Выход задачи — выбор одного grasp из конечного набора кандидатов (G_O=\{g_1,\ldots,g_K\}\), (g_i\in SE(3)\times\mathbb R_+), или abstention.
+- Gripper — parallel jaw. Выход задачи — выбор одного grasp из конечного набора кандидатов $G_O=\{g_1,\ldots,g_K\}$, $g_i\in SE(3)\times\mathbb R_+$, или abstention.
 - Не моделируются траектория подхода, кинематика всей руки и полный цикл подъёма. До learned selector выполняется только консервативный read-only geometric filter: конечная конфигурация gripper не должна пересекать наблюдаемые obstacle/shelf points с noise dilation.
 
 Такое ограничение намеренно отделяет научную подзадачу — **выбор по скрытой grasp-релевантной геометрии** — от motion planning и whole-cycle feasibility.
 
 ### 1.2. Privileged latent world и локальный mechanical certificate
 
-Пусть (Y\in\mathcal Y) — полная target geometry, известная только в simulator/training data. Для grasp (g) зададим bounded signed certificate
+Пусть $Y\in\mathcal Y$ — полная target geometry, известная только в simulator/training data. Для grasp $g$ зададим bounded signed certificate
 
-\[
+$$
 U_Y(g)\in[-1,1].
-\]
+$$
 
 Он должен измерять только состояние после локального closing parallel jaws:
 
@@ -46,12 +46,12 @@ U_Y(g)\in[-1,1].
 
 Практическая label-функция — сглаженный робастный margin
 
-\[
+$$
 U_Y(g)=\mathbb E_{\eta\sim\nu}
 \big[\psi(C(Y,g\oplus\eta))\big],
-\]
+$$
 
-где (C) — signed analytic/simulation certificate, (eta) — малые pose, depth-to-world и friction perturbations, а (psi) ограничивает score. Сглаживание уменьшает разрывы при смене contact topology. Никакие SDF/mesh targets не входят в loss модели.
+где $C$ — signed analytic/simulation certificate, $\eta$ — малые pose, depth-to-world и friction perturbations, а $\psi$ ограничивает score. Сглаживание уменьшает разрывы при смене contact topology. Никакие SDF/mesh targets не входят в loss модели.
 
 Важно: certificate является proxy для очень малого lift, а не обещанием предсказать успех всей траектории. Корреляцию certificate с физическим pickup надо измерить отдельно.
 
@@ -59,78 +59,78 @@ U_Y(g)=\mathbb E_{\eta\sim\nu}
 
 Каждая полная форма индуцирует функцию
 
-\[
+$$
 T(Y)=F_Y,\qquad F_Y:g\mapsto U_Y(g).
-\]
+$$
 
 Определим task-equivalence
 
-\[
+$$
 Y\sim_TY'\quad\Longleftrightarrow\quad
 U_Y(g)=U_{Y'}(g)\ \text{для почти всех }g.
-\]
+$$
 
-Нас интересует не posterior (p(Y\mid O)), а его pushforward
+Нас интересует не posterior $p(Y\mid O)$, а его pushforward
 
-\[
+$$
 \Pi_O=T_\#p(Y\mid O),
-\]
+$$
 
-то есть условное распределение random function (F_Y\). Это и есть **Task-Image Posterior Process (TIPP)**.
+то есть условное распределение random function $F_Y$. Это и есть **Task-Image Posterior Process (TIPP)**.
 
-Для конечного candidate set (G_O) наблюдаемая restriction имеет вид
+Для конечного candidate set $G_O$ наблюдаемая restriction имеет вид
 
-\[
+$$
 \mathbf u_Y(G_O)=
 (U_Y(g_1),\ldots,U_Y(g_K))\in[-1,1]^K.
-\]
+$$
 
-Размер learned output — (K) scalars на stochastic sample, а не (64^3) или (128^3) geometric field.
+Размер learned output — $K$ scalars на stochastic sample, а не (64^3) или (128^3) geometric field.
 
 ---
 
 ## 2. Почему задача не сводится к обычному per-grasp probability
 
-Если оптимизировать только expected binary success одного действия, достаточно marginal (p(S_g=1\mid O)), и joint stochastic process был бы неоправданным усложнением. Поэтому TIPP должен проверяться на более строгой и practically relevant цели: **один и тот же grasp должен оставаться близким к лучшему при разных скрытых геометриях, совместимых с наблюдением**.
+Если оптимизировать только expected binary success одного действия, достаточно marginal $p(S_g=1\mid O)$, и joint stochastic process был бы неоправданным усложнением. Поэтому TIPP должен проверяться на более строгой и practically relevant цели: **один и тот же grasp должен оставаться близким к лучшему при разных скрытых геометриях, совместимых с наблюдением**.
 
 Для одной скрытой формы определим smooth oracle value и statewise regret:
 
-\[
+$$
 b_\tau(\mathbf u)=
 \tau\log\sum_{j=1}^K\exp(u_j/\tau),
 \qquad
 r_i(\mathbf u)=b_\tau(\mathbf u)-u_i.
-\]
+$$
 
-Joint sample (mathbf u^{(s)}) отвечает одному возможному hidden world; поэтому (r_i^{(s)}) говорит, насколько (g_i) хуже лучшего доступного grasp **в том же мире**. Независимые uncertainty heads по кандидатам не задают это совместное событие корректно.
+Joint sample $\mathbf u^{(s)}$ отвечает одному возможному hidden world; поэтому $r_i^{(s)}$ говорит, насколько $g_i$ хуже лучшего доступного grasp **в том же мире**. Независимые uncertainty heads по кандидатам не задают это совместное событие корректно.
 
 Выбор:
 
-\[
+$$
 g^*=\arg\min_{g_i\in G_O}
 \operatorname{CVaR}^{\rm upper}_{\alpha}
 \left[r_i(\mathbf U)\mid O\right]
-\]
+$$
 
 при ограничении
 
-\[
+$$
 \Pr[U_Y(g_i)>0\mid O]\ge 1-\delta.
-\]
+$$
 
 Если feasible set пуст, selector abstains; в forced-attempt режиме выбирается минимум CVaR без ограничения.
 
 Почему regret полезен именно при occlusion: две скрытые формы могут иметь по одному отличному, но разному grasp. Усреднение score может предпочесть хрупкий компромисс или переуверенный mode. Upper-tail statewise regret напрямую штрафует grasp, который резко проигрывает при части plausible shapes. При этом absolute-margin constraint не позволяет назвать «надёжным» наименее плохой grasp на intrinsically ungraspable object.
 
-Простая связь с успехом: если (B=b_\tau(\mathbf U)\), то для любого (gamma>0)
+Простая связь с успехом: если $B=b_\tau(\mathbf U)$, то для любого $\gamma>0$
 
-\[
+$$
 \Pr(U_i\le0)
 \le
 \Pr(B<\gamma)+\Pr(r_i\ge\gamma).
-\]
+$$
 
-Следовательно, малый tail regret действительно ограничивает вероятность failure, если почти каждый plausible hidden world содержит grasp с запасом не меньше (gamma).
+Следовательно, малый tail regret действительно ограничивает вероятность failure, если почти каждый plausible hidden world содержит grasp с запасом не меньше $\gamma$.
 
 ---
 
@@ -141,29 +141,29 @@ g^*=\arg\min_{g_i\in G_O}
 - BCE по каждому grasp восстанавливает только marginals и допускает невозможные combinations между grasps.
 - Diagonal Gaussian задаёт unimodal symmetric uncertainty и не представляет mutually exclusive hidden-shape modes.
 - Pairwise/listwise rank loss сохраняет порядок, но не калибрует absolute success boundary и может collapse-нуть posterior.
-- Diffusion over a fixed (K)-vector зависит от размера/порядка candidate set и требует многих denoising steps.
+- Diffusion over a fixed $K$-vector зависит от размера/порядка candidate set и требует многих denoising steps.
 - Full likelihood в implicit stochastic-process model недоступен.
 
 Нужен sample-based, adversarial-free, strictly proper score для joint finite restriction, который особенно чувствителен к top-set и boundary.
 
 ### 3.2. Base kernel score
 
-Пусть модель даёт (S) joint samples
+Пусть модель даёт $S$ joint samples
 
-\[
+$$
 \hat{\mathbf u}^{(s)}\sim P_\theta^{G}(\cdot\mid O),
 \quad s=1,\ldots,S.
-\]
+$$
 
-Для characteristic kernel (k_0), например смеси IMQ/RBF kernels на нормированных margins, используем unbiased empirical kernel score
+Для characteristic kernel $k_0$, например смеси IMQ/RBF kernels на нормированных margins, используем unbiased empirical kernel score
 
-\[
+$$
 \widehat{\mathcal S}_{k_0}
 =
 \frac{1}{S(S-1)}\sum_{s\ne t}
 k_0(\hat{\mathbf u}^{(s)},\hat{\mathbf u}^{(t)})
 -\frac{2}{S}\sum_s k_0(\hat{\mathbf u}^{(s)},\mathbf u).
-\]
+$$
 
 С точностью до не зависящего от модели члена это MMD squared между predictive distribution и point observation. В ожидании по ground-truth samples score строго proper: уникальный population minimizer — истинная conditional joint distribution.
 
@@ -171,7 +171,7 @@ k_0(\hat{\mathbf u}^{(s)},\hat{\mathbf u}^{(t)})
 
 Определим гладкую карту
 
-\[
+$$
 h_{\tau,\kappa}(\mathbf u)=
 \left[
 \underbrace{b_\tau(\mathbf u)-\mathbf u}_{\text{statewise regret}},
@@ -179,11 +179,11 @@ h_{\tau,\kappa}(\mathbf u)=
 \underbrace{\sigma(\mathbf u/\kappa)}_{\text{signed boundary}},
 \underbrace{b_\tau(\mathbf u)}_{\text{oracle availability}}
 \right].
-\]
+$$
 
-Второй characteristic kernel (k_D) применяется к pushforward distribution (h_\#P_\theta^G). Финальный objective:
+Второй characteristic kernel $k_D$ применяется к pushforward distribution $h_\#P_\theta^G$. Финальный objective:
 
-\[
+$$
 \boxed{
 \mathcal L_{\rm DTKS}
 =\mathbb E_{(O,Y),G}
@@ -193,17 +193,17 @@ h_{\tau,\kappa}(\mathbf u)=
 \mathcal S_{k_D}
 (h_\#P_\theta^G,h(\mathbf u_Y^G))
 \right].}
-\]
+$$
 
 Это не произвольная сумма calibration и ranking losses:
 
 - первая часть идентифицирует полную joint law;
 - вторая часть перераспределяет finite-sample capacity к decision-relevant topology: кто near-optimal, пересекается ли zero boundary и существует ли вообще хороший кандидат;
-- обе части являются proper kernel scores; наличие characteristic (k_0) делает сумму strictly proper при любом (lambda\ge0). Значит, decision emphasis не меняет population truth target, в отличие от чистого regret/ranking objective.
+- обе части являются proper kernel scores; наличие characteristic $k_0$ делает сумму strictly proper при любом $\lambda\ge0$. Значит, decision emphasis не меняет population truth target, в отличие от чистого regret/ranking objective.
 
 ### 3.4. Random action sketches
 
-На каждом SGD step берётся случайный sketch (G\subset G_O) переменного размера: uniform candidates + hard near-boundary + diverse orientations. Distribution sketches должна иметь full support над finite subsets. Это даёт:
+На каждом SGD step берётся случайный sketch $G\subset G_O$ переменного размера: uniform candidates + hard near-boundary + diverse orientations. Distribution sketches должна иметь full support над finite subsets. Это даёт:
 
 - обучение function restrictions вместо фиксированного output tensor;
 - контроль памяти;
@@ -220,7 +220,7 @@ Hard sampling не должно зависеть только от текуще�
 
 Входные tokens:
 
-- видимые target points ((x,y,z,r,g,b,\sigma_D));
+- видимые target points $(x,y,z,r,g,b,\sigma_D)$;
 - foreground-obstacle points с отдельным type embedding;
 - camera-ray direction, visibility/occlusion-boundary flag и distance-to-depth-discontinuity;
 - shelf plane как несколько observed plane tokens, не как scene SDF.
@@ -229,56 +229,56 @@ Hard sampling не должно зависеть только от текуще�
 
 ### 4.2. Grasp-relative query operator
 
-Для каждого (g_i):
+Для каждого $g_i$:
 
 1. видимые points переводятся в gripper frame;
 2. compact support attention выбирает points в closing corridor и вокруг fingertips;
 3. отдельный cross-attention читает global object token и occlusion-boundary tokens;
 4. pose token содержит jaw width, approach axis, closing axis и camera-relative orientation.
 
-Получается (q_i=Q_\theta(O,g_i)). Decoder не видит другие candidates; поэтому значение underlying function в (g_i) не меняется при добавлении/удалении (g_j).
+Получается $q_i=Q_\theta(O,g_i)$. Decoder не видит другие candidates; поэтому значение underlying function в $g_i$ не меняется при добавлении/удалении $g_j$.
 
 ### 4.3. Один latent world для всех grasps
 
 Из pooled observation context условный normalizing flow получает
 
-\[
+$$
 z^{(s)}=T_\theta(\epsilon^{(s)};E_\theta(O)),
 \qquad \epsilon^{(s)}\sim\mathcal N(0,I_d).
-\]
+$$
 
-Один и тот же (z^{(s)}) передаётся всем queries:
+Один и тот же $z^{(s)}$ передаётся всем queries:
 
-\[
+$$
 \hat u_i^{(s)}=D_\theta(q_i,z^{(s)}).
-\]
+$$
 
-Таким образом, sample index (s) — это не независимый noise для score, а один coherent task-world. Нелинейный decoder позволяет одному latent mode менять целые regions grasp space совместно.
+Таким образом, sample index $s$ — это не независимый noise для score, а один coherent task-world. Нелинейный decoder позволяет одному latent mode менять целые regions grasp space совместно.
 
 ### 4.4. Projective consistency и symmetries
 
-Для (G'\subset G) restriction samples, вычисленных с тем же (z), буквально совпадает:
+Для $G'\subset G$ restriction samples, вычисленных с тем же $z$, буквально совпадает:
 
-\[
+$$
 \hat{\mathbf u}^{(s)}(G')
 =\operatorname{restrict}_{G'}
 \hat{\mathbf u}^{(s)}(G).
-\]
+$$
 
-Это сильнее одной permutation equivariance: модель не переопределяет posterior при смене числа candidates. Parallel-jaw symmetry (g\equiv gR_\pi) обеспечивается weight sharing/symmetrization decoder outputs. Candidate order не влияет ни на samples, ни на decision.
+Это сильнее одной permutation equivariance: модель не переопределяет posterior при смене числа candidates. Parallel-jaw symmetry $g\equiv gR_\pi$ обеспечивается weight sharing/symmetrization decoder outputs. Candidate order не влияет ни на samples, ни на decision.
 
 ### 4.5. Efficiency target
 
 Рекомендуемые стартовые значения:
 
 - 2–4k visible points;
-- latent (d=32) или (64);
-- (K=128) candidates;
-- (S=8) posterior samples в online режиме, (S=32) для evaluation;
+- latent $d=32$ или (64);
+- $K=128$ candidates;
+- $S=8$ posterior samples в online режиме, $S=32$ для evaluation;
 - один observation encoding, после него batched query decoding;
 - target: менее 50 ms selector latency на desktop GPU и менее 1 GB дополнительной memory.
 
-Сложность decoder (O(SKc)), DTKS training (O(S^2K)); нет voxel volume, mesh extraction, per-completion grasp generation или repeated collision checking по полным reconstructed shapes.
+Сложность decoder $O(SKc)$, DTKS training $O(S^2K)$; нет voxel volume, mesh extraction, per-completion grasp generation или repeated collision checking по полным reconstructed shapes.
 
 ---
 
@@ -330,33 +330,33 @@ VEGCT используется как test и как небольшой controll
 
 ### Claim A — task-image sufficiency
 
-Для любой decision rule, чья conditional objective зависит от (Y) только через (U_Y(g)), posterior (p(Y\mid O)) можно заменить pushforward (Pi_O) без изменения Bayes/risk-sensitive решения. Это следует из change of variables для measurable map (T:Y\mapsto F_Y).
+Для любой decision rule, чья conditional objective зависит от $Y$ только через $U_Y(g)$, posterior $p(Y\mid O)$ можно заменить pushforward $\Pi_O$ без изменения Bayes/risk-sensitive решения. Это следует из change of variables для measurable map $T:Y\mapsto F_Y$.
 
-Более сильная минимальность должна формулироваться аккуратно: если representation позволяет вычислять ожидания всех bounded continuous functionals всех finite restrictions (F_Y(g_{1:K})), она определяет закон (Pi_O). Это minimality относительно **семейства distribution-sensitive grasp decisions**, а не относительно одного fixed expected-success action.
+Более сильная минимальность должна формулироваться аккуратно: если representation позволяет вычислять ожидания всех bounded continuous functionals всех finite restrictions $F_Y(g_{1:K})$, она определяет закон $\Pi_O$. Это minimality относительно **семейства distribution-sensitive grasp decisions**, а не относительно одного fixed expected-success action.
 
 ### Claim B — strict propriety DTKS
 
-Kernel score с characteristic (k_0) строго proper. Kernel score после (h) proper для pushforward distribution. Неотрицательная сумма сохраняет strict propriety благодаря первой части. Поэтому в realizable infinite-data limit DTKS не жертвует calibration ради ranking.
+Kernel score с characteristic $k_0$ строго proper. Kernel score после $h$ proper для pushforward distribution. Неотрицательная сумма сохраняет strict propriety благодаря первой части. Поэтому в realizable infinite-data limit DTKS не жертвует calibration ради ranking.
 
 ### Claim C — posterior-to-decision regret bound
 
-На (C(G)) используем sup norm. Map
+На $C(G)$ используем sup norm. Map
 
-\[
+$$
 F\mapsto r_g(F)=\max_{g'\in G}F(g')-F(g)
-\]
+$$
 
 является 2-Lipschitz. Если
 
-\[
+$$
 W_1(\widehat\Pi_O,\Pi_O)\le\varepsilon
-\]
+$$
 
 и risk functional $\rho$ $L_\rho$-Lipschitz по $W_1$, то ошибка risk каждого grasp не больше $2L_\rho\varepsilon$, а excess risk действия, выбранного по $\widehat\Pi_O$, не больше $4L_\rho\varepsilon$. Для CVaR с tail mass $\alpha$ константа ухудшается как $1/\alpha$.
 
 ### Claim D — finite candidate approximation
 
-Если (F_Y(g)) (L_g)-Lipschitz после smoothing, а candidates образуют (delta_G)-net допустимого grasp domain, добавочный oracle gap ограничен (O(L_g\delta_G)). Это отделяет ошибку selector от ошибки candidate generator.
+Если $F_Y(g)$ $L_g$-Lipschitz после smoothing, а candidates образуют $\delta_G$-net допустимого grasp domain, добавочный oracle gap ограничен $O(L_g\delta_G)$. Это отделяет ошибку selector от ошибки candidate generator.
 
 ### Что нельзя заявлять как theorem
 
@@ -385,7 +385,7 @@ W_1(\widehat\Pi_O,\Pi_O)\le\varepsilon
 
 ### 7.2. General-ML ablations
 
-- (k_0) only против DTKS;
+- $k_0$ only против DTKS;
 - independent latent per candidate против shared global latent;
 - shared latent, но decoder видит весь candidate set, против projectively consistent decoder;
 - energy score против characteristic-kernel score;
@@ -394,7 +394,7 @@ W_1(\widehat\Pi_O,\Pi_O)\le\varepsilon
 - no occlusion-ray tokens / no RGB / no depth-uncertainty channel;
 - expected utility, lower quantile utility, CVaR utility, expected regret, CVaR regret;
 - random scenes only против addition VEGCT bundles;
-- (S\in\{1,4,8,16,32\}), (K\in\{32,64,128,256\}).
+- $S\in\{1,4,8,16,32\}$, $K\in\{32,64,128,256\}$.
 
 ### 7.3. Metrics
 
@@ -409,7 +409,7 @@ W_1(\widehat\Pi_O,\Pi_O)\le\varepsilon
 
 - per-grasp Brier/ECE только как marginal diagnostics;
 - joint kernel score/MMD на held-out bundles;
-- calibration of (Pr(r_i>\gamma));
+- calibration of $\Pr(r_i>\gamma)$;
 - coverage of predicted near-optimal set;
 - calibration by occlusion band и sensor-noise band.
 
@@ -421,7 +421,7 @@ W_1(\widehat\Pi_O,\Pi_O)\le\varepsilon
 
 1. TIPP statistically improves forced-attempt success over same-backbone deterministic and independent-uncertainty models;
 2. shared process materially улучшает VEGCT tail regret, а не только calibration score;
-3. DTKS превосходит (k_0)-only при одинаковой model capacity;
+3. DTKS превосходит $k_0$-only при одинаковой model capacity;
 4. gain сохраняется против хотя бы одной strong completion-based uncertainty baseline;
 5. latency остаётся практически допустимой;
 6. real-robot confidence interval исключает тривиальный gain.
@@ -482,7 +482,7 @@ W_1(\widehat\Pi_O,\Pi_O)\le\varepsilon
 [Bayes-Sufficient Representations in Supervised Learning](https://arxiv.org/abs/2606.04045) определяет loss-dependent Bayes quotient входов, которым соответствует один и тот же Bayes-optimal action. Это важнейшая близкая работа и её нельзя скрывать. Отличие TIPP:
 
 - Bayes quotient там минимален для **одной fixed supervised action rule**;
-- TIPP quotient расположен на latent worlds (Y), а объект предсказания — posterior distribution целой action-indexed utility function;
+- TIPP quotient расположен на latent worlds $Y$, а объект предсказания — posterior distribution целой action-indexed utility function;
 - TIPP сохраняет информацию для variable candidate sets, tail-risk, abstention и near-optimal sets, а не только unique Bayes action;
 - DTKS и PCLO — конкретный learnable stochastic-process mechanism, отсутствующий в Bayes-sufficiency framework.
 
@@ -500,7 +500,7 @@ W_1(\widehat\Pi_O,\Pi_O)\le\varepsilon
 
 Только после повторного literature search перед submission:
 
-1. постановка partial-observation learning как прямого восстановления pushforward posterior (T_\#p(Y\mid O)) над task-induced utility functions без latent-state reconstruction;
+1. постановка partial-observation learning как прямого восстановления pushforward posterior $T_\#p(Y\mid O)$ над task-induced utility functions без latent-state reconstruction;
 2. state/task-image quotient, достаточный для семейства distribution-sensitive decisions;
 3. DTKS — strictly proper joint score с дополнительным proper score на regret/top-set/boundary pushforward;
 4. PCLO — observation-conditioned, symmetry-aware, projectively consistent implicit process для arbitrary grasp query sets;
@@ -545,7 +545,7 @@ W_1(\widehat\Pi_O,\Pi_O)\le\varepsilon
 2. **«Joint law не нужна для выбора одного action».** Центральный ответ — statewise tail regret/near-optimal consensus; обязательна абляция, где marginals совпадают, а joint copula различается и только TIPP выбирает правильно.
 3. **«Task margin — скрытая реконструкция другим именем».** Показать dimensionality, отсутствие occupancy supervision/output и pairs разных meshes с одинаковым task image.
 4. **«Synthetic posterior не calibrated в real world».** Real calibration split, hardware risk–coverage и explicit limitation under distribution shift.
-5. **«Candidate generator определяет результат».** Фиксированный общий candidate set, oracle coverage metric и (delta_G)-net analysis.
+5. **«Candidate generator определяет результат».** Фиксированный общий candidate set, oracle coverage metric и $\delta_G$-net analysis.
 6. **«Improvement — от большей модели/compute».** Equal-parameter, equal-latency и equal-number-of-samples comparisons.
 7. **«Contemporary overlap».** Обязательно обсуждать Bayes-Sufficient Representations, probabilistic/robust DFL, Utility-Directed Conformal Prediction, TARGO, TOSC, GraspFoM и PartialBiGrasp; сделать ещё один search перед submission deadline.
 
@@ -577,7 +577,7 @@ W_1(\widehat\Pi_O,\Pi_O)\le\varepsilon
 
 ### Phase 0 — kill test до большой модели
 
-1. Собрать 1–2k VEGCT bundles и (K=32) candidates.
+1. Собрать 1–2k VEGCT bundles и $K=32$ candidates.
 2. Обучить tiny shared-latent generator и independent quantile baseline на precomputed utility vectors без point-cloud encoder.
 3. Проверить: одинаковые marginals / разные joint modes, CVaR-regret selection и DTKS gradients.
 
@@ -587,7 +587,7 @@ W_1(\widehat\Pi_O,\Pi_O)\le\varepsilon
 
 1. Зафиксировать certificate и проверить correlation с small-lift simulation.
 2. Реализовать point encoder + projective decoder.
-3. Сравнить same-backbone deterministic, independent, shared-(k_0), shared-DTKS.
+3. Сравнить same-backbone deterministic, independent, shared-$k_0$, shared-DTKS.
 4. Провести occlusion/noise/category-shift sweeps.
 
 ### Phase 2 — completion baselines и efficiency

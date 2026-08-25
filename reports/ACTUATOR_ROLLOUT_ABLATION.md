@@ -4,22 +4,22 @@
 
 Полный paired ablation на seeds 0, 1, 2 и curriculum
 
-\[
+$$
 H4\rightarrow H8\rightarrow H16\rightarrow H32
-\]
+$$
 
 завершён. `drive_error` улучшает средние результаты на H8 и H16, но это улучшение не переносится на H32. На основном H32-критерии кандидат хуже baseline на validation во всех трёх seeds и в среднем хуже на unseen test:
 
-\[
+$$
 E_{\mathrm{test}}^{\mathrm{drive}}-E_{\mathrm{test}}^{\mathrm{aperture}}
 =+0.006481.
-\]
+$$
 
 Иерархический 95% bootstrap CI равен
 
-\[
+$$
 [-0.001089,\;0.017838],
-\]
+$$
 
 поэтому чистый rollout gain **не подтверждён**.
 
@@ -29,56 +29,56 @@ E_{\mathrm{test}}^{\mathrm{drive}}-E_{\mathrm{test}}^{\mathrm{aperture}}
 
 Состояние системы в обеих руках:
 
-\[
+$$
 x_k=(q_k,r_k),
 \qquad
 q_k=(R_k,p_k)\in SE(3),
 \qquad
 r_k\in\mathbb R^6.
-\]
+$$
 
 Проверялся авторегрессионный оператор
 
-\[
+$$
 \hat x_{k+1}
 =F_\theta(\hat x_k,\bar a_{k+1},\phi),
 \qquad
 \hat x_0=x_0,
-\]
+$$
 
 без teacher forcing. Для следующей команды сначала строилась свободная trial-конфигурация суставов
 
-\[
+$$
 \tilde r_{k+1}=R_{\mathrm{free}}(\bar a_{k+1}).
-\]
+$$
 
 Для collision sample $i$, закреплённого за link $\ell(i)$, FK и SDF query имели вид
 
-\[
+$$
 y_i^G(\tilde r_{k+1})
 =T_{\ell(i)}(\tilde r_{k+1})y_i,
 \qquad
 z_i^O=q_k^{-1}y_i^G(\tilde r_{k+1}),
-\]
+$$
 
-\[
+$$
 h_i^{\mathrm{geom}}=\phi(z_i^O),
 \qquad
 h_i^{\mathrm{contact}}
 =h_i^{\mathrm{geom}}-2.56\ \mathrm{mm}.
-\]
+$$
 
 Смещение 2.56 мм использовалось одинаково в обеих руках только для contact signal и gate. В geometric feasibility использовалось исходное $h_i^{\mathrm{geom}}$, без этого смещения.
 
 Единственный локальный contact feature:
 
-\[
+$$
 f_i=\frac{h_i^{\mathrm{contact}}}{s_{\mathrm{sdf}}}\in\mathbb R.
-\]
+$$
 
 Неизменённый integral block:
 
-\[
+$$
 z_i=
 \operatorname{SiLU}
 \left(
@@ -88,39 +88,39 @@ W_0f_i+
 \right),
 \qquad
 \bar z=\frac1M\sum_i z_i.
-\]
+$$
 
 Baseline передаёт в head два скаляра:
 
-\[
+$$
 c_k^{A}=\left[\frac{A(r_k)}{L},\frac{\bar a_{k+1}}{L}\right]\in\mathbb R^2,
-\]
+$$
 
 где $r_k\in\mathbb R^6$ — фактическая конфигурация суставов, $A(r_k)$ — derived aperture, $\bar a_{k+1}$ — следующая команда, $L$ — length scale.
 
 Candidate вместо этого использует нормированную ошибку привода:
 
-\[
+$$
 \bar r_{k+1}=R_{\mathrm{free}}(\bar a_{k+1}),
 \qquad
 u_k=\frac{\bar r_{k+1}-r_k}{s}\in\mathbb R^6,
-\]
+$$
 
 где $R_{\mathrm{free}}$ — lookup свободной конфигурации gripper для команды, а $s\in\mathbb R^6$ — travel ranges суставов. Изменяется только вход первого head layer: $64+2\to64+6$, то есть $31\,436\to31\,948$ параметров ($+512$).
 
 Далее обе руки использовали один и тот же output:
 
-\[
+$$
 (\Delta\xi,\Delta r^c)\in\mathbb R^{6+6},
-\]
+$$
 
-\[
+$$
 \hat q_{k+1}
 =\operatorname{Exp}(\widehat{\Delta\xi})\hat q_k,
 \qquad
 \hat r_{k+1}
 =\tilde r_{k+1}+\Delta r^c.
-\]
+$$
 
 Обе руки стартовали из своих frozen paired `best-local.pt`, после чего для rollout создавался новый AdamW optimizer. Teacher forcing не использовался. На каждом горизонте допускалось до 25 epochs с patience 10; checkpoint выбирался только по validation terminal $d_X$.
 
@@ -139,21 +139,21 @@ Runner проверял hashes и полную идентичность model/lo
 
 Компоненты метрики:
 
-\[
+$$
 T_k=\|\hat p_k-p_k^*\|_2,
 \qquad
 T_k^L=\frac{T_k}{L},
-\]
+$$
 
-\[
+$$
 R_k=\theta(\hat R_k,R_k^*)
 =\arccos\left(
 \operatorname{clip}
 \frac{\operatorname{tr}(\hat R_kR_k^{*T})-1}{2},-1,1
 \right),
-\]
+$$
 
-\[
+$$
 J_k=
 \sqrt{
 \frac16\sum_{m=1}^{6}
@@ -161,31 +161,31 @@ J_k=
 \frac{\hat r_{k,m}-r_{k,m}^*}{s_m}
 \right)^2
 }.
-\]
+$$
 
-\[
+$$
 d_X(k)=
 \sqrt{
 (T_k^L)^2+R_k^2+J_k^2
 }.
-\]
+$$
 
 Terminal metric для curriculum horizon $H$:
 
-\[
+$$
 E_H=d_X(H).
-\]
+$$
 
 Trajectory state loss и feasibility loss оставались одинаковыми:
 
-\[
+$$
 \mathcal L
 =\mathcal L_{\mathrm{state}}
 +\lambda_K\mathcal L_K,
 \qquad
 \mathcal L_{\mathrm{state}}
 =\frac1H\sum_{k=1}^{H}d_X(k)^2.
-\]
+$$
 
 Средние T/R/J в таблицах — это средние уже вычисленных trajectory components. Поэтому средний $d_X$ в общем случае не равен корню из квадратов средних T/R/J.
 
@@ -202,19 +202,19 @@ Trajectory state loss и feasibility loss оставались одинаков�
 
 Относительное изменение test error:
 
-\[
+$$
 H4:+5.95\%,\qquad
 H8:-4.50\%,\qquad
 H16:-6.24\%,\qquad
 H32:+3.20\%.
-\]
+$$
 
 Таким образом, actuator conditioning помогает на промежуточных горизонтах H8/H16, но после примерно 10–11 closure steps его pushforward error пересекает baseline и затем накапливается быстрее. На H32 test:
 
-\[
+$$
 0.206607\longrightarrow0.213213,
 \qquad +3.20\%.
-\]
+$$
 
 ## Полные T/R/J результаты всех горизонтов
 
@@ -256,9 +256,9 @@ H32:+3.20\%.
 
 Знак определён как
 
-\[
+$$
 \Delta=E^{\mathrm{drive\_error}}-E^{\mathrm{aperture}},
-\]
+$$
 
 поэтому положительное значение означает ухудшение. Все три validation differences положительны.
 
@@ -299,19 +299,19 @@ Test:
 
 На test кандидат немного уменьшает rotation error,
 
-\[
+$$
 0.104379\to0.101347\ \mathrm{rad},
-\]
+$$
 
 но увеличивает translation,
 
-\[
+$$
 16.564\to17.841\ \mathrm{mm},
-\]
+$$
 
 а joint component практически не меняется. Итоговое ухудшение $d_X$ в основном связано с translation drift.
 
-## Полная H32 pushforward-кривая dX(k)
+## Полная H32 pushforward-кривая $d_X(k)$
 
 Ниже test $d_X(k)$, усреднённый сначала внутри каждого test object, затем по трём объектам и трём seeds. Разность определена как `drive_error - aperture`.
 
@@ -353,9 +353,9 @@ Test:
 
 До $k=10$ `drive_error` лучше, на $k=11$ знак меняется. После этого candidate остаётся хуже до terminal state. Максимальный средний разрыв наблюдается около $k=20$:
 
-\[
+$$
 \Delta d_X(20)=+0.011588.
-\]
+$$
 
 Это уточняет диагноз: новый conditioning улучшает первые contact increments, но не уменьшает долговременную ошибку композиции оператора.
 
@@ -390,25 +390,25 @@ Equal-trajectory mean внутри объекта, затем mean по трём
 
 Bootstrap выполнялся с 10 000 replicates и seed 20260818 по иерархии
 
-\[
+$$
 \text{seed}\rightarrow\text{object}\rightarrow\text{trajectory}.
-\]
+$$
 
 Получено:
 
-\[
+$$
 \overline\Delta_{\mathrm{bootstrap}}=+0.006481,
 \qquad
 CI_{95\%}=[-0.001089,0.017838].
-\]
+$$
 
 Прямая разность итоговых equal-object means:
 
-\[
+$$
 \Delta_{\mathrm{direct}}
 =0.213212742-0.206607107
 =+0.006605635.
-\]
+$$
 
 $0.006481$ — mean конечного Monte Carlo bootstrap distribution, а $0.006606$ — непосредственная разность агрегированных метрик. Их небольшое отличие возникает из-за иерархического resampling и конечных 10 000 replicates.
 

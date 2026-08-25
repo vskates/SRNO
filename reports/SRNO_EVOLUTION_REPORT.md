@@ -7,8 +7,8 @@
 Работа шла не одной серией чистых ablation. В ней были три типа изменений:
 
 1. исправления simulator/data contract: масштаб и позы объектов, collision-геометрия, PhysX contact envelope, actual joints, material binding;
-2. изменения представления модели: \(a\to r\), затем добавление \(J_q\) во вход contact cell;
-3. контролируемые ablation: \(\lambda_K=0\), gate/feasibility, strong friction, solver/contact-memory, `gap` против `gap_jq` и `aperture` против `drive_error`.
+2. изменения представления модели: $a\to r$, затем добавление $J_q$ во вход contact cell;
+3. контролируемые ablation: $\lambda_K=0$, gate/feasibility, strong friction, solver/contact-memory, `gap` против `gap_jq` и `aperture` против `drive_error`.
 
 Поэтому ниже явно разделены:
 
@@ -17,20 +17,20 @@
 
 Главная численная линия получилась такой:
 
-| Версия | Local validation \(d_X\) | H32 validation \(d_X\) | H32 unseen test \(d_X\) | Статус сравнения |
+| Версия | Local validation $d_X$ | H32 validation $d_X$ | H32 unseen test $d_X$ | Статус сравнения |
 |---|---:|---:|---:|---|
-| SRNO-\(a\), complete coverage | 0.03560 | 0.41646 | 0.44987 | исходный устойчивый baseline |
-| SRNO-\(a\), PhysX cooked SDF | 0.03388 | 0.41097 | 0.44044 | точечная SDF/geometry правка |
-| SRNO-\(r\), interim 11 objects | 0.02515 | 0.29787 | 0.52519 | другой dataset/split; test только 2 объекта |
-| SRNO-\(r\), material-v2, 28 objects | 0.03120 | 0.17172 | 0.20410 | финальный полный dataset |
-| SRNO-\(r\)+\(J_q\), local, 3 seeds | **0.02010** | — | local test **0.02583** | чистый one-step phase |
-| SRNO-\(r\)+\(J_q\), rollout, 3 seeds | — | 0.19753 | 0.21977 | clean H4→H32; rollout gain не подтверждён |
-| SRNO-\(r\)+`drive_error`, local, 3 seeds | **0.01283** | — | local test **0.01504** | чистый local actuator ablation |
-| SRNO-\(r\)+`drive_error`, rollout, 3 seeds | — | 0.17933 | 0.21321 | clean H4→H32; H32 gain не подтверждён |
+| SRNO-$a$, complete coverage | 0.03560 | 0.41646 | 0.44987 | исходный устойчивый baseline |
+| SRNO-$a$, PhysX cooked SDF | 0.03388 | 0.41097 | 0.44044 | точечная SDF/geometry правка |
+| SRNO-$r$, interim 11 objects | 0.02515 | 0.29787 | 0.52519 | другой dataset/split; test только 2 объекта |
+| SRNO-$r$, material-v2, 28 objects | 0.03120 | 0.17172 | 0.20410 | финальный полный dataset |
+| SRNO-$r$+$J_q$, local, 3 seeds | **0.02010** | — | local test **0.02583** | чистый one-step phase |
+| SRNO-$r$+$J_q$, rollout, 3 seeds | — | 0.19753 | 0.21977 | clean H4→H32; rollout gain не подтверждён |
+| SRNO-$r$+`drive_error`, local, 3 seeds | **0.01283** | — | local test **0.01504** | чистый local actuator ablation |
+| SRNO-$r$+`drive_error`, rollout, 3 seeds | — | 0.17933 | 0.21321 | clean H4→H32; H32 gain не подтверждён |
 
 Последние два local-only эксперимента записаны отдельно в разделах 25–26:
-history-dependent candidate дал test \(d_X=0.029247\), а обучение исходной
-L1-архитектуры на smooth subset — \(d_X=0.034252\) при оценке на полном test.
+history-dependent candidate дал test $d_X=0.029247$, а обучение исходной
+L1-архитектуры на smooth subset — $d_X=0.034252$ при оценке на полном test.
 Эти числа получены как диагностические ablation. Позднее, 22 августа, по
 явному решению data contract smooth-фильтр был принят для основной **local
 train/validation supervision**, при этом full test сохранён. Production
@@ -43,115 +43,115 @@ retrain после этого переключения не запускался
 численные строки выше являются применимым controlled result этого data
 contract, но checkpoint по-прежнему хранится под именем диагностического run.
 
-От SRNO-\(a\)+PhysX-SDF до полного SRNO-\(r\)+material-v2 test H32 уменьшился с \(0.44044\) до \(0.20410\), то есть на 53.66%. Это суммарный эффект нового state/geometry representation, нового датасета, исправленного материала и нового split, а не чистый эффект только \(a\to r\).
+От SRNO-$a$+PhysX-SDF до полного SRNO-$r$+material-v2 test H32 уменьшился с $0.44044$ до $0.20410$, то есть на 53.66%. Это суммарный эффект нового state/geometry representation, нового датасета, исправленного материала и нового split, а не чистый эффект только $a\to r$.
 
 ## 2. Обозначения и соглашения
 
 ### 2.1 Состояние и системы координат
 
-- \(O\) — object frame;
-- \(G\) — gripper frame;
-- \(q=(R,p)\in SE(3)\) — pose объекта, переводящий object coordinates в gripper coordinates:
+- $O$ — object frame;
+- $G$ — gripper frame;
+- $q=(R,p)\in SE(3)$ — pose объекта, переводящий object coordinates в gripper coordinates:
 
-\[
+$$
 x_G=R x_O+p;
-\]
+$$
 
-- \(R\in SO(3)\), \(p\in\mathbb R^3\);
-- \(a\) — scalar actual aperture;
-- \(\bar a_k\) — commanded aperture на шаге \(k\);
-- \(r=(r_1,\ldots,r_6)\in\mathbb R^6\) — actual PhysX joint configuration gripper;
-- \(A(r)\) — derived scalar aperture diagnostic;
-- \(s_m\) — полный free travel range joint \(m\);
-- \(L\) — gripper length scale; в финальном asset \(L=0.1114999652\) m;
-- \(M=256\) — число collision surface samples gripper;
-- \(d=64\) — hidden dimension contact cell;
-- \(\phi(x_O)\) — SDF объекта, positive outside;
-- \(s_{\rm sdf}=0.02\) m — SDF normalization scale;
-- \(\delta_{\rm gate}\) — threshold вызова neural cell;
-- \(d_c\) — суммарный PhysX contact envelope;
-- \(h_{\rm admissible}\) — допустимый residual penetration для geometric feasibility.
+- $R\in SO(3)$, $p\in\mathbb R^3$;
+- $a$ — scalar actual aperture;
+- $\bar a_k$ — commanded aperture на шаге $k$;
+- $r=(r_1,\ldots,r_6)\in\mathbb R^6$ — actual PhysX joint configuration gripper;
+- $A(r)$ — derived scalar aperture diagnostic;
+- $s_m$ — полный free travel range joint $m$;
+- $L$ — gripper length scale; в финальном asset $L=0.1114999652$ m;
+- $M=256$ — число collision surface samples gripper;
+- $d=64$ — hidden dimension contact cell;
+- $\phi(x_O)$ — SDF объекта, positive outside;
+- $s_{\rm sdf}=0.02$ m — SDF normalization scale;
+- $\delta_{\rm gate}$ — threshold вызова neural cell;
+- $d_c$ — суммарный PhysX contact envelope;
+- $h_{\rm admissible}$ — допустимый residual penetration для geometric feasibility.
 
 Кватернионы на диске имеют порядок XYZW и нормализуются loader-ом.
 
 ### 2.2 Геодезическая ошибка rotation
 
-Для \(R_1,R_2\in SO(3)\):
+Для $R_1,R_2\in SO(3)$:
 
-\[
+$$
 \theta(R_1,R_2)
 =\cos^{-1}\!\left(\operatorname{clip}\frac{\operatorname{tr}(R_2^T R_1)-1}{2},-1,1\right).
-\]
+$$
 
 В коде используется устойчивая эквивалентная форма через `atan2(sin, cos)`.
 
-### 2.3 Left/spatial \(SE(3)\) update
+### 2.3 Left/spatial $SE(3)$ update
 
-Пусть twist упорядочен как \(\Delta\xi=(v,\omega)\). При
-\(\Omega=[\omega]_\times\), \(\vartheta=\|\omega\|\):
+Пусть twist упорядочен как $\Delta\xi=(v,\omega)$. При
+$\Omega=[\omega]_\times$, $\vartheta=\|\omega\|$:
 
-\[
+$$
 R_\Delta=I+\frac{\sin\vartheta}{\vartheta}\Omega
 +\frac{1-\cos\vartheta}{\vartheta^2}\Omega^2,
-\]
+$$
 
-\[
+$$
 V=I+\frac{1-\cos\vartheta}{\vartheta^2}\Omega
 +\frac{\vartheta-\sin\vartheta}{\vartheta^3}\Omega^2,
 \qquad p_\Delta=Vv.
-\]
+$$
 
 Настоящий left/spatial update:
 
-\[
+$$
 R'=R_\Delta R,\qquad p'=R_\Delta p+p_\Delta.
-\]
+$$
 
 Около нуля коэффициенты вычисляются рядами Тейлора.
 
 ### 2.4 Метрики
 
-Для SRNO-\(r\):
+Для SRNO-$r$:
 
-\[
+$$
 e_T=\|\hat p-p^*\|_2,
 \qquad e_R=\theta(\hat R,R^*),
-\]
+$$
 
-\[
+$$
 e_J=\sqrt{\frac{1}{6}\sum_{m=1}^{6}
 \left(\frac{\hat r_m-r_m^*}{s_m}\right)^2},
-\]
+$$
 
-\[
+$$
 \boxed{
 d_X=\sqrt{\frac{e_T^2}{L^2}+e_R^2+e_J^2}
 }.
-\]
+$$
 
-Для первоначального SRNO-\(a\) joint term заменялся на
+Для первоначального SRNO-$a$ joint term заменялся на
 
-\[
+$$
 e_a/L=\frac{|\hat a-a^*|}{L}.
-\]
+$$
 
 Дополнительные rollout-метрики:
 
-\[
+$$
 e_A=|A(\hat r)-a^*|,
 \qquad
 e_{\rm lag}=|[(A(\hat r)-\bar a)-(a^*-\bar a)]|,
-\]
+$$
 
-\[
+$$
 k_{\rm onset}(a)=\min\{k:a_k-\bar a_k>\delta_{\rm gate}\},
-\]
+$$
 
-а terminal metrics вычисляются только на \(k=32\). Reported penetration использует raw geometric gap:
+а terminal metrics вычисляются только на $k=32$. Reported penetration использует raw geometric gap:
 
-\[
+$$
 P_{k,i}=(-h^{\rm geom}_{k,i})_+.
-\]
+$$
 
 ## 3. Simulator и исходный dataset contract
 
@@ -174,9 +174,9 @@ P_{k,i}=(-h^{\rm geom}_{k,i})_+.
 
 Collector повторяет validation-generation pipeline для asset selection, spawn transforms и initial grasp poses, но физическая постановка была специально упрощена:
 
-- gravity \(=0\);
+- gravity $=0$;
 - shelf отсутствует;
-- объект не фиксируется ни по \(z\), ни по другим координатам;
+- объект не фиксируется ни по $z$, ни по другим координатам;
 - approach phase не используется;
 - gripper закрывается 32 малыми command increments;
 - записываются начальное состояние и 32 последующих settled states, всего 33;
@@ -186,18 +186,18 @@ Collector повторяет validation-generation pipeline для asset selecti
   deterministic pose candidates;
 - после collection из **train и validation local supervision** дополнительно
   исключаются физически settled, но редкие pose/contact jumps
-  \(d_{\Delta q}>0.05\); удаляются ровно отдельные transition indices, а не
+  $d_{\Delta q}>0.05$; удаляются ровно отдельные transition indices, а не
   целые trajectories, поскольку jumps встречаются в 44.6% train и 29.0% val
   trajectories;
 - test split остаётся полным, включая jumps, чтобы фильтр обучения не
   искусственно улучшал итоговую оценку;
 - object SDF хранится один раз на объект, а не копируется на trajectories.
 
-Первый полный набор содержал 29 объектов \(\times\) 100 trajectories:
+Первый полный набор содержал 29 объектов $\times$ 100 trajectories:
 
-\[
+$$
 2900\text{ trajectories},\qquad 2900\times32=92\,800\text{ transitions}.
-\]
+$$
 
 Object-wise split был 23/3/3. Позже `ogurtsy-marinovannye-670-g-21054` был полностью удалён из catalog, assets и данных. Финальный набор содержит 28 объектов, 2800 trajectories и split 22/3/3.
 
@@ -210,7 +210,7 @@ Object-wise split был 23/3/3. Позже `ogurtsy-marinovannye-670-g-21054` �
 - `position[T,33,3]`;
 - `quaternion_xyzw[T,33,4]`;
 - `actual_aperture[T,33]`;
-- после \(a\to r\): `joint_position[T,33,6]` и фиксированный порядок joint names;
+- после $a\to r$: `joint_position[T,33,6]` и фиксированный порядок joint names;
 - optional diagnostics на 32 transitions: contact count, effort, max penetration, residual velocities и settling substeps.
 
 Финальные шесть joints:
@@ -228,45 +228,45 @@ Lazy HDF5 loader открывает отдельные read-only handles в ка
 
 TensorBoard пишет все runs в `runs/`. User-level systemd service `srno-tensorboard.service` включён и активен, слушает только `127.0.0.1:6006`, автоматически перезапускается после сбоя. Для пользователя включён `Linger=yes`, поэтому service поднимается и после reboot без интерактивного login.
 
-## 4. Самая первая архитектура: SRNO-\(a\)
+## 4. Самая первая архитектура: SRNO-$a$
 
 ### 4.1 Operator
 
 Изначально моделировался shared quasistatic operator
 
-\[
+$$
 \mathcal R_\phi:
 (q_k,a_k,\bar a_{k+1},\phi)
 \longmapsto(q_{k+1},a_{k+1}).
-\]
+$$
 
 Free predictor:
 
-\[
+$$
 \tilde q_{k+1}=q_k,
 \qquad
 \tilde a_{k+1}=\bar a_{k+1}.
-\]
+$$
 
 256 nominal gripper points выбирались scalar aperture:
 
-\[
+$$
 y_i^G(a)=c_i+s_i a.
-\]
+$$
 
 Для trial pose:
 
-\[
+$$
 z_i^O=R_k^T(y_i^G(\tilde a_{k+1})-p_k),
 \qquad
 h_i=\phi(z_i^O).
-\]
+$$
 
 ### 4.2 Exact free bypass
 
-\[
+$$
 \mathrm{active}_k=mathbf 1\!\left[min_i h_i\le\delta_{\rm gate}\right].
-\]
+$$
 
 Если sample не active, возвращается в точности trial state и neural cell не вызывается. Это даёт machine-exact free motion.
 
@@ -274,86 +274,86 @@ h_i=\phi(z_i^O).
 
 Node и position features:
 
-\[
+$$
 e_i=\frac{h_i}{s_{\rm sdf}},
 \qquad
 \rho_i=\frac{y_i^G}{L}.
-\]
+$$
 
 Один diagonal-kernel integral layer:
 
-\[
+$$
 z_i^{\rm lat}
 =\operatorname{SiLU}\!\left(
-W_0e_i+rac1M\sum_{j=1}^{M}
+W_0e_i+\frac{1}{M}\sum_{j=1}^{M}
 \kappa(\rho_i,\rho_j)\odot W_1e_j+b
 \right),
-\]
+$$
 
-где \(\kappa\) — `MLP(6→64→64)`, а \(\odot\) — component-wise product. После mean pooling:
+где $\kappa$ — `MLP(6→64→64)`, а $\odot$ — component-wise product. После mean pooling:
 
-\[
+$$
 \bar z=\frac1M\sum_i z_i^{\rm lat}.
-\]
+$$
 
-Head `MLP(66→128→128→7)` получает \(\bar z\), \(a_k/L\) и \(\tilde a_{k+1}/L\) и выдаёт
+Head `MLP(66→128→128→7)` получает $\bar z$, $a_k/L$ и $\tilde a_{k+1}/L$ и выдаёт
 
-\[
+$$
 (\widehat{\Delta v},\Delta\omega,\eta)\in\mathbb R^7.
-\]
+$$
 
 Физический twist:
 
-\[
+$$
 \Delta\xi=(L\widehat{\Delta v},\Delta\omega),
 \qquad
 \hat q_{k+1}=\Exp(\widehat{\Delta\xi})q_k,
-\]
+$$
 
-\[
+$$
 \hat a_{k+1}
 =\tilde a_{k+1}
 +\sigma(\eta)(a_k-\tilde a_{k+1}).
-\]
+$$
 
-Последний layer был инициализирован нулевым motion, а bias \(\eta=-4\).
+Последний layer был инициализирован нулевым motion, а bias $\eta=-4$.
 
 ### 4.4 Loss и обучение
 
 Первоначальная state loss:
 
-\[
+$$
 \mathcal L_{\rm state}
 =\frac{\|\hat p-p^*\|^2}{L^2}
 +\lambda_R\theta(\hat R,R^*)^2
 +\lambda_a\frac{(\hat a-a^*)^2}{L^2}.
-\]
+$$
 
 Изначальная feasibility:
 
-\[
+$$
 \mathcal L_K
 =\frac1M\sum_{i=1}^{M}
 \left[
 \frac{(0-h_i^{\rm pred})_+}{s_{\rm sdf}}
 \right]^2,
-\]
+$$
 
-\[
+$$
 \mathcal L=\mathcal L_{\rm state}+\lambda_K\mathcal L_K,
 \qquad
 \lambda_R=\lambda_a=\lambda_K=1.
-\]
+$$
 
 Режимы:
 
-- local: ground-truth state \(x_k^*\), active one-step transitions;
+- local: ground-truth state $x_k^*$, active one-step transitions;
 - rollout: autoregressive без teacher forcing;
-- curriculum \(H4\to H8\to H16\to H32\).
+- curriculum $H4\to H8\to H16\to H32$.
 
-Общие optimizer defaults: AdamW, learning rate \(3\cdot10^{-4}\), weight decay \(10^{-4}\), clipping 1.0, BF16 neural cell на CUDA и float32 geometry/\(SE(3)\)/loss.
+Общие optimizer defaults: AdamW, learning rate $3\cdot10^{-4}$, weight decay $10^{-4}$, clipping 1.0, BF16 neural cell на CUDA и float32 geometry/$SE(3)$/loss.
 
-## 5. Первые обучения SRNO-\(a\)
+## 5. Первые обучения SRNO-$a$
 
 Первая конфигурация использовала маленькие chunks по 8 samples/trajectory на object. Затем были отдельно проверены загрузка всего object целиком и эффективный complete-coverage sampler. В окончательном sampler `4 objects × 256 local transitions` и `4 objects × 8 rollout trajectories` — это **размер minibatch chunk, а не ограничение dataset**: за эпоху каждый active transition/trajectory посещается ровно один раз без replacement.
 
@@ -368,32 +368,32 @@ Head `MLP(66→128→128→7)` получает \(\bar z\), \(a_k/L\) и \(\tild
 
 Unseen test финальных H32 checkpoints:
 
-| Run | Terminal \(d_X\) | Mean translation | Mean rotation | Mean aperture | Mean/max penetration |
+| Run | Terminal $d_X$ | Mean translation | Mean rotation | Mean aperture | Mean/max penetration |
 |---|---:|---:|---:|---:|---:|
-| `srno-contact-v1` | 0.455406 | 0.110412 \(L\) | 0.195439 rad | 0.010724 \(L\) | 0.756 / 33.670 mm |
-| `srno-contact-v1-curriculum` | 0.458531 | 0.116206 \(L\) | 0.195809 rad | 0.010724 \(L\) | 0.890 / 33.857 mm |
+| `srno-contact-v1` | 0.455406 | 0.110412 $L$ | 0.195439 rad | 0.010724 $L$ | 0.756 / 33.670 mm |
+| `srno-contact-v1-curriculum` | 0.458531 | 0.116206 $L$ | 0.195809 rad | 0.010724 $L$ | 0.890 / 33.857 mm |
 | `srno-contact-v1-full-data` | 0.454601 | 10.754 mm | 0.195676 rad | 1.050 mm | 0.622 / 33.750 mm |
 | `srno-contact-v1-full-coverage` | **0.449868** | **9.921 mm** | 0.197273 rad | **0.832 mm** | **0.458 / 33.448 mm** |
 
-Для `full-coverage` terminal physical errors были 19.045 mm translation, 0.383784 rad rotation и 2.944 mm aperture. Этот run стал основным SRNO-\(a\) baseline.
+Для `full-coverage` terminal physical errors были 19.045 mm translation, 0.383784 rad rotation и 2.944 mm aperture. Этот run стал основным SRNO-$a$ baseline.
 
-Local checkpoint первого run при прямом H32 rollout дал test terminal \(d_X=0.502095\), тогда как recurrently trained checkpoint дал 0.455406. Это подтвердило необходимость autoregressive curriculum, но разрыв local/rollout остался большим.
+Local checkpoint первого run при прямом H32 rollout дал test terminal $d_X=0.502095$, тогда как recurrently trained checkpoint дал 0.455406. Это подтвердило необходимость autoregressive curriculum, но разрыв local/rollout остался большим.
 
-## 6. Чистый ablation \(\lambda_K=0\)
+## 6. Чистый ablation $\lambda_K=0$
 
 Менялось только
 
-\[
+$$
 \lambda_K:1\longrightarrow0,
 \qquad
 \mathcal L=\mathcal L_{\rm state}.
-\]
+$$
 
 Dataset, sampler, architecture, curriculum, seed и optimizer были одинаковы с `full-coverage`.
 
 Validation best per horizon:
 
-| Horizon | \(\lambda_K=1\) | \(\lambda_K=0\) | Изменение |
+| Horizon | $\lambda_K=1$ | $\lambda_K=0$ | Изменение |
 |---:|---:|---:|---:|
 | H4 | 0.012137 | 0.012642 | +4.16% |
 | H8 | 0.060880 | 0.061440 | +0.92% |
@@ -402,7 +402,7 @@ Validation best per horizon:
 
 Однако unseen test curve финальных H32 checkpoints:
 
-| Step | \(\lambda_K=1\) | \(\lambda_K=0\) | Изменение |
+| Step | $\lambda_K=1$ | $\lambda_K=0$ | Изменение |
 |---:|---:|---:|---:|
 | 4 | 0.034832 | 0.041214 | +18.32% |
 | 8 | 0.109347 | 0.113769 | +4.04% |
@@ -411,10 +411,10 @@ Validation best per horizon:
 
 При
 
-\[
+$$
 \operatorname{slope}_{[a,b]}
 =\frac{d_X(b)-d_X(a)}{b-a},
-\]
+$$
 
 slopes baseline/candidate были: 0–4: 0.008708/0.010304; 4–8: 0.018629/0.018139; 8–16: 0.015422/0.014654; 16–32: 0.013572/0.014288.
 
@@ -430,17 +430,17 @@ Mean penetration выросла 0.458→0.913 mm, почти на 99.3%. Выв�
 
 Из 95,700 GT states:
 
-- 67.54% имели \(\min h<0\);
+- 67.54% имели $\min h<0$;
 - 61.58% — глубже 1 mm;
 - 40.56% — глубже 5 mm;
-- median \(\min h=-2.85\) mm;
-- минимум \(-36.94\) mm.
+- median $\min h=-2.85$ mm;
+- минимум $-36.94$ mm.
 
-На 3041 violating GT states gradient feasibility был ненулевым в 100% случаев, median norm 0.0716. То есть simulator GT не являлся stationary point текущей \(\mathcal L_K\).
+На 3041 violating GT states gradient feasibility был ненулевым в 100% случаев, median norm 0.0716. То есть simulator GT не являлся stationary point текущей $\mathcal L_K$.
 
 ### 7.2 Gradient conflict
 
-- stall batches: median \(\cos(g_{\rm state},g_K)=-0.324\), 68.75% отрицательных, median \(\|g_K\|/\|g_{\rm state}\|=4.56\);
+- stall batches: median $\cos(g_{\rm state},g_K)=-0.324$, 68.75% отрицательных, median $\|g_K\|/\|g_{\rm state}\|=4.56$;
 - sliding: median cosine +0.172, 34.38% отрицательных;
 - near-contact: 81.25% batches имели нулевой feasibility gradient.
 
@@ -448,10 +448,10 @@ Mean penetration выросла 0.458→0.913 mm, почти на 99.3%. Выв�
 
 Среднее отношение ошибок
 
-\[
+$$
 \Gamma_{\rm PF}
 =\frac{E_{\rm pushforward}}{E_{\rm teacher}}
-\]
+$$
 
 равнялось 1.833 train, 1.812 val и 1.821 test. Pushforward был хуже в 93.79%, 96.34% и 93.88% matched samples.
 
@@ -463,7 +463,7 @@ Mean penetration выросла 0.458→0.913 mm, почти на 99.3%. Выв�
 
 ### 7.5 Shape split и state ambiguity
 
-Float32 H32 terminal \(d_X\): train shapes 0.476, val 0.411, test 0.452. Unseen shape не был единственным separator.
+Float32 H32 terminal $d_X$: train shapes 0.476, val 0.411, test 0.452. Unseen shape не был единственным separator.
 
 Среди 70,438 contact transitions ближайший 1% neighbours имел median output-correction distance 0.00362, p95 0.0373; 3.12% были >0.05, max 0.198. При этом 42 exact duplicates были согласованы: mean 0.000123, max 0.00126. Явного глобального non-Markov collapse это не доказало.
 
@@ -489,49 +489,49 @@ SDF стал строиться по cooked convex-decomposition collision geome
 
 PhysX создаёт контакт до пересечения геометрических поверхностей. Суммарный envelope:
 
-\[
+$$
 d_c=d_{\rm object}+d_{\rm finger}
 =2.00\text{ mm}+0.56\text{ mm}
 =2.56\text{ mm}.
-\]
+$$
 
 Были разделены два сигнала:
 
-\[
+$$
 h_i^{\rm geom}=\phi_{\rm cooked}(z_i),
-\]
+$$
 
-\[
+$$
 \boxed{h_i^{\rm contact}=h_i^{\rm geom}-d_c}.
-\]
+$$
 
-`contact signal` и gate используют \(h^{\rm contact}\), но geometric feasibility использует **только** raw \(h^{\rm geom}\). Вычитание 2.56 mm из feasibility было бы двойным учётом PhysX contact envelope.
+`contact signal` и gate используют $h^{\rm contact}$, но geometric feasibility использует **только** raw $h^{\rm geom}$. Вычитание 2.56 mm из feasibility было бы двойным учётом PhysX contact envelope.
 
 ### 8.3 Калибровка gate
 
-Для simulator contact label \(C_k=\mathbf1[\texttt{contact_count}_k>0]\) и trial minimum \(m_k=\min_i h_{k,i}^{\rm contact}\):
+Для simulator contact label $C_k=\mathbf1[\texttt{contact_count}_k>0]$ и trial minimum $m_k=\min_i h_{k,i}^{\rm contact}$:
 
-\[
+$$
 \operatorname{Recall}(\delta)
 =\frac{\sum_k C_k\mathbf1[m_k\le\delta]}{\sum_k C_k}.
-\]
+$$
 
 Калибратор выбирает
 
-\[
+$$
 \delta_{\rm gate}
 =\max\left(
 Q_{0.995}(m_k\mid C_k=1),
 2.01v_{\max},
 \epsilon_{\rm fp32}
 \right).
-\]
+$$
 
-Первый threshold старого geometry contract был 8.2841665 mm и давал train+val recall 99.5002%. После cooked-object geometry contact-only threshold был 4.4967 mm; при runtime gripper geometry — 1.5071 mm. Но эти значения были меньше conservative two-voxel floor. Для 96³ grids с \(v_{\max}=3.94737\) mm production gate стал 7.93421 mm.
+Первый threshold старого geometry contract был 8.2841665 mm и давал train+val recall 99.5002%. После cooked-object geometry contact-only threshold был 4.4967 mm; при runtime gripper geometry — 1.5071 mm. Но эти значения были меньше conservative two-voxel floor. Для 96³ grids с $v_{\max}=3.94737$ mm production gate стал 7.93421 mm.
 
 ### 8.4 Retrain после одной SDF правки
 
-`srno-contact-v1-physx-sdf` сохранил SRNO-\(a\):
+`srno-contact-v1-physx-sdf` сохранил SRNO-$a$:
 
 | Local | H4 | H8 | H16 | H32 val | H32 test |
 |---:|---:|---:|---:|---:|---:|
@@ -547,24 +547,24 @@ Q_{0.995}(m_k\mid C_k=1),
 
 Необходимость correction определялась через free predictor:
 
-\[
+$$
 c_k=d_X(x_{k+1}^*,F_{\rm free}(x_k^*)),
-\]
+$$
 
-\[
+$$
 \tau_{\rm num}=Q_{0.995}(c_k\mid\text{no simulator contact})
 =0.00765149,
-\]
+$$
 
-\[
+$$
 y_k^{\rm corr}=\mathbf1[c_k>\tau_{\rm num}].
-\]
+$$
 
 Минимальный threshold с recall не ниже 99.5%:
 
-\[
+$$
 \delta_{\rm corr}=1.607985\text{ mm}.
-\]
+$$
 
 Train/val/test recall: 99.459%/99.825%/99.838%; precision: 91.973%/89.269%/91.246%. Active index уменьшился 82,548→72,514 transitions, то есть 88.95%→78.14% полного набора.
 
@@ -572,24 +572,24 @@ Train/val/test recall: 99.459%/99.825%/99.838%; precision: 91.973%/89.269%/91.24
 
 Из-за неправильных GT gaps была проверена формальная robust boundary:
 
-\[
+$$
 h_{\rm admissible}
 =-Q_{0.995}((-h_{\rm GT})_+)
 =-31.241722\text{ mm}.
-\]
+$$
 
 Это был diagnostic stress value, не физическая константа.
 
 ### 9.3 Четыре arms
 
-| Arm | \(\delta_{\rm gate}\) | \(h_{\rm admissible}\) | Local | H4 | H8 | H16 | H32 val |
+| Arm | $\delta_{\rm gate}$ | $h_{\rm admissible}$ | Local | H4 | H8 | H16 | H32 val |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | baseline | 7.934 mm | 0 | 0.03651 | 0.01084 | 0.05750 | 0.21725 | 0.39270 |
 | gate-only | 1.608 mm | 0 | 0.03845 | **0.00989** | 0.05441 | 0.21713 | 0.39667 |
 | feasibility-only | 7.934 mm | −31.242 mm | **0.02274** | 0.01134 | 0.05490 | 0.21826 | **0.34971** |
 | combined | 1.608 mm | −31.242 mm | 0.02492 | **0.00987** | **0.05321** | **0.21466** | 0.35256 |
 
-Unseen test \(d_X(k)\):
+Unseen test $d_X(k)$:
 
 | Arm | H4 | H8 | H16 | H32 |
 |---|---:|---:|---:|---:|
@@ -598,23 +598,23 @@ Unseen test \(d_X(k)\):
 | feasibility-only | 0.04982 | 0.12641 | 0.24578 | **0.43941** |
 | combined | 0.03013 | 0.10510 | 0.23258 | 0.44110 |
 
-Все paired H32 confidence intervals включали zero. `gate-only` устойчиво улучшил H4/H8/H16, но не H32. Relaxed feasibility улучшал local fit и validation H32, но не generalization; mean penetration выросла 0.609→0.800 mm (`feasibility-only`) и 0.839 mm (`combined`). Это навело на root cause: scalar \(a\) не восстанавливает фактические poses links под контактом.
+Все paired H32 confidence intervals включали zero. `gate-only` устойчиво улучшил H4/H8/H16, но не H32. Relaxed feasibility улучшал local fit и validation H32, но не generalization; mean penetration выросла 0.609→0.800 mm (`feasibility-only`) и 0.839 mm (`combined`). Это навело на root cause: scalar $a$ не восстанавливает фактические poses links под контактом.
 
 ![Contact-manifold ablation](../runs/contact-manifold-ablation/comparison/ablation_dashboard.png)
 
-## 10. Переход от scalar aperture к actual joints: SRNO-\(r\)
+## 10. Переход от scalar aperture к actual joints: SRNO-$r$
 
 ### 10.1 Прямая geometric диагностика
 
 На 3 объектах, 100 trajectories на объект и 9600 states сравнивались:
 
-\[
+$$
 m_a^*=\min_i\phi\!\left((q^*)^{-1}y_i^G(a^*)\right),
-\]
+$$
 
-\[
+$$
 m_r^*=\min_i\phi\!\left((q^*)^{-1}T_{\ell(i)}(r^*)y_i^{\ell(i)}\right).
-\]
+$$
 
 Результаты all states:
 
@@ -628,36 +628,36 @@ m_r^*=\min_i\phi\!\left((q^*)^{-1}T_{\ell(i)}(r^*)y_i^{\ell(i)}\right).
 | Penetration >1 mm | 50.750% | **0.0104%** |
 | Penetration >2 mm | 48.583% | **0%** |
 
-На simulator-contact states mean penetration упала 7.364→0.0725 mm. Free-schedule FK point replay error был \(7.87\cdot10^{-8}\) m mean и \(1.68\cdot10^{-7}\) m max; replayed joint-position error был ровно zero.
+На simulator-contact states mean penetration упала 7.364→0.0725 mm. Free-schedule FK point replay error был $7.87\cdot10^{-8}$ m mean и $1.68\cdot10^{-7}$ m max; replayed joint-position error был ровно zero.
 
 Новая geometric boundary:
 
-\[
+$$
 h_{\rm admissible}^{\rm geom}=-0.551733\text{ mm}
-\]
+$$
 
-на diagnostic subset. В effective contact coordinates это было бы \(-3.111733\) mm, но feasibility намеренно осталась geometric и использовала первое значение.
+на diagnostic subset. В effective contact coordinates это было бы $-3.111733$ mm, но feasibility намеренно осталась geometric и использовала первое значение.
 
 ### 10.2 Новое состояние и geometry
 
 Operator стал
 
-\[
+$$
 \mathcal R_\phi:(q_k,r_k,\bar a_{k+1},\phi)
 \longmapsto(q_{k+1},r_{k+1}).
-\]
+$$
 
-Каждый collision sample привязан к link \(\ell(i)\):
+Каждый collision sample привязан к link $\ell(i)$:
 
-\[
+$$
 y_i^G(r)=T_{\ell(i)}(r)y_i^{\ell(i)},
-\]
+$$
 
-\[
+$$
 z_i^O(q,r)=R^T(y_i^G(r)-p),
 \qquad
 h_i^{\rm geom}(q,r)=\phi(z_i^O(q,r)).
-\]
+$$
 
 Эта одна и та же FK geometry используется для input gaps, gate и feasibility.
 
@@ -665,72 +665,72 @@ h_i^{\rm geom}(q,r)=\phi(z_i^O(q,r)).
 
 В empty gripper были записаны 33 joint knots:
 
-\[
+$$
 \bar a_j\longmapsto r_j^{\rm free}.
-\]
+$$
 
 Lookup/interpolation задаёт
 
-\[
+$$
 \tilde r_{k+1}=R_{\rm free}(\bar a_{k+1}),
 \qquad
 \tilde x_{k+1}=(q_k,\tilde r_{k+1}).
-\]
+$$
 
-Ничего в \(R_{\rm free}\) не обучается.
+Ничего в $R_{\rm free}$ не обучается.
 
 ### 10.4 Derived aperture
 
-Пусть \(r_o=r^{\rm free}(a_{\max})\), \(r_c=r^{\rm free}(a_{\min})\), \(d=r_c-r_o\). Тогда
+Пусть $r_o=r^{\rm free}(a_{\max})$, $r_c=r^{\rm free}(a_{\min})$, $d=r_c-r_o$. Тогда
 
-\[
+$$
 \chi(r)=\operatorname{clip}\left(
 \frac{(r-r_o)^Td}{d^Td},0,1
 \right),
-\]
+$$
 
-а \(A(r)\) получается интерполяцией по 33 aperture knots в позиции \(32\chi(r)\). Это только diagnostic/conditioning scalar; collision geometry никогда больше не выбирается через \(A(r)\).
+а $A(r)$ получается интерполяцией по 33 aperture knots в позиции $32\chi(r)$. Это только diagnostic/conditioning scalar; collision geometry никогда больше не выбирается через $A(r)$.
 
 ### 10.5 Новый head и loss
 
-Integral layer, \(M=256\), \(d=64\), kernel и pooling не менялись. Head стал `MLP(66→128→128→12)`:
+Integral layer, $M=256$, $d=64$, kernel и pooling не менялись. Head стал `MLP(66→128→128→12)`:
 
-\[
+$$
 (\widehat{\Delta\xi},\widehat{\Delta r})\in\mathbb R^{6+6}.
-\]
+$$
 
 Joint output нормализован travel range:
 
-\[
+$$
 \Delta r^c=s\odot\widehat{\Delta r},
 \qquad
 \hat r_{k+1}=\tilde r_{k+1}+\Delta r^c.
-\]
+$$
 
 State loss:
 
-\[
+$$
 \mathcal L_{\rm state}
 =\frac{\|\hat p-p^*\|^2}{L^2}
 +\lambda_R\theta(\hat R,R^*)^2
 +\lambda_r\frac16\sum_{m=1}^{6}
 \left(\frac{\hat r_m-r_m^*}{s_m}\right)^2.
-\]
+$$
 
 Feasibility:
 
-\[
+$$
 \mathcal L_K
 =\frac1M\sum_i
 \left[
 \frac{(h_{\rm admissible}-h_i^{\rm geom}(\hat q,\hat r))_+}
 {s_{\rm sdf}}
 \right]^2.
-\]
+$$
 
 ### 10.6 Interim обучение на 11 объектах
 
-Dataset: 8 train / 1 val / 2 test objects, по 100 trajectories; \(\delta_{\rm gate}=7.07507\) mm, \(h_{\rm admissible}=-0.512322\) mm.
+Dataset: 8 train / 1 val / 2 test objects, по 100 trajectories; $\delta_{\rm gate}=7.07507$ mm, $h_{\rm admissible}=-0.512322$ mm.
 
 | Local | H4 | H8 | H16 | H32 val | Final val eval | Final test eval |
 |---:|---:|---:|---:|---:|---:|---:|
@@ -738,7 +738,7 @@ Dataset: 8 train / 1 val / 2 test objects, по 100 trajectories; \(\delta_{\rm 
 
 Val all-state errors: 10.633 mm translation, 0.137161 rad rotation, 0.02536 normalized joint absolute error. Test: 15.621 mm, 0.201134 rad, 0.01788. Terminal test: 31.351 mm, 0.415729 rad, joint RMSE 0.03618, aperture 1.259 mm.
 
-На H32 validation flow contribution распределялся примерно как translation 26.5%, rotation 70.1%, joints 3.4%. На test terminal squared state distance: около 68% rotation, 31% translation и <1% joints. Значит, \(r\)-часть уже не была главным bottleneck; оставались object-pose prediction и autoregressive composition.
+На H32 validation flow contribution распределялся примерно как translation 26.5%, rotation 70.1%, joints 3.4%. На test terminal squared state distance: около 68% rotation, 31% translation и <1% joints. Значит, $r$-часть уже не была главным bottleneck; оставались object-pose prediction и autoregressive composition.
 
 ## 11. Проверка Markov/state sufficiency и contact memory
 
@@ -746,33 +746,33 @@ Val all-state errors: 10.633 mm translation, 0.137161 rad rotation, 0.02536 norm
 
 Для 72 contact/stall states на 3 объектах сравнивались два successor:
 
-\[
+$$
 x_{k+1}^{\rm preserve}
 =F_{\rm PhysX}(x_k,\bar a_{k+1};\text{сохранённая solver history}),
-\]
+$$
 
-\[
+$$
 x_{k+1}^{\rm fresh}
 =F_{\rm PhysX}(x_k,\bar a_{k+1};\text{новая scene, только }q_k,r_k).
-\]
+$$
 
-\[
+$$
 D_{\rm reset}=d_X(x_{k+1}^{\rm preserve},x_{k+1}^{\rm fresh}).
-\]
+$$
 
-Результат: mean 0.023275, median 0.004157, p90 0.042836, p95 0.123605, max 0.361155. Fresh repeatability mean была \(9.63\cdot10^{-5}\). Mean error лучшей local model на тех же samples был 0.037400; reset/model ratio 0.622. В 19.44% samples reset error был не меньше global local validation error.
+Результат: mean 0.023275, median 0.004157, p90 0.042836, p95 0.123605, max 0.361155. Fresh repeatability mean была $9.63\cdot10^{-5}$. Mean error лучшей local model на тех же samples был 0.037400; reset/model ratio 0.622. В 19.44% samples reset error был не меньше global local validation error.
 
 Вывод: hidden solver/contact state существует и создаёт тяжёлый tail, но его средний масштаб меньше model error, поэтому это не единственный bottleneck.
 
 ### 11.2 Factorization tests
 
-**P0a, velocities.** Production preserve уже обнулял object/joint velocities перед increment; дополнительный zero write ничего не менял, \(D_v\equiv0\). Paired continuous repeatability при этом имела mean \(d_X=0.013784\), median 0.001758.
+**P0a, velocities.** Production preserve уже обнулял object/joint velocities перед increment; дополнительный zero write ничего не менял, $D_v\equiv0$. Paired continuous repeatability при этом имела mean $d_X=0.013784$, median 0.001758.
 
 **P0b, strong-friction flag.** В первоначальном Python schema setter не был доступен; вместо неэквивалентной подмены тест был отмечен unavailable. Позже native PhysX probe позволил выполнить чистый test: `eDISABLE_STRONG_FRICTION=true` при неизменных коэффициентах. Mean reset error 0.023275→0.022202, ratio 0.9539, улучшились ровно 50% samples. Strong friction не оказался root cause.
 
 **P0c, PCM→SAT.** При `physxScene:collisionSystem=SAT` mean reset error вырос 0.023275→0.655427, median до 0.251247, max до 10.4815. Translation error достигал 1.169 m. Отключение PCM таким способом разрушало режим симуляции и было отвергнуто.
 
-**Fresh preconditioning.** Fresh scene сначала equilibrate-илась на текущей command, затем получала следующую. Mean error стал 0.024501 против cold 0.023275; ratio 1.05266, улучшились только 36.11%. Drift, внесённый preconditioning, сам имел mean \(d_X=0.017020\). Это не исправило hidden-state effect.
+**Fresh preconditioning.** Fresh scene сначала equilibrate-илась на текущей command, затем получала следующую. Mean error стал 0.024501 против cold 0.023275; ratio 1.05266, улучшились только 36.11%. Drift, внесённый preconditioning, сам имел mean $d_X=0.017020$. Это не исправило hidden-state effect.
 
 ## 12. Исправление contact material и material-v2 dataset
 
@@ -780,11 +780,11 @@ D_{\rm reset}=d_X(x_{k+1}^{\rm preserve},x_{k+1}^{\rm fresh}).
 
 Intended coefficients
 
-\[
+$$
 \mu_s=2.4,
 \qquad
 \mu_d=2.0
-\]
+$$
 
 присутствовали как замысел, но не были надёжно bound и read-back из фактического `PxMaterial`. Поэтому старый dataset нельзя было считать собранным при зафиксированной friction law. Точное прежнее effective material значение не было сертифицировано, поэтому в отчёте оно намеренно не придумывается.
 
@@ -792,22 +792,22 @@ Intended coefficients
 
 Для sticking/sliding Coulomb law:
 
-\[
+$$
 \|f_t\|\le\mu_s f_n
 \quad\text{(sticking)},
-\]
+$$
 
-\[
+$$
 f_t=-\mu_d f_n\frac{v_t}{\|v_t\|}
 \quad\text{(sliding)}.
-\]
+$$
 
 Финальная конфигурация:
 
-- \(\mu_s=2.4\), \(\mu_d=2.0\);
+- $\mu_s=2.4$, $\mu_d=2.0$;
 - friction/restitution combine mode `min`;
 - restitution 0;
-- rigid contact, \(k_c=0,c_c=0\);
+- rigid contact, $k_c=0,c_c=0$;
 - patch friction, PCM contact generation;
 - strong friction enabled;
 - TGS solver;
@@ -820,22 +820,22 @@ SDF/FK из-за material bug не менялись.
 
 ### 12.3 Финальный dataset и повторная калибровка
 
-После исправления материала заново собраны 28 объектов \(\times\) 100 trajectories, split 22/3/3, с actual joints. На train+val было 80,000 settled transitions:
+После исправления материала заново собраны 28 объектов $\times$ 100 trajectories, split 22/3/3, с actual joints. На train+val было 80,000 settled transitions:
 
 - simulator contacts: 58,940;
 - free transitions: 21,060;
-- \(v_{\max}=3.947368\) mm;
-- \(\delta_{\rm gate}=7.934210\) mm;
+- $v_{\max}=3.947368$ mm;
+- $\delta_{\rm gate}=7.934210$ mm;
 - contact recall 100%;
 - free false-positive rate 59.16% из-за conservative two-voxel floor;
-- \(h_{\rm admissible}^{\rm geom}=-0.492325\) mm.
+- $h_{\rm admissible}^{\rm geom}=-0.492325$ mm.
 
 Последнее значение вычислено как
 
-\[
+$$
 h_{\rm admissible}^{\rm geom}
 =-Q_{0.995}\left((-h_{\rm GT}^{\rm geom})_+\right).
-\]
+$$
 
 Геометрический contact gate сначала даёт полный active index:
 
@@ -849,11 +849,11 @@ h_{\rm admissible}^{\rm geom}
 После последующего решения использовать smooth train/validation supervision
 ground-truth transition помечается jump при
 
-\[
+$$
 d_{\Delta q,k}=
 \sqrt{(\|p_{k+1}-p_k\|/L)^2+d_{SO(3)}(R_k,R_{k+1})^2}>0.05,
 \qquad L=0.1114999652\ {\rm m}.
-\]
+$$
 
 Итоговый production local index имеет следующий contract:
 
@@ -885,14 +885,14 @@ smooth подпути не вводится: непрерывные HDF5 traject
 
 Полная rollout evaluation:
 
-| Split | Terminal \(d_X\) | Mean T | Mean R | Mean J abs/travel | Mean aperture | Terminal T | Terminal R | Terminal J RMSE | Terminal aperture | Mean/max penetration |
+| Split | Terminal $d_X$ | Mean T | Mean R | Mean J abs/travel | Mean aperture | Terminal T | Terminal R | Terminal J RMSE | Terminal aperture | Mean/max penetration |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | val | 0.171675 | 6.692 mm | 0.044656 | 0.016337 | 0.861 mm | 13.310 mm | 0.094811 | 0.062421 | 2.088 mm | 0.0376 / 18.801 mm |
 | test | **0.204097** | 8.006 mm | 0.047183 | 0.019008 | 1.073 mm | 16.510 mm | 0.102904 | 0.071548 | 2.851 mm | 0.0644 / 16.884 mm |
 
 Против interim SRNO-r terminal val уменьшился 0.297862→0.171675 (−42.35%), test 0.525187→0.204097 (−61.14%). Но split вырос с 8/1/2 до 22/3/3 и material изменился, поэтому это не чистая architecture ablation.
 
-## 13. Две диагностики material-v2 перед \(J_q\)
+## 13. Две диагностики material-v2 перед $J_q$
 
 ### 13.1 Oracle gate
 
@@ -900,8 +900,8 @@ Frozen H32 checkpoint не переобучался. Вместо geometric gate
 
 | Split | Geometric gate | Oracle gate | Изменение |
 |---|---:|---:|---:|
-| val terminal \(d_X\) | 0.171675 | 0.171740 | +0.038% |
-| test terminal \(d_X\) | 0.204097 | 0.209026 | +2.415% |
+| val terminal $d_X$ | 0.171675 | 0.171740 | +0.038% |
+| test terminal $d_X$ | 0.204097 | 0.209026 | +2.415% |
 
 Geometric gate относительно GT contact имел recall 100%; precision 83.37% val и 87.57% test. Oracle gate не улучшил результат: gate не был главным bottleneck.
 
@@ -911,33 +911,33 @@ Geometric gate относительно GT contact имел recall 100%; precisi
 
 На 72 samples/3 objects были определены:
 
-\[
+$$
 D_{\rm cont}=d_X(x_{k+1}^{A},x_{k+1}^{B})
-\]
+$$
 
 для двух continuous repeats,
 
-\[
+$$
 D_{\rm reset}=d_X(x_{k+1}^{\rm continuous},x_{k+1}^{\rm fresh}),
-\]
+$$
 
 и model error
 
-\[
+$$
 E_{\rm model}=d_X(\mathcal R_\theta(x_k),x_{k+1}).
-\]
+$$
 
 Получено:
 
-\[
+$$
 E_{\rm floor}=\mathbb E[D_{\rm cont}]=0.002991,
-\]
+$$
 
-\[
+$$
 E_{\rm model}=0.036876,
 \qquad
 \gamma=\frac{E_{\rm model}}{E_{\rm floor}}=12.329.
-\]
+$$
 
 Reset mean был 0.005791. Model error оставался более чем в 12 раз выше simulator repeatability floor. Это сняло simulator stochasticity и gate с позиции главных объяснений и мотивировало проверку достаточности contact features.
 
@@ -949,71 +949,71 @@ Reset mean был 0.005791. Model error оставался более чем в 
 
 Scalar gap сообщает глубину/зазор, но не сообщает явным образом направление contact normal и moment arm относительно spatial object motion. Для каждого trial point:
 
-\[
+$$
 z_i^O=R^T(y_i^G-p),
-\]
+$$
 
-\[
+$$
 n_i^O=\frac{\nabla\phi(z_i^O)}
 {\max(\|\nabla\phi(z_i^O)\|,10^{-8})},
 \qquad
 n_i^G=Rn_i^O,
-\]
+$$
 
-\[
+$$
 \rho_i=\frac{y_i^G}{L}.
-\]
+$$
 
 Для left/spatial dimensionless pose perturbation Jacobian gap имеет знак
 
-\[
+$$
 \boxed{
 J_{q,i}=
 \left[-n_i^G,\;-\left(\rho_i\times n_i^G\right)\right]
 \in\mathbb R^6
 }.
-\]
+$$
 
 Candidate node feature:
 
-\[
+$$
 \boxed{
 f_i=left[
 \frac{h_i^{\rm contact}}{s_{\rm sdf}},
 J_{q,i}
 \right]\in\mathbb R^7
 }.
-\]
+$$
 
 Baseline использует только первый scalar.
 
 ### 14.2 Differentiable SDF gradient
 
-Для fractional voxel coordinate \(u=(z-o)/v\), base index \(b=\lfloor u\rfloor\), \(\alpha=u-b\):
+Для fractional voxel coordinate $u=(z-o)/v$, base index $b=\lfloor u\rfloor$, $\alpha=u-b$:
 
-\[
+$$
 \phi(z)=\sum_{a,b,c\in\{0,1\}}
 w_a(\alpha_x)w_b(\alpha_y)w_c(\alpha_z)
 G_{c,b,a},
-\]
+$$
 
-где \(w_0(t)=1-t\), \(w_1(t)=t\). \(\nabla\phi\) получается аналитическим дифференцированием тех же восьми weights с делением на соответствующие \(v_x,v_y,v_z\). Вне grid возвращаются positive \(s_{\rm sdf}\) и zero gradient. Geometry остаётся float32; graph не detach-ится.
+где $w_0(t)=1-t$, $w_1(t)=t$. $\nabla\phi$ получается аналитическим дифференцированием тех же восьми weights с делением на соответствующие $v_x,v_y,v_z$. Вне grid возвращаются positive $s_{\rm sdf}$ и zero gradient. Geometry остаётся float32; graph не detach-ится.
 
 ### 14.3 Что именно изменилось
 
 Только две lifting matrices contact cell изменили input dimension:
 
-\[
+$$
 W_0,W_1:\mathbb R^1\to\mathbb R^{64}
 \quad\longrightarrow\quad
 W_0,W_1:\mathbb R^7\to\mathbb R^{64}.
-\]
+$$
 
 Добавлено
 
-\[
+$$
 2\times(7-1)\times64=768
-\]
+$$
 
 параметров: 31,436→32,204, то есть +2.44%. Kernel MLP, pooling, 12-output head, loss, gate, FK, dataset, optimizer и local schedule не менялись. Default `contact_features="gap"`, поэтому старые checkpoints совместимы.
 
@@ -1023,10 +1023,10 @@ W_0,W_1:\mathbb R^7\to\mathbb R^{64}.
 - split 22/3/3;
 - train/val/test active transitions 62,231/9,168/9,474;
 - seeds 0, 1, 2;
-- AdamW \(3\cdot10^{-4}\), weight decay \(10^{-4}\), clipping 1.0;
+- AdamW $3\cdot10^{-4}$, weight decay $10^{-4}$, clipping 1.0;
 - 4 objects × 256 local transitions;
 - максимум 100 epochs, patience 10;
-- best checkpoint только по validation one-step \(d_X\);
+- best checkpoint только по validation one-step $d_X$;
 - полная evaluation всех active transitions;
 - в рамках этого local phase rollout/H4–H32 не запускался; позднее он был выполнен отдельным clean paired experiment.
 
@@ -1034,18 +1034,18 @@ W_0,W_1:\mathbb R^7\to\mathbb R^{64}.
 
 Equal-object full-set evaluation:
 
-| Arm | Seed | Train \(d_X\) | Val \(d_X\) | Test \(d_X\) | Best epoch / epochs run |
+| Arm | Seed | Train $d_X$ | Val $d_X$ | Test $d_X$ | Best epoch / epochs run |
 |---|---:|---:|---:|---:|---:|
 | gap | 0 | 0.036210 | 0.031197 | 0.037451 | 15 / 26 |
 | gap | 1 | 0.036204 | 0.031033 | 0.037203 | 14 / 25 |
 | gap | 2 | 0.036874 | 0.030870 | 0.036699 | 11 / 22 |
-| gap+\(J_q\) | 0 | 0.024846 | 0.020099 | 0.026333 | 56 / 67 |
-| gap+\(J_q\) | 1 | 0.024574 | **0.019838** | **0.025196** | 91 / 100 |
-| gap+\(J_q\) | 2 | 0.025289 | 0.020357 | 0.025969 | 54 / 65 |
+| gap+$J_q$ | 0 | 0.024846 | 0.020099 | 0.026333 | 56 / 67 |
+| gap+$J_q$ | 1 | 0.024574 | **0.019838** | **0.025196** | 91 / 100 |
+| gap+$J_q$ | 2 | 0.025289 | 0.020357 | 0.025969 | 54 / 65 |
 
 Mean ± sample standard deviation across seeds:
 
-| Split | gap | gap+\(J_q\) | Relative change |
+| Split | gap | gap+$J_q$ | Relative change |
 |---|---:|---:|---:|
 | train | 0.036429 ± 0.000385 | 0.024903 ± 0.000361 | −31.64% |
 | val | 0.031033 ± 0.000164 | 0.020098 ± 0.000259 | **−35.24%** |
@@ -1059,7 +1059,7 @@ Paired validation improvement произошло во всех seeds:
 
 ### 14.6 Component decomposition на test
 
-| Component | gap | gap+\(J_q\) | Изменение |
+| Component | gap | gap+$J_q$ | Изменение |
 |---|---:|---:|---:|
 | translation | 1.3961 mm | **1.2325 mm** | −11.72% |
 | rotation | **0.006539 rad** | 0.006932 rad | **+6.00%** |
@@ -1069,7 +1069,7 @@ Aggregate gain в основном пришёл из joint correction и, сла
 
 Per-object test, mean по трём seeds:
 
-| Test object | gap | gap+\(J_q\) | Difference | Relative |
+| Test object | gap | gap+$J_q$ | Difference | Relative |
 |---|---:|---:|---:|---:|
 | Hercules oats | 0.034631 | 0.021040 | −0.013591 | −39.24% |
 | orange/raisin cookies | 0.036533 | 0.028860 | −0.007673 | −21.00% |
@@ -1077,24 +1077,24 @@ Per-object test, mean по трём seeds:
 
 Hierarchical bootstrap ресемплировал training seeds, затем test objects, затем transitions внутри объекта; 10,000 replicates:
 
-\[
+$$
 \mathbb E[E_{\rm test}^{J_q}-E_{\rm test}^{\rm gap}]
 =-0.011286,
-\]
+$$
 
-\[
+$$
 95\%\ \mathrm{CI}=[-0.012980,-0.009451].
-\]
+$$
 
-Верхняя граница ниже zero, и \(J_q\) лучше на validation во всех трёх seeds. Заданный criterion `confirmed_local_gain` выполнен.
+Верхняя граница ниже zero, и $J_q$ лучше на validation во всех трёх seeds. Заданный criterion `confirmed_local_gain` выполнен.
 
 Относительно simulator floor:
 
-\[
+$$
 \gamma_{\rm gap}=\frac{0.037118}{0.002991}=12.410,
 \qquad
 \gamma_{J_q}=\frac{0.025833}{0.002991}=8.637.
-\]
+$$
 
 Model всё ещё примерно в 8.6 раза выше simulator floor.
 
@@ -1104,48 +1104,48 @@ Model всё ещё примерно в 8.6 раза выше simulator floor.
 
 Он доказывает устойчивое улучшение **local one-step** aggregate error при добавлении explicit contact normal/moment information с ростом parameter count всего на 2.44%.
 
-Сам local experiment не доказывал улучшение H4/H8/H16/H32, terminal pose, rollout stability или long-horizon rotation. Позднейший clean rollout показал обратное на H32: `gap_jq` test \(d_X=0.219773\) против `gap` \(0.206607\), bootstrap difference \(+0.013183\) с 95% CI \([+0.006825,+0.019440]\). Поэтому production H32 branch осталась gap-only SRNO-r material-v2; `gap_jq` существует как opt-in configuration, но rollout gain не подтверждён.
+Сам local experiment не доказывал улучшение H4/H8/H16/H32, terminal pose, rollout stability или long-horizon rotation. Позднейший clean rollout показал обратное на H32: `gap_jq` test $d_X=0.219773$ против `gap` $0.206607$, bootstrap difference $+0.013183$ с 95% CI $[+0.006825,+0.019440]$. Поэтому production H32 branch осталась gap-only SRNO-r material-v2; `gap_jq` существует как opt-in configuration, но rollout gain не подтверждён.
 
 ## 15. Actuator conditioning: `aperture` против `drive_error`
 
-После того как rollout-\(J_q\) не прошёл H32-критерий, actuator ablation проводился на последней подтверждённой feature-ветке `gap`. Сначала `drive_error` дал сильный local gain, после чего был выполнен отдельный полный clean rollout ablation. Другие компоненты модели и physics/data contract одновременно не менялись.
+После того как rollout-$J_q$ не прошёл H32-критерий, actuator ablation проводился на последней подтверждённой feature-ветке `gap`. Сначала `drive_error` дал сильный local gain, после чего был выполнен отдельный полный clean rollout ablation. Другие компоненты модели и physics/data contract одновременно не менялись.
 
 ### 15.1 Формула единственной модификации
 
 Состояние и trial configuration:
 
-\[
+$$
 x_k=(q_k,r_k),
 \qquad
 q_k=(R_k,p_k)\in SE(3),
 \qquad
 \tilde r_{k+1}=R_{\rm free}(\bar a_{k+1}).
-\]
+$$
 
 В обеих руках contact geometry вычислялась одинаково:
 
-\[
+$$
 y_i^G(\tilde r_{k+1})
 =T_{\ell(i)}(\tilde r_{k+1})y_i,
 \qquad
 z_i^O=q_k^{-1}y_i^G(\tilde r_{k+1}),
-\]
+$$
 
-\[
+$$
 h_i^{\rm geo}=\phi(z_i^O),
 \qquad
 h_i^{\rm contact}=h_i^{\rm geo}-2.56\;{\rm mm}.
-\]
+$$
 
-2.56 mm вычитались только для contact signal и gate. Feasibility продолжала использовать (h_i^{\rm geo}) без contact-envelope shift. Единственный local feature в обеих руках:
+2.56 mm вычитались только для contact signal и gate. Feasibility продолжала использовать $h_i^{\rm geo}$ без contact-envelope shift. Единственный local feature в обеих руках:
 
-\[
+$$
 f_i=\frac{h_i^{\rm contact}}{s_{\rm sdf}}\in\mathbb R.
-\]
+$$
 
 Integral cell не менялась:
 
-\[
+$$
 z_i=\operatorname{SiLU}\!\left(
 W_0f_i+
 \frac1M\sum_j
@@ -1153,11 +1153,11 @@ W_0f_i+
 \right),
 \qquad
 \bar z=\frac1M\sum_i z_i.
-\]
+$$
 
 Baseline conditioning состояла из двух скаляров:
 
-\[
+$$
 \boxed{
 c_k^{\rm aperture}
 =\left[
@@ -1165,11 +1165,11 @@ c_k^{\rm aperture}
 \frac{\bar a_{k+1}}{L}
 \right]\in\mathbb R^2
 }.
-\]
+$$
 
 Candidate заменяла их полным нормированным mismatch шести приводов:
 
-\[
+$$
 \bar r_{k+1}=R_{\rm free}(\bar a_{k+1}),
 \qquad
 \boxed{
@@ -1177,58 +1177,58 @@ u_k=
 \frac{\bar r_{k+1}-r_k}{s}
 \in\mathbb R^6
 }.
-\]
+$$
 
-Деление на (s=(s_1,\ldots,s_6)) покомпонентное. (u_k) — position-drive error перед следующим increment, не torque и не contact reaction.
+Деление на $s=(s_1,\ldots,s_6)$ покомпонентное. $u_k$ — position-drive error перед следующим increment, не torque и не contact reaction.
 
 Изменился только input первого head layer:
 
-\[
+$$
 64+2\longrightarrow64+6.
-\]
+$$
 
 Число параметров:
 
-\[
+$$
 31\,436\longrightarrow31\,948,
 \qquad
 \Delta N=512,
 \qquad +1.63\%.
-\]
+$$
 
 Output обеих рук оставался одинаковым:
 
-\[
+$$
 (\Delta\xi,\Delta r^c)\in\mathbb R^{6+6},
-\]
+$$
 
-\[
+$$
 \hat q_{k+1}
 =\operatorname{Exp}(\widehat{\Delta\xi})\hat q_k,
 \qquad
 \hat r_{k+1}
 =\tilde r_{k+1}+\Delta r^c.
-\]
+$$
 
 ### 15.2 Метрики и loss
 
 Для каждого rollout step:
 
-\[
+$$
 T_k=\|\hat p_k-p_k^*\|_2,
 \qquad
 T_k^L=\frac{T_k}{L},
-\]
+$$
 
-\[
+$$
 R_k=\theta(\hat R_k,R_k^*)
 =\arccos\!\left(
 \operatorname{clip}
 \frac{\operatorname{tr}(\hat R_kR_k^{*T})-1}{2},-1,1
 \right),
-\]
+$$
 
-\[
+$$
 J_k=
 \sqrt{
 \frac16\sum_{m=1}^{6}
@@ -1236,27 +1236,27 @@ J_k=
 \frac{\hat r_{k,m}-r_{k,m}^*}{s_m}
 \right)^2
 },
-\]
+$$
 
-\[
+$$
 \boxed{
 d_X(k)=\sqrt{(T_k^L)^2+R_k^2+J_k^2}
 },
 \qquad
 E_H=d_X(H).
-\]
+$$
 
 Одинаковая objective:
 
-\[
+$$
 \mathcal L
 =\mathcal L_{\rm state}+\lambda_K\mathcal L_K,
 \qquad
 \mathcal L_{\rm state}
 =\frac1H\sum_{k=1}^{H}d_X(k)^2.
-\]
+$$
 
-Средние T/R/J ниже — средние уже вычисленных trajectory components. Поэтому mean (d_X) не обязан равняться корню из квадратов mean T/R/J.
+Средние T/R/J ниже — средние уже вычисленных trajectory components. Поэтому mean $d_X$ не обязан равняться корню из квадратов mean T/R/J.
 
 ### 15.3 Clean contract
 
@@ -1264,9 +1264,9 @@ E_H=d_X(H).
 - seeds: 0, 1, 2;
 - 100 trajectories на каждый evaluation object: 300 validation и 300 unseen-test trajectories на checkpoint;
 - rollout без teacher forcing;
-- curriculum \(H4\to H8\to H16\to H32\);
+- curriculum $H4\to H8\to H16\to H32$;
 - максимум 25 epochs на horizon, patience 10;
-- checkpoint выбирался только по validation terminal \(d_X(H)\);
+- checkpoint выбирался только по validation terminal $d_X(H)$;
 - каждая рука начиналась из соответствующего frozen local checkpoint и получала новый rollout AdamW optimizer/scheduler;
 - manifest SHA-256: `c8bddec752f0418e92383fd0d9193e2d70a37845244c4c1c26ed9f9170c3012a`;
 - gripper SHA-256: `6f3280535f5fd5bf543da3dba911825710ea73edb2a19b77b4fd4225fa2f02d6`.
@@ -1277,7 +1277,7 @@ Baseline initialization: `runs/ablation-jq-local/baseline/seed-{0,1,2}/best-loca
 
 На полном active one-step evaluation `drive_error` был подтверждён:
 
-| Split | aperture \(d_X\) | drive_error \(d_X\) | aperture T/R/J | drive_error T/R/J |
+| Split | aperture $d_X$ | drive_error $d_X$ | aperture T/R/J | drive_error T/R/J |
 |---|---:|---:|---|---|
 | train | 0.036429 | 0.018299 | 0.001398 / 0.010630 / 0.027883 | 0.001200 / 0.010289 / 0.005663 |
 | val | 0.031033 | 0.012832 | 0.001194 / 0.006181 / 0.026288 | 0.000944 / 0.005720 / 0.005822 |
@@ -1285,14 +1285,14 @@ Baseline initialization: `runs/ablation-jq-local/baseline/seed-{0,1,2}/best-loca
 
 Local test difference и bootstrap:
 
-\[
+$$
 E_{\rm test}^{\rm drive}-E_{\rm test}^{\rm aperture}
 =-0.022086,
-\]
+$$
 
-\[
+$$
 95\%\;CI=[-0.023543,-0.020797].
-\]
+$$
 
 Именно этот сильный local gain мотивировал полный rollout experiment.
 
@@ -1302,7 +1302,7 @@ E_{\rm test}^{\rm drive}-E_{\rm test}^{\rm aperture}
 
 Validation:
 
-| Arm | H | \(d_X\) | T [m] | T/L | R [rad] | J/travel |
+| Arm | H | $d_X$ | T [m] | T/L | R [rad] | J/travel |
 |---|---:|---:|---:|---:|---:|---:|
 | aperture | 4 | 0.013551787 | 0.001111693 | 0.009970346 | 0.007668148 | 0.001603323 |
 | aperture | 8 | 0.034075549 | 0.002489365 | 0.022326153 | 0.021775098 | 0.005507032 |
@@ -1315,7 +1315,7 @@ Validation:
 
 Test:
 
-| Arm | H | \(d_X\) | T [m] | T/L | R [rad] | J/travel |
+| Arm | H | $d_X$ | T [m] | T/L | R [rad] | J/travel |
 |---|---:|---:|---:|---:|---:|---:|
 | aperture | 4 | 0.018252572 | 0.001635874 | 0.014671516 | 0.008576471 | 0.002754367 |
 | aperture | 8 | 0.044945031 | 0.003716006 | 0.033327417 | 0.024851562 | 0.008230999 |
@@ -1328,16 +1328,16 @@ Test:
 
 Относительное изменение test terminal error:
 
-\[
+$$
 H4:+5.95\%,\qquad
 H8:-4.50\%,\qquad
 H16:-6.24\%,\qquad
 H32:+3.20\%.
-\]
+$$
 
 Следовательно, `drive_error` помогает на H8/H16, но этот эффект не сохраняется на полном H32.
 
-### 15.6 Все terminal \(d_X\) по seeds
+### 15.6 Все terminal $d_X$ по seeds
 
 Validation:
 
@@ -1363,17 +1363,17 @@ Test:
 
 H32 validation разность `drive_error - aperture` положительна во всех seeds:
 
-\[
+$$
 \Delta_0=+0.010042,
 \qquad
 \Delta_1=+0.005382,
 \qquad
 \Delta_2=+0.006873.
-\]
+$$
 
 ### 15.7 H32 component diagnosis
 
-| Split | Arm | T [m] | T/L | R [rad] | J/travel | \(d_X\) |
+| Split | Arm | T [m] | T/L | R [rad] | J/travel | $d_X$ |
 |---|---|---:|---:|---:|---:|---:|
 | val | aperture | 0.013184 | 0.118244 | 0.095097 | 0.064209 | 0.171902 |
 | val | drive_error | 0.014301 | 0.128261 | 0.095333 | 0.064834 | 0.179335 |
@@ -1382,25 +1382,25 @@ H32 validation разность `drive_error - aperture` положительн�
 
 На test rotation немного улучшилась:
 
-\[
+$$
 0.104379\to0.101347\;{\rm rad},
 \qquad -2.90\%,
-\]
+$$
 
 но translation ухудшилась:
 
-\[
+$$
 16.564\to17.841\;{\rm mm},
 \qquad +7.71\%.
-\]
+$$
 
-Joint component практически не изменилась, (0.073940\to0.074008). Поэтому H32 aggregate degradation в основном вызвана translation drift.
+Joint component практически не изменилась, $0.073940\to0.074008$. Поэтому H32 aggregate degradation в основном вызвана translation drift.
 
 ### 15.8 Полная H32 test pushforward-кривая
 
-Разность \(\Delta(k)=d_X^{\rm drive}(k)-d_X^{\rm aperture}(k)\):
+Разность $\Delta(k)=d_X^{\rm drive}(k)-d_X^{\rm aperture}(k)$:
 
-| k | aperture | drive_error | \(\Delta(k)\) |
+| k | aperture | drive_error | $\Delta(k)$ |
 |---:|---:|---:|---:|
 | 0 | 0.000000000 | 0.000000000 | +0.000000000 |
 | 1 | 0.017183603 | 0.008032721 | -0.009150883 |
@@ -1436,11 +1436,11 @@ Joint component практически не изменилась, (0.073940\to0.
 | 31 | 0.196488341 | 0.204226236 | +0.007737895 |
 | 32 | 0.206607049 | 0.213212704 | +0.006605655 |
 
-До \(k=10\) candidate лучше; на \(k=11\) знак меняется. Максимальный средний разрыв:
+До $k=10$ candidate лучше; на $k=11$ знак меняется. Максимальный средний разрыв:
 
-\[
+$$
 \Delta(20)=+0.011588.
-\]
+$$
 
 Это показывает, что actuator conditioning улучшает первые contact increments, но не уменьшает long-horizon composition error.
 
@@ -1468,37 +1468,37 @@ Candidate хуже на каждом validation и test object.
 
 Подтверждение требовало одновременно
 
-\[
+$$
 E_{\rm val,H32}^{\rm drive}<E_{\rm val,H32}^{\rm aperture}
-\]
+$$
 
 во всех трёх seeds и верхнюю границу 95% hierarchical bootstrap CI ниже нуля. Bootstrap: seed → object → trajectory, 10 000 replicates, seed 20260818.
 
 Прямая equal-object разность:
 
-\[
+$$
 \Delta_{\rm direct}
 =0.213212742-0.206607107
 =+0.006605635.
-\]
+$$
 
 Bootstrap distribution:
 
-\[
+$$
 \overline\Delta_{\rm bootstrap}=+0.006481,
 \qquad
 95\%\;CI=[-0.001089,+0.017838].
-\]
+$$
 
 Различие 0.006606 против 0.006481 связано с иерархическим Monte Carlo resampling и конечными 10 000 replicates.
 
 Оба строгих условия не выполнены. Формальный результат:
 
-\[
+$$
 \boxed{
 \texttt{drive\_error не подтверждён для H32 rollout}
 }.
-\]
+$$
 
 Несмотря на большой local gain и пользу на H8/H16, рабочим global conditioning полного rollout остаётся `aperture`.
 
@@ -1510,15 +1510,15 @@ Bootstrap distribution:
 
 | Run | Representation / изменение | Seed | Local val | H4 | H8 | H16 | H32 val | H32 test |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| `srno-contact-v1` | ранний SRNO-\(a\) | 0 | 0.018214 | 0.025354 | 0.084209 | 0.244301 | 0.431521 | 0.455406 |
+| `srno-contact-v1` | ранний SRNO-$a$ | 0 | 0.018214 | 0.025354 | 0.084209 | 0.244301 | 0.431521 | 0.455406 |
 | `srno-contact-v1-curriculum` | повтор curriculum | 0 | 0.018214 | 0.025354 | 0.082244 | 0.241875 | 0.434877 | 0.458531 |
 | `srno-contact-v1-full-data` | object-at-once full data | 0 | 0.032984 | 0.012107 | 0.060771 | 0.236074 | 0.416735 | 0.454601 |
 | `srno-contact-v1-full-coverage` | efficient complete coverage | 0 | 0.035601 | 0.012137 | 0.060880 | 0.233099 | 0.416463 | 0.449868 |
-| `srno-contact-v1-lambda-k0` | только \(\lambda_K=0\) | 0 | 0.022545 | 0.012642 | 0.061440 | 0.230088 | 0.382794 | 0.459616 |
+| `srno-contact-v1-lambda-k0` | только $\lambda_K=0$ | 0 | 0.022545 | 0.012642 | 0.061440 | 0.230088 | 0.382794 | 0.459616 |
 | `srno-contact-v1-physx-sdf` | cooked SDF/contact geometry | 0 | 0.033883 | 0.012445 | 0.061335 | 0.232829 | 0.410975 | 0.440439 |
 | contact baseline | baseline manifold study | 0 | 0.036513 | 0.010839 | 0.057505 | 0.217253 | 0.392696 | 0.44144 |
-| contact gate-only | \(\delta=1.608\) mm | 0 | 0.038454 | 0.009893 | 0.054406 | 0.217127 | 0.396666 | 0.44040 |
-| contact feasibility-only | \(h_{adm}=-31.242\) mm | 0 | 0.022743 | 0.011343 | 0.054898 | 0.218257 | 0.349711 | 0.43941 |
+| contact gate-only | $\delta=1.608$ mm | 0 | 0.038454 | 0.009893 | 0.054406 | 0.217127 | 0.396666 | 0.44040 |
+| contact feasibility-only | $h_{adm}=-31.242$ mm | 0 | 0.022743 | 0.011343 | 0.054898 | 0.218257 | 0.349711 | 0.43941 |
 | contact combined | оба изменения | 0 | 0.024923 | 0.009872 | 0.053205 | 0.214663 | 0.352562 | 0.44110 |
 | `srno-r-interim-11objects` | actual joints, 11 objects | 0 | 0.025153 | 0.035326 | 0.124717 | 0.205775 | 0.297874 | 0.525187 |
 | `srno-r-material-v2` | actual joints, final physics/data | 0 | 0.031199 | 0.013685 | 0.034846 | 0.068178 | **0.171715** | **0.204097** |
@@ -1535,15 +1535,15 @@ Bootstrap distribution:
 
 1. **Базовая neural-operator конструкция работала**, включая exact free bypass и shared integral cell, но scalar-aperture geometry делала supervision физически противоречивой.
 2. **Одна SDF/PhysX правка была необходима, но недостаточна**: test H32 0.44987→0.44044.
-3. **\(\lambda_K=0\) не решил rollout**: validation H32 выглядел лучше, unseen test ухудшился, penetration почти удвоилась.
+3. **$\lambda_K=0$ не решил rollout**: validation H32 выглядел лучше, unseen test ухудшился, penetration почти удвоилась.
 4. **Gate не был главным bottleneck**: gate-only помогал H4–H16, но не H32; oracle gate material-v2 также не улучшил terminal error.
-5. **Главный найденный geometric bug — \(a\to r\)**. Actual-joint FK уменьшил mean GT penetration 5.974→0.0589 mm и долю >1 mm с 50.75% до 0.0104%.
+5. **Главный найденный geometric bug — $a\to r$**. Actual-joint FK уменьшил mean GT penetration 5.974→0.0589 mm и долю >1 mm с 50.75% до 0.0104%.
 6. **Material binding был отдельным настоящим data bug**. Он исправлен runtime read-back/assert, а dataset после этого полностью пересобран и перекалиброван.
 7. **Ранние тесты указывали на PhysX contact-history effect**, но обновлённый
    preserve/fresh тест из раздела 19 не отделил его от continuous-repeat floor;
    поэтому наличие значимого hidden-state effect сейчас не считается доказанным.
 8. **Финальный gap-only SRNO-r существенно улучшил long horizon**: material-v2 test H32 0.20410.
-9. **Explicit \(J_q\) дал подтверждённый local gain**, но не rollout gain: local test 0.03712→0.02583, тогда как H32 test 0.20661→0.21977; H32 bootstrap CI целиком положителен.
+9. **Explicit $J_q$ дал подтверждённый local gain**, но не rollout gain: local test 0.03712→0.02583, тогда как H32 test 0.20661→0.21977; H32 bootstrap CI целиком положителен.
 10. **`drive_error` дал ещё больший local gain**, test 0.03712→0.01504, но также не скомпозировался до H32: test 0.20661→0.21321, а validation хуже во всех seeds.
 
 Оба ранее запланированных clean rollout comparisons теперь выполнены. Ни `gap_jq`, ни `drive_error` не прошли строгий H32-критерий, поэтому текущая рабочая long-horizon ветка остаётся `gap` + `aperture`. Следующий experiment должен адресовать именно long-horizon composition/object-pose drift, не смешивая это с новой physics или dataset revision.
@@ -1551,19 +1551,19 @@ Bootstrap distribution:
 ## 18. Воспроизводимость и артефакты
 
 - Базовый diagnostic dashboard: [`runs/srno-contact-v1-full-coverage/diagnostics-point16/diagnostic_dashboard.png`](../runs/srno-contact-v1-full-coverage/diagnostics-point16/diagnostic_dashboard.png)
-- \(\lambda_K=0\) report: [`runs/srno-contact-v1-lambda-k0/comparison/summary.md`](../runs/srno-contact-v1-lambda-k0/comparison/summary.md)
+- $\lambda_K=0$ report: [`runs/srno-contact-v1-lambda-k0/comparison/summary.md`](../runs/srno-contact-v1-lambda-k0/comparison/summary.md)
 - SDF/PhysX diagnostic: [`runs/sdf-collision-diagnostic/results.json`](../runs/sdf-collision-diagnostic/results.json)
 - Contact-manifold report: [`runs/contact-manifold-ablation/comparison/summary.md`](../runs/contact-manifold-ablation/comparison/summary.md)
-- \(a\) против actual-joint FK: [`runs/joint-gap-diagnostic/results.json`](../runs/joint-gap-diagnostic/results.json)
+- $a$ против actual-joint FK: [`runs/joint-gap-diagnostic/results.json`](../runs/joint-gap-diagnostic/results.json)
 - Markov test: [`runs/markov-state-sufficiency-v1/results.json`](../runs/markov-state-sufficiency-v1/results.json)
 - Contact-memory factorization: [`runs/contact-memory-factorization-v1/results.json`](../runs/contact-memory-factorization-v1/results.json)
 - Strong-friction native ablation: [`runs/strong-friction-ablation-v1/results.json`](../runs/strong-friction-ablation-v1/results.json)
 - Final material-v2 calibration: [`data/simulator-r-v1/calibration-material-v2.json`](../data/simulator-r-v1/calibration-material-v2.json)
 - Oracle gate: [`runs/material-v2-diagnostics/oracle-gate/results.json`](../runs/material-v2-diagnostics/oracle-gate/results.json)
 - Simulator floor: [`runs/material-v2-diagnostics/simulator-floor/results.json`](../runs/material-v2-diagnostics/simulator-floor/results.json)
-- Final \(J_q\) results: [`runs/ablation-jq-local/results.json`](../runs/ablation-jq-local/results.json)
-- Final \(J_q\) dashboard: [`runs/ablation-jq-local/jq_local_ablation.png`](../runs/ablation-jq-local/jq_local_ablation.png)
-- \(J_q\) rollout results: [`runs/ablation-jq-rollout/results.json`](../runs/ablation-jq-rollout/results.json)
+- Final $J_q$ results: [`runs/ablation-jq-local/results.json`](../runs/ablation-jq-local/results.json)
+- Final $J_q$ dashboard: [`runs/ablation-jq-local/jq_local_ablation.png`](../runs/ablation-jq-local/jq_local_ablation.png)
+- $J_q$ rollout results: [`runs/ablation-jq-rollout/results.json`](../runs/ablation-jq-rollout/results.json)
 - Actuator local results: [`runs/ablation-actuator-local/results.json`](../runs/ablation-actuator-local/results.json)
 - Actuator rollout results: [`runs/ablation-actuator-rollout/results.json`](../runs/ablation-actuator-rollout/results.json)
 - Actuator rollout dashboard: [`runs/ablation-actuator-rollout/actuator_rollout_ablation.png`](../runs/ablation-actuator-rollout/actuator_rollout_ablation.png)
@@ -1575,7 +1575,7 @@ Bootstrap distribution:
 - `2b5501c` — actual PhysX joint state for gripper geometry;
 - `32ac086` — PhysX contact material binding and verification.
 
-Текущие \(J_q\) и actuator-conditioning реализации находятся в рабочем дереве поверх этих commits. После composition diagnostics полный regression suite: **63 passed**, 12 warnings.
+Текущие $J_q$ и actuator-conditioning реализации находятся в рабочем дереве поверх этих commits. После composition diagnostics полный regression suite: **63 passed**, 12 warnings.
 
 ## 19. Contact-composition diagnostics v2: amplification, signed bias и Markov/history
 
@@ -1584,10 +1584,10 @@ Bootstrap distribution:
 loss, архитектура и веса checkpoints не изменялись. Production-вариантом до и
 после теста остаётся
 
-\[
+$$
 \boxed{\texttt{contact\_features=gap},\qquad
 \texttt{global\_conditioning=aperture}}.
-\]
+$$
 
 `drive_error` использовался только как диагностический контроль актуального
 one-step floor. Ни `J_q`, ни `drive_error` не объявлялись production-вариантом.
@@ -1603,14 +1603,14 @@ one-step floor. Ни `J_q`, ни `drive_error` не объявлялись produ
   `6f3280535f5fd5bf543da3dba911825710ea73edb2a19b77b4fd4225fa2f02d6`;
 - simulator config SHA256:
   `e8d87869ff2fe7a0111d6d2c8e4394631e9dd5a8432299ea8a8527bdac09ea01`;
-- \(\mu_s=2.4\), \(\mu_d=2.0\), combine=`min`, patch friction, PCM;
+- $\mu_s=2.4$, $\mu_d=2.0$, combine=`min`, patch friction, PCM;
 - rigid contact, TGS, 64 position и 16 velocity iterations;
-- \(\delta_{\rm gate}=7.9342104\) mm,
-  \(d_c=\texttt{contact\_offset\_sum}=2.56\) mm,
-  \(s_{\rm sdf}=20\) mm;
+- $\delta_{\rm gate}=7.9342104$ mm,
+  $d_c=\texttt{contact\_offset\_sum}=2.56$ mm,
+  $s_{\rm sdf}=20$ mm;
 - actuator: force drive, position target,
-  \(K=14\), \(D=0.35\), \(\tau_{\max}=480\),
-  \(\dot r_{\max}=0.1\) rad/s;
+  $K=14$, $D=0.35$, $\tau_{\max}=480$,
+  $\dot r_{\max}=0.1$ rad/s;
 - settling: minimum 20, maximum 2400 control steps, 10 consecutive valid
   checks, thresholds 0.5 mm position delta, 0.01 m/s linear velocity,
   0.1 rad/s angular velocity и 0.01 rad/s joint velocity;
@@ -1624,9 +1624,9 @@ fail-fast ошибкой.
 объекте детерминированно выбрано 12 sustained-contact transitions: ровно по три
 из диапазонов
 
-\[
+$$
 [1,8],\quad[9,16],\quad[17,24],\quad[25,31].
-\]
+$$
 
 Итого выбрано 72 состояния. Для всех amplification-комбинаций валидны 71; один
 переход test-объекта `pechene-sdobnoe-...-46835` на позднем шаге не прошёл
@@ -1644,28 +1644,28 @@ bootstrap содержит 10 000 repetitions.
 1. **Слишком большой локальный gain модели.** Малое возмущение состояния может
    усиливаться learned map сильнее, чем реальным simulator transition:
 
-   \[
+   $$
    A_{model}>A_{sim}.
-   \]
+   $$
 
 2. **Малый, но ненулевой signed one-step bias.** Даже при хорошем среднем
-   one-step \(d_X\) ошибка одного знака может приблизительно суммироваться:
+   one-step $d_X$ ошибка одного знака может приблизительно суммироваться:
 
-   \[
+   $$
    b_k^{TF}\ne0,
    \qquad
    b_{32}^{AR}\approx\sum_{k=0}^{31}b_k^{TF}.
-   \]
+   $$
 
-3. **Недостаточность состояния \(x=(q,r)\).** При одинаковых наблюдаемых
-   \((q_k,r_k,\bar a_{k+1})\) следующий equilibrium может зависеть от скрытой
+3. **Недостаточность состояния $x=(q,r)$.** При одинаковых наблюдаемых
+   $(q_k,r_k,\bar a_{k+1})$ следующий equilibrium может зависеть от скрытой
    PhysX contact/solver history:
 
-   \[
+   $$
    F_{sim}(q_k,r_k,\bar a_{k+1};\,\mathcal H_1)
    \ne
    F_{sim}(q_k,r_k,\bar a_{k+1};\,\mathcal H_2).
-   \]
+   $$
 
 #### Какие checkpoints участвовали
 
@@ -1702,14 +1702,14 @@ increment, а actual aperture имеет ненулевой lag относите
 каждого объекта выбрано по три перехода в каждом из четырёх диапазонов шагов,
 то есть
 
-\[
+$$
 6\ \text{objects}\times4\ \text{bands}\times3\ \text{states}
 =72\ \text{states}.
-\]
+$$
 
 Начальная pose каждого выбранного trajectory бралась из сохранённого
 `source_pose_index`. Поэтому continuous branches воспроизводили всю closure
-history от открытого gripper до выбранного \(x_k\), а не начинались напрямую из
+history от открытого gripper до выбранного $x_k$, а не начинались напрямую из
 изолированного contact state.
 
 #### Какие simulator branches запускались
@@ -1718,24 +1718,24 @@ history от открытого gripper до выбранного \(x_k\), а н
 веток с одной исходной continuous history:
 
 1. `preserve` — untouched continuous replay;
-2. `repeat` — независимый untouched replay для \(A_{noise}\);
+2. `repeat` — независимый untouched replay для $A_{noise}$;
 3. `amplification_base` — состояние непосредственно перед increment точно
-   перезаписано в reference \(x_k\);
+   перезаписано в reference $x_k$;
 4. шесть perturbed branches: translation, rotation и joints при
-   \(\epsilon=0.005\) и \(0.01\).
+   $\epsilon=0.005$ и $0.01$.
 
 `amplification_base` и каждая perturbed branch получали одну и ту же следующую
-command \(\bar a_{k+1}\) и один production settling protocol. Поэтому
-\(A_{sim}\) сравнивает две ветки, которые перед command различаются только
-заданной \(\delta x\), тогда как `preserve`/`repeat` отдельно измеряют
+command $\bar a_{k+1}$ и один production settling protocol. Поэтому
+$A_{sim}$ сравнивает две ветки, которые перед command различаются только
+заданной $\delta x$, тогда как `preserve`/`repeat` отдельно измеряют
 вариативность непрерывного replay.
 
 Для Markov/history test дополнительно создавались четыре свежие сцены:
 
-- `fresh,cold-a` и `fresh,cold-b`: восстановить \((q_k,r_k)\), обнулить
-  velocities и сразу подать \(\bar a_{k+1}\);
-- `fresh,warm-a` и `fresh,warm-b`: восстановить \((q_k,r_k)\), сначала settle
-  на текущей command \(\bar a_k\), затем подать \(\bar a_{k+1}\).
+- `fresh,cold-a` и `fresh,cold-b`: восстановить $(q_k,r_k)$, обнулить
+  velocities и сразу подать $\bar a_{k+1}$;
+- `fresh,warm-a` и `fresh,warm-b`: восстановить $(q_k,r_k)$, сначала settle
+  на текущей command $\bar a_k$, затем подать $\bar a_{k+1}$.
 
 Пары `a/b` измеряли repeatability каждого reset protocol. Отдельно сохранялся
 drift состояния во время warm preconditioning.
@@ -1745,17 +1745,17 @@ drift состояния во время warm preconditioning.
 Signed-bias часть проходила по всем 600 val/test trajectories из HDF5. Для
 каждого из трёх seeds и каждого из 32 шагов выполнялись одновременно:
 
-- teacher-forced prediction из истинного \(x_k^*\);
+- teacher-forced prediction из истинного $x_k^*$;
 - полный autoregressive rollout без teacher forcing;
-- body-frame \(SE(3)\)-log ошибки;
+- body-frame $SE(3)$-log ошибки;
 - signed spatial translation в gripper frame.
 
 Таким образом, bias-оценка содержит
 
-\[
+$$
 3\ \text{seeds}\times600\ \text{trajectories}\times32\ \text{steps}
 =57\,600
-\]
+$$
 
 teacher-forced и столько же autoregressive pose comparisons для каждой
 диагностической model arm.
@@ -1763,7 +1763,7 @@ teacher-forced и столько же autoregressive pose comparisons для к�
 #### Что намеренно не менялось
 
 В ходе эксперимента не менялись dataset shards, object split, SDF, collision
-geometry, gripper FK, \(\delta_{gate}\), contact offset, material, settling,
+geometry, gripper FK, $\delta_{gate}$, contact offset, material, settling,
 actuator, contact cell, head, loss или model weights. Не запускались retrain,
 implicit solver, memory state и новые auxiliary losses. Поэтому результаты
 диагностируют composition текущего SRNO, а не смешивают её с очередной версией
@@ -1771,72 +1771,72 @@ physics или обучения.
 
 ### 19.3 Единая метрика и perturbations
 
-Для состояния \(x=(q,r)=(R,p,r)\) использовалась та же метрика, что и при
+Для состояния $x=(q,r)=(R,p,r)$ использовалась та же метрика, что и при
 обучении SRNO-r:
 
-\[
+$$
 d_X^2(x_1,x_2)=
 \frac{\|p_1-p_2\|_2^2}{L^2}
 +\theta(R_1,R_2)^2
 +\frac16\sum_{m=1}^{6}
 \left(\frac{r_{1,m}-r_{2,m}}{s_m}\right)^2.
-\]
+$$
 
 Раздельно вносились
 
-\[
+$$
 \delta x_p=(\delta p,0,0),\qquad
 \delta x_R=(0,\delta\omega,0),\qquad
 \delta x_r=(0,0,\delta r)
-\]
+$$
 
-с \(d_X(x+\delta x,x)\in\{0.005,0.01\}\). Для joints:
+с $d_X(x+\delta x,x)\in\{0.005,0.01\}$. Для joints:
 
-\[
+$$
 \delta r=\epsilon(s\odot u),\qquad
 \sqrt{\frac16\sum_m u_m^2}=1.
-\]
+$$
 
 Направление отражалось около фактических PhysX joint limits без clipping.
-Максимальное отклонение измеренного input \(d_X\) от цели составило
-\(2.60\cdot10^{-7}\) для rotation,
-\(9.02\cdot10^{-8}\) для translation и
-\(1.75\cdot10^{-8}\) для joints. Ни одна perturbation не вышла за joint limits.
+Максимальное отклонение измеренного input $d_X$ от цели составило
+$2.60\cdot10^{-7}$ для rotation,
+$9.02\cdot10^{-8}$ для translation и
+$1.75\cdot10^{-8}$ для joints. Ни одна perturbation не вышла за joint limits.
 
 ### 19.4 Model-vs-simulator amplification
 
 Измерялись
 
-\[
+$$
 A_{\rm model}=
 \frac{d_X(R_\theta(x+\delta x,\bar a_{k+1}),
 R_\theta(x,\bar a_{k+1}))}
 {d_X(x+\delta x,x)},
-\]
+$$
 
-\[
+$$
 A_{\rm sim}=
 \frac{d_X(F_{\rm sim}(x+\delta x,\bar a_{k+1}),
 F_{\rm sim}(x,\bar a_{k+1}))}
 {d_X(x+\delta x,x)},
-\]
+$$
 
-\[
+$$
 A_{\rm noise}=
 \frac{d_X(F_{\rm sim}^{(1)}(x),F_{\rm sim}^{(2)}(x))}
 {d_X(x+\delta x,x)}.
-\]
+$$
 
-Для \(A_{\rm sim}\) baseline и perturbed branch непосредственно перед следующей
-command записывались из одного exact \(x_k\). Две дополнительные untouched
-continuous-replay ветки независимо оценивали \(A_{\rm noise}\). Floor не
+Для $A_{\rm sim}$ baseline и perturbed branch непосредственно перед следующей
+command записывались из одного exact $x_k$. Две дополнительные untouched
+continuous-replay ветки независимо оценивали $A_{\rm noise}$. Floor не
 вычитался. Ни gate status, ни simulator contact count не переключились ни в
 одной из 426 валидных комбинаций state/type/scale.
 
 В таблице mean является equal-object mean; median, p90 и p95 рассчитаны по
 pooled samples. Model объединяет три production H32 seeds.
 
-| Perturbation | \(\epsilon\) | \(A_{model}\), mean / median / p90 / p95 | \(A_{sim}\), mean / median / p90 / p95 | \(A_{noise}\), mean / median / p90 / p95 |
+| Perturbation | $\epsilon$ | $A_{model}$, mean / median / p90 / p95 | $A_{sim}$, mean / median / p90 / p95 | $A_{noise}$, mean / median / p90 / p95 |
 |---|---:|---:|---:|---:|
 | translation | 0.005 | 0.9911 / 0.9972 / 1.0207 / 1.0408 | 5.0814 / 1.2650 / 3.7317 / 11.3690 | 6.9360 / 0.9091 / 9.1900 / 15.4747 |
 | translation | 0.010 | 0.9911 / 0.9976 / 1.0148 / 1.0316 | 2.1438 / 1.1398 / 3.5703 / 5.1218 | 3.4680 / 0.4545 / 4.5950 / 7.7374 |
@@ -1847,12 +1847,12 @@ pooled samples. Model объединяет три production H32 seeds.
 
 Формальный признак чрезмерной expansiveness был
 
-\[
+$$
 \operatorname{CI}_{95\%,low}
 \left[\mathbb E\log\frac{A_{\rm model}}{A_{\rm sim}}\right]>0.
-\]
+$$
 
-| Perturbation | \(\epsilon\) | all steps: mean log-ratio, 95% CI | steps 17--31: mean log-ratio, 95% CI | Excessive |
+| Perturbation | $\epsilon$ | all steps: mean log-ratio, 95% CI | steps 17--31: mean log-ratio, 95% CI | Excessive |
 |---|---:|---:|---:|---:|
 | translation | 0.005 | -0.2828, [-0.5005, -0.0729] | -0.4575, [-0.8591, -0.1043] | no |
 | translation | 0.010 | -0.2025, [-0.3755, -0.0264] | -0.4038, [-0.6413, -0.1519] | no |
@@ -1864,7 +1864,7 @@ pooled samples. Model объединяет три production H32 seeds.
 Следовательно, данных в пользу чрезмерной local expansiveness SRNO нет. Для
 translation cell почти сохраняет perturbation, для rotation имеет gain около
 единицы, а dependence следующего состояния от current joints почти подавлена.
-Однако \(A_{\rm noise}\) сопоставим с raw \(A_{\rm sim}\) и часто превосходит
+Однако $A_{\rm noise}$ сопоставим с raw $A_{\rm sim}$ и часто превосходит
 его. Поэтому simulator Jacobian в значительной части выборки noise-limited;
 таблица доказывает отсутствие заявленного model-over-simulator эффекта, но не
 даёт точной оценки физического amplification.
@@ -1873,58 +1873,58 @@ translation cell почти сохраняет perturbation, для rotation и�
 
 ### 19.5 Signed one-step и accumulated pose bias
 
-Диагностический \(SE(3)\)-log использует twist order \([v,\omega]\) и устойчивые
+Диагностический $SE(3)$-log использует twist order $[v,\omega]$ и устойчивые
 ряды около нуля. Teacher-forced error:
 
-\[
+$$
 e_k^{\rm TF}=
 \Log\!\left[(q_{k+1}^*)^{-1}
 R_\theta(x_k^*,\bar a_{k+1})_q\right]
 =\begin{bmatrix}v_k\\\omega_k\end{bmatrix},
 \qquad b_k^{\rm TF}=\mathbb E[e_k^{\rm TF}],
-\]
+$$
 
-\[
+$$
 B_K^{\rm TF}=\sum_{k=0}^{K-1}b_k^{\rm TF}.
-\]
+$$
 
 Для autoregressive rollout:
 
-\[
+$$
 b_k^{\rm AR}=\mathbb E\!\left[
 \Log((q_k^*)^{-1}\hat q_k)\right].
-\]
+$$
 
 Средняя по шагам норма signed mean one-step bias:
 
-| H32 checkpoint arm | \(\mathbb E_k\|b_{k,T}^{TF}\|\) | \(\mathbb E_k\|b_{k,R}^{TF}\|\) |
+| H32 checkpoint arm | $\mathbb E_k\|b_{k,T}^{TF}\|$ | $\mathbb E_k\|b_{k,R}^{TF}\|$ |
 |---|---:|---:|
 | production `aperture` | 0.13267 mm | 0.37851 mrad |
 | diagnostic `drive_error` | 0.11404 mm | 0.38759 mrad |
 
 Накопленный teacher-forced bias и фактический terminal AR bias:
 
-| Arm | \(B_{32,T}^{TF}\), mm | \(B_{32,R}^{TF}\), mrad | \(b_{32,T}^{AR}\), mm | \(b_{32,R}^{AR}\), mrad | cosine T / R |
+| Arm | $B_{32,T}^{TF}$, mm | $B_{32,R}^{TF}$, mrad | $b_{32,T}^{AR}$, mm | $b_{32,R}^{AR}$, mrad | cosine T / R |
 |---|---:|---:|---:|---:|---:|
 | `aperture` | [1.528, -0.043, 2.828] | [-1.320, 2.408, -0.786] | [0.691, 0.085, 2.552] | [-1.331, 2.014, -2.058] | 0.9724 / 0.9077 |
 | `drive_error` | [1.078, 0.004, 2.740] | [-1.368, 2.241, -1.995] | [0.762, 0.058, 2.621] | [-1.472, 1.789, -3.110] | 0.9956 / 0.9562 |
 
 95% hierarchical bootstrap CI для production cumulative translation равны
 
-\[
+$$
 B_{32,T}^{TF,aperture}:
 ([0.708,2.379],[-0.885,0.795],[1.962,3.729])\ {\rm mm},
-\]
+$$
 
 а для diagnostic control
 
-\[
+$$
 B_{32,T}^{TF,drive}:
 ([0.230,2.151],[-0.998,1.076],[1.373,4.107])\ {\rm mm}.
-\]
+$$
 
 Band-wise signed means ниже даны в порядке
-\([v_x,v_y,v_z,\omega_x,\omega_y,\omega_z]\), в mm/mrad на один шаг:
+$[v_x,v_y,v_z,\omega_x,\omega_y,\omega_z]$, в mm/mrad на один шаг:
 
 | Arm | Steps 1--8 | Steps 9--16 | Steps 17--24 | Steps 25--32 |
 |---|---:|---:|---:|---:|
@@ -1934,19 +1934,19 @@ Band-wise signed means ниже даны в порядке
 По строгому правилу одинакового знака с CI, не содержащим ноль, минимум в трёх
 из четырёх bands устойчивы:
 
-- production `aperture`: \(v_x>0\) и \(v_z>0\);
-- diagnostic `drive_error`: только \(v_z>0\).
+- production `aperture`: $v_x>0$ и $v_z>0$;
+- diagnostic `drive_error`: только $v_z>0$.
 
-Signed spatial translation \(\hat p-p^*\) в gripper frame также сохранена
+Signed spatial translation $\hat p-p^*$ в gripper frame также сохранена
 отдельно. Сумма её teacher-forced mean по 32 шагам равна
 [0.922, -0.677, -0.597] mm для `aperture` и
 [1.663, -2.743, -3.135] mm для `drive_error`. Отличие от body-frame
-\(SE(3)\)-log ожидаемо из-за изменения frame вдоль trajectories.
+$SE(3)$-log ожидаемо из-за изменения frame вдоль trajectories.
 
-Высокое совпадение направлений \(B_{32}^{TF}\) и \(b_{32}^{AR}\), особенно
-устойчивый положительный \(z\)-bias, показывает, что terminal drift в
+Высокое совпадение направлений $B_{32}^{TF}$ и $b_{32}^{AR}$, особенно
+устойчивый положительный $z$-bias, показывает, что terminal drift в
 существенной части согласуется с интегрированием малого систематического
-one-step pose bias. Простое улучшение aggregate one-step \(d_X\) этот signed
+one-step pose bias. Простое улучшение aggregate one-step $d_X$ этот signed
 bias не устранило.
 
 ![Signed and cumulative pose bias](../runs/contact-composition-diagnostics-v2/signed_pose_bias.png)
@@ -1955,59 +1955,59 @@ bias не устранило.
 
 На тех же состояниях сравнивались:
 
-\[
+$$
 D_{\rm cold}=d_X(x_{k+1}^{preserve},x_{k+1}^{fresh,cold}),
-\]
+$$
 
-\[
+$$
 D_{\rm warm}=d_X(x_{k+1}^{preserve},x_{k+1}^{fresh,warm}),
-\]
+$$
 
-\[
+$$
 D_{\rm precond}=d_X(x_k^{warm},x_k),
 \qquad
 E_{\rm local}^{drive}=d_X(R_\theta^{drive}(x_k),x_{k+1}^{preserve}).
-\]
+$$
 
-`cold` восстанавливает только \((q_k,r_k)\), обнуляет velocities и сразу подаёт
+`cold` восстанавливает только $(q_k,r_k)$, обнуляет velocities и сразу подаёт
 следующую command. `warm` сначала settles восстановленное состояние на текущей
 command, затем выполняет тот же increment. Preserve, cold и warm branches
 повторялись для оценки repeatability.
 
 Ниже equal-object means; translation дана в mm, rotation в mrad,
-\(J\) — joint RMSE, нормированный на travel:
+$J$ — joint RMSE, нормированный на travel:
 
-| Comparison | \(d_X\) | T, mm | R, mrad | J |
+| Comparison | $d_X$ | T, mm | R, mrad | J |
 |---|---:|---:|---:|---:|
 | untouched continuous repeat | 0.034680 | 2.9607 | 15.6471 | 0.005466 |
 | fresh cold | 0.014947 | 1.3106 | 6.5316 | 0.002938 |
 | fresh warm | 0.008767 | 0.5855 | 6.1205 | 0.002095 |
 | warm preconditioning drift | 0.005477 | 0.4004 | 3.3350 | 0.001800 |
-| cold repeatability | \(9.21\cdot10^{-8}\) | 0 | \(9.21\cdot10^{-5}\) | 0 |
-| warm repeatability | \(9.49\cdot10^{-8}\) | 0 | \(9.49\cdot10^{-5}\) | 0 |
+| cold repeatability | $9.21\cdot10^{-8}$ | 0 | $9.21\cdot10^{-5}$ | 0 |
+| warm repeatability | $9.49\cdot10^{-8}$ | 0 | $9.49\cdot10^{-5}$ | 0 |
 | local `aperture`, same samples, 3 seeds | 0.031388 | 1.0035 | 5.0293 | 0.028303 |
 | local `drive_error`, same samples, 3 seeds | 0.011100 | 0.7226 | 4.6388 | 0.006348 |
 
 Исходный масштаб history effect:
 
-\[
+$$
 \Gamma_{\rm history}
 =\frac{\mathbb E[D_{\rm warm}]}
 {\mathbb E[E_{\rm local}^{drive}]}
 =0.7898,
 \qquad95\%\ CI=[0.5232,1.0857].
-\]
+$$
 
 По заранее заданному правилу это формально `comparable`. Но untouched
 continuous replay сам имеет больший разброс. Поэтому дополнительно, без
 вычитания floor, вычислено
 
-\[
+$$
 \Gamma_{\rm warm/repeat}
 =\frac{\mathbb E[D_{\rm warm}]}{\mathbb E[D_{\rm repeat}]}
 =0.2528,
 \qquad95\%\ CI=[0.1344,0.8807].
-\]
+$$
 
 Даже верхняя граница CI меньше единицы. Следовательно, warm history discrepancy
 не разрешён над variability двух untouched continuous branches. Fresh cold и
@@ -2015,13 +2015,13 @@ warm branches внутри одинакового reset protocol почти де
 независимые continuous histories могут разойтись в чувствительном contact
 режиме. Корректный итог этого теста:
 
-\[
+$$
 \boxed{\text{Markov/history effect на этой выборке noise-limited, а не доказан}.}
-\]
+$$
 
-Нельзя на основании \(\Gamma_{history}\) вводить memory state или менять
-solver. При этом снижение \(D_{cold}\to D_{warm}\) и ненулевой
-\(D_{precond}\) подтверждают, что fresh preconditioning является необходимой
+Нельзя на основании $\Gamma_{history}$ вводить memory state или менять
+solver. При этом снижение $D_{cold}\to D_{warm}$ и ненулевой
+$D_{precond}$ подтверждают, что fresh preconditioning является необходимой
 частью корректного reset protocol.
 
 ![Preserve/fresh Markov distributions](../runs/contact-composition-diagnostics-v2/history_markov.png)
@@ -2033,7 +2033,7 @@ solver. При этом снижение \(D_{cold}\to D_{warm}\) и ненул�
    simulator по заданному CI-критерию; simulator amplification частично
    noise-limited.
 2. **Систематический signed pose bias подтверждён.** У production устойчивы
-   положительные \(v_x\) и \(v_z\), а направление накопленного TF bias хорошо
+   положительные $v_x$ и $v_z$, а направление накопленного TF bias хорошо
    совпадает с terminal AR drift. Это наиболее информативный найденный механизм
    composition defect.
 3. **Скрытая PhysX history не отделена от repeatability floor.** Warm discrepancy
@@ -2051,7 +2051,7 @@ solver. При этом снижение \(D_{cold}\to D_{warm}\) и ненул�
 - [`contact_composition_diagnostics.py`](../scripts/contact_composition_diagnostics.py)
   — объединённый headless runner;
 - [`test_contact_composition_diagnostics.py`](../tests/test_contact_composition_diagnostics.py)
-  — \(SE(3)\)-log, perturbation, amplification, selection и fail-fast tests.
+  — $SE(3)$-log, perturbation, amplification, selection и fail-fast tests.
 
 ## 20. No-retrain диагностика quasistatic refinement и split signed bias
 
@@ -2060,7 +2060,7 @@ solver. При этом снижение \(D_{cold}\to D_{warm}\) и ненул�
 Этот эксперимент проверяет две гипотезы до любых новых изменений SRNO:
 
 1. является ли simulator-defined closure map устойчивым к измельчению load
-   increments \(N=32\to64\to128\) и к более строгому settling;
+   increments $N=32\to64\to128$ и к более строгому settling;
 2. присутствует ли один и тот же signed one-step pose bias уже на train, либо он
    возникает только на unseen objects.
 
@@ -2082,17 +2082,17 @@ actuators и physics settings также не менялись.
 
 Во всех расчётах использовалась прежняя state metric
 
-\[
+$$
 d_X^2(x_1,x_2)=
 \frac{\|p_1-p_2\|^2}{L^2}
 +\theta(R_1,R_2)^2
 +\frac16\sum_{m=1}^{6}
 \left(\frac{r_{1,m}-r_{2,m}}{s_m}\right)^2,
-\]
+$$
 
-где \(p\) — translation объекта, \(R\) — его orientation,
-\(\theta(R_1,R_2)\) — geodesic rotation angle, \(r\in\mathbb R^6\) — actual
-joint configuration, \(s_m\) — travel range joint-а, \(L\) — gripper length
+где $p$ — translation объекта, $R$ — его orientation,
+$\theta(R_1,R_2)$ — geodesic rotation angle, $r\in\mathbb R^6$ — actual
+joint configuration, $s_m$ — travel range joint-а, $L$ — gripper length
 scale.
 
 ### 20.2 Simulator refinement: выборка и процедура
@@ -2108,25 +2108,25 @@ scale.
 
 Позы покрывают квартильные режимы contact onset и были предварительно
 отфильтрованы по object-wise p90 числа settling substeps. Для каждой позы
-состояние \((q_0,r_0)\) восстанавливалось независимо; максимальная фактическая
-ошибка восстановления составила \(4.88\cdot10^{-7}\) по \(d_X\).
+состояние $(q_0,r_0)$ восстанавливалось независимо; максимальная фактическая
+ошибка восстановления составила $4.88\cdot10^{-7}$ по $d_X$.
 
 Одна и та же continuous load path задавалась как
 
-\[
+$$
 \alpha_k=\frac{k}{N},\qquad
 \bar r(\alpha_k)=r_{open}+\alpha_k(r_{close}-r_{open}).
-\]
+$$
 
 Commanded aperture интерполировалась по исходным 33 knots. Поэтому общие точки
 
-\[
+$$
 \frac{k}{32}=\frac{2k}{64}=\frac{4k}{128}
-\]
+$$
 
-получали строго одинаковую command. Для каждого \(N\in\{32,64,128\}\)
+получали строго одинаковую command. Для каждого $N\in\{32,64,128\}$
 выполнено по две независимые repeat branches. Дополнительно выполнена одна
-ветка \(N=32\) со strict settling:
+ветка $N=32$ со strict settling:
 
 | Criterion | Production | Strict |
 |---|---:|---:|
@@ -2141,42 +2141,42 @@ Commanded aperture интерполировалась по исходным 33 k
 
 Основные refinement errors:
 
-\[
+$$
 E_{32,64}=\frac1{32}\sum_{k=1}^{32}
 d_X(x_k^{32},x_{2k}^{64}),
-\]
+$$
 
-\[
+$$
 E_{64,128}=\frac1{64}\sum_{k=1}^{64}
 d_X(x_k^{64},x_{2k}^{128}),
 \qquad
 \rho=\frac{E_{64,128}}{E_{32,64}}.
-\]
+$$
 
-Отдельно вычислялись repeatability floors для каждого \(N\) и
+Отдельно вычислялись repeatability floors для каждого $N$ и
 
-\[
+$$
 E_{settle}=\frac1{32}\sum_{k=1}^{32}
 d_X(x_k^{32,prod},x_k^{32,strict}).
-\]
+$$
 
 ### 20.3 Refinement results
 
-Ниже equal-object means. \(T\) дан в mm, \(R\) в mrad,
-\(J=\sqrt{\frac16\sum_m(\Delta r_m/s_m)^2}\).
+Ниже equal-object means. $T$ дан в mm, $R$ в mrad,
+$J=\sqrt{\frac16\sum_m(\Delta r_m/s_m)^2}$.
 
-| Comparison | mean \(d_X\) | T, mm | R, mrad | J | terminal \(d_X\) |
+| Comparison | mean $d_X$ | T, mm | R, mrad | J | terminal $d_X$ |
 |---|---:|---:|---:|---:|---:|
-| \(E_{32,64}\) | 0.091231 | 8.1416 | 35.4952 | 0.013228 | 0.525645 |
-| \(E_{64,128}\) | 0.087329 | 8.0818 | 31.6588 | 0.014084 | 0.387289 |
-| repeat \(N=32\) | 0.100319 | 9.3588 | 34.4870 | 0.013979 | 0.502419 |
-| repeat \(N=64\) | 0.054024 | 4.1781 | 32.3799 | 0.011129 | 0.219303 |
-| repeat \(N=128\) | 0.056721 | 4.9103 | 27.2520 | 0.010446 | 0.199071 |
-| production vs strict \(N=32\) | 0.070809 | 6.1107 | 36.9390 | 0.012583 | 0.271097 |
+| $E_{32,64}$ | 0.091231 | 8.1416 | 35.4952 | 0.013228 | 0.525645 |
+| $E_{64,128}$ | 0.087329 | 8.0818 | 31.6588 | 0.014084 | 0.387289 |
+| repeat $N=32$ | 0.100319 | 9.3588 | 34.4870 | 0.013979 | 0.502419 |
+| repeat $N=64$ | 0.054024 | 4.1781 | 32.3799 | 0.011129 | 0.219303 |
+| repeat $N=128$ | 0.056721 | 4.9103 | 27.2520 | 0.010446 | 0.199071 |
+| production vs strict $N=32$ | 0.070809 | 6.1107 | 36.9390 | 0.012583 | 0.271097 |
 
 Per-object refinement:
 
-| Split | \(E_{32,64}\) | \(E_{64,128}\) | \(\rho\) | \(E_{settle}\) |
+| Split | $E_{32,64}$ | $E_{64,128}$ | $\rho$ | $E_{settle}$ |
 |---|---:|---:|---:|---:|
 | train | 0.155284 | 0.156439 | 1.086887 | 0.095829 |
 | val | 0.059075 | 0.047042 | 0.796315 | 0.032466 |
@@ -2184,26 +2184,26 @@ Per-object refinement:
 
 Hierarchical bootstrap `object -> trajectory`, 10 000 repetitions, seed 0:
 
-\[
+$$
 \boxed{
 \rho=0.957232,
 \qquad95\%\ CI=[0.737004,1.259491].
 }
-\]
+$$
 
 Заранее заданные правила дают:
 
-- не `converged`: \(\rho>0.75\), а верхняя CI больше 1;
-- не `non-converged`: нижняя CI \(0.7370<0.75\);
+- не `converged`: $\rho>0.75$, а верхняя CI больше 1;
+- не `non-converged`: нижняя CI $0.7370<0.75$;
 - формально не `noise-limited`:
-  \(E_{64,128}=0.087329>1.5E_{repeat}=0.085082\), но превышение составляет
-  лишь \(0.002247\) по \(d_X\).
+  $E_{64,128}=0.087329>1.5E_{repeat}=0.085082$, но превышение составляет
+  лишь $0.002247$ по $d_X$.
 
 Поэтому строгая классификация refinement:
 
-\[
+$$
 \boxed{\texttt{inconclusive}.}
-\]
+$$
 
 Repeatability здесь того же порядка, что и refinement difference, и поэтому
 не позволяет уверенно измерить asymptotic convergence rate. Это не является
@@ -2211,12 +2211,12 @@ Repeatability здесь того же порядка, что и refinement diff
 
 Для settling получено
 
-\[
+$$
 \frac{E_{settle}}{E_{32,64}}=1.36906,
 \qquad95\%\ CI=[0.72789,2.36404].
-\]
+$$
 
-Но \(E_{settle}=0.070809<1.5E_{repeat}^{32}=0.150478\), поэтому по
+Но $E_{settle}=0.070809<1.5E_{repeat}^{32}=0.150478$, поэтому по
 предварительно зафиксированному правилу settling **не классифицирован как
 materially sensitive**.
 
@@ -2224,11 +2224,11 @@ materially sensitive**.
 
 | Paired curve | Valid / total state comparisons |
 |---|---:|
-| \(32\leftrightarrow64\) | 763 / 768 |
-| \(64\leftrightarrow128\) | 1524 / 1536 |
-| repeat \(N=32\) | 384 / 384 |
-| repeat \(N=64\) | 758 / 768 |
-| repeat \(N=128\) | 1513 / 1536 |
+| $32\leftrightarrow64$ | 763 / 768 |
+| $64\leftrightarrow128$ | 1524 / 1536 |
+| repeat $N=32$ | 384 / 384 |
+| repeat $N=64$ | 758 / 768 |
+| repeat $N=128$ | 1513 / 1536 |
 | production vs strict | 346 / 384 |
 
 Неполные trajectories не заполнялись искусственно: их masks сохранены, а
@@ -2247,29 +2247,29 @@ one-step comparisons для TF и столько же состояний для 
 
 Teacher-forced signed pose error определён как
 
-\[
+$$
 e_k^{TF}=
 \Log\!\left[(q_{k+1}^*)^{-1}
 R_\theta(x_k^*,\bar a_{k+1})_q\right]
 =\begin{bmatrix}v_k\\\omega_k\end{bmatrix},
-\]
+$$
 
-\[
+$$
 b_{S,k}^{TF}=\mathbb E_S[e_k^{TF}],
 \qquad
 B_{S,32}^{TF}=\sum_{k=0}^{31}b_{S,k}^{TF},
 \quad S\in\{train,val,test\}.
-\]
+$$
 
 Autoregressive control:
 
-\[
+$$
 b_{S,k}^{AR}=\mathbb E_S\left[
 \Log((q_k^*)^{-1}\hat q_k)\right].
-\]
+$$
 
 Ниже signed band means в порядке
-\([v_x,v_y,v_z,\omega_x,\omega_y,\omega_z]\), в mm/mrad **на один шаг**.
+$[v_x,v_y,v_z,\omega_x,\omega_y,\omega_z]$, в mm/mrad **на один шаг**.
 
 | Split | Steps 1--8 | Steps 9--16 | Steps 17--24 | Steps 25--32 |
 |---|---:|---:|---:|---:|
@@ -2279,7 +2279,7 @@ b_{S,k}^{AR}=\mathbb E_S\left[
 
 Накопленный TF bias и фактический terminal AR bias:
 
-| Split | \(B_{32,T}^{TF}\), mm | \(B_{32,R}^{TF}\), mrad | \(b_{32,T}^{AR}\), mm | \(b_{32,R}^{AR}\), mrad |
+| Split | $B_{32,T}^{TF}$, mm | $B_{32,R}^{TF}$, mrad | $b_{32,T}^{AR}$, mm | $b_{32,R}^{AR}$, mrad |
 |---|---:|---:|---:|---:|
 | train | [0.740, -0.605, 5.145] | [0.349, 1.461, -0.244] | [0.588, -0.406, 4.949] | [0.260, 1.249, -0.058] |
 | val | [0.947, -0.265, 2.093] | [-1.537, 5.615, -0.589] | [0.619, -0.021, 1.695] | [-1.177, 4.864, -0.767] |
@@ -2289,33 +2289,33 @@ Hierarchical bootstrap `model seed -> object -> trajectory`, 10 000
 repetitions, показывает устойчивые компоненты — CI одного знака минимум в трёх
 из четырёх step bands:
 
-- train: \(v_z>0\);
-- validation: \(v_z>0\);
-- test: \(v_x>0\) и \(v_z>0\).
+- train: $v_z>0$;
+- validation: $v_z>0$;
+- test: $v_x>0$ и $v_z>0$.
 
-Для общей компоненты \(v_z\) cumulative estimates и 95% CI:
+Для общей компоненты $v_z$ cumulative estimates и 95% CI:
 
-\[
+$$
 B_{train,32,v_z}^{TF}=5.145\ [3.957,6.424]\ {\rm mm},
-\]
+$$
 
-\[
+$$
 B_{val,32,v_z}^{TF}=2.093\ [0.830,3.440]\ {\rm mm},
-\]
+$$
 
-\[
+$$
 B_{test,32,v_z}^{TF}=3.566\ [2.386,4.965]\ {\rm mm}.
-\]
+$$
 
 На test дополнительно
 
-\[
+$$
 B_{test,32,v_x}^{TF}=2.115\ [0.276,3.941]\ {\rm mm}.
-\]
+$$
 
-Следовательно, положительный \(v_z\)-bias не является только unseen-object
+Следовательно, положительный $v_z$-bias не является только unseen-object
 generalization effect: он уже присутствует на train и затем наблюдается на val
-и test. Направление terminal AR \(v_z\) совпадает с accumulated TF bias на всех
+и test. Направление terminal AR $v_z$ совпадает с accumulated TF bias на всех
 трёх split-ах.
 
 ![Split signed bias](../runs/quasistatic-refinement-bias-v1/split_signed_bias.png)
@@ -2327,15 +2327,15 @@ generalization effect: он уже присутствует на train и зат
 1. refinement не классифицирован ни как converged, ни как non-converged, а
    оказался около repeatability floor;
 2. settling sensitivity поверх repeatability floor не подтверждена;
-3. общий train/val/test \(v_z>0\) signed bias подтверждён;
+3. общий train/val/test $v_z>0$ signed bias подтверждён;
 4. однако ветка `explicit_update_law_candidate` разрешена только после
    подтверждённого convergence refinement.
 
 Поэтому итог остаётся
 
-\[
+$$
 \boxed{\texttt{inconclusive}.}
-\]
+$$
 
 Данные совместимы с гипотезой систематического defect explicit update law, но
 данный эксперимент не отделил её от simulator repeatability/discretization с
@@ -2362,25 +2362,25 @@ generalization effect: он уже присутствует на train и зат
 Предыдущая диагностика измеряла signed teacher-forced bias только после H32
 rollout training. Поэтому оставались две причины:
 
-\[
+$$
 \text{bias локального learned operator}
 \quad\text{или}\quad
 \text{bias, внесённый rollout fine-tuning}.
-\]
+$$
 
 Чтобы разделить их без retrain, для каждого seed сравнивались соответствующие
 frozen checkpoints:
 
-\[
+$$
 \theta_{local}
 =\texttt{runs/ablation-jq-local/baseline/seed-\{0,1,2\}/best-local.pt},
-\]
+$$
 
-\[
+$$
 \theta_{H32}
 =\texttt{runs/ablation-actuator-rollout/aperture/seed-\{0,1,2\}/}
 \texttt{best-rollout-h32.pt}.
-\]
+$$
 
 Обе руки имеют `contact_features=gap`,
 `global_conditioning=aperture`, одинаковые architecture, manifest, gripper и
@@ -2393,7 +2393,7 @@ Runner проверил hashes, stages, horizon и sample ordering. Никако
 На одних и тех же 2 800 trajectories — 2 200 train, 300 validation и 300 test —
 для трёх seeds вычислялось
 
-\[
+$$
 e_k^{TF}(\theta)
 =
 \Log\!\left[
@@ -2401,23 +2401,23 @@ e_k^{TF}(\theta)
 R_\theta(x_k^*,\bar a_{k+1})_q
 \right]
 =\begin{bmatrix}v_k\\\omega_k\end{bmatrix},
-\]
+$$
 
-\[
+$$
 b_{S,k}^{TF}(\theta)=\mathbb E_S[e_k^{TF}(\theta)],
 \qquad
 B_{S,32}^{TF}(\theta)=\sum_{k=0}^{31}b_{S,k}^{TF}(\theta).
-\]
+$$
 
 Главная paired величина:
 
-\[
+$$
 \boxed{
 \Delta B_{S,32,z}^{TF}
 =B_{S,32,z}^{TF}(\theta_{H32})
 -B_{S,32,z}^{TF}(\theta_{local}).
 }
-\]
+$$
 
 Для local, H32 и их paired difference использован hierarchical bootstrap
 `model seed -> object -> trajectory`, 10 000 repetitions, seed 0. Pairing
@@ -2427,7 +2427,7 @@ B_{S,32}^{TF}(\theta)=\sum_{k=0}^{31}b_{S,k}^{TF}(\theta).
 
 Все значения ниже в mm; в скобках дана 95% bootstrap CI.
 
-| Split | \(B_{32,z}^{TF}(local)\) | \(B_{32,z}^{TF}(H32)\) | \(\Delta B_{32,z}^{TF}=H32-local\) | Вывод |
+| Split | $B_{32,z}^{TF}(local)$ | $B_{32,z}^{TF}(H32)$ | $\Delta B_{32,z}^{TF}=H32-local$ | Вывод |
 |---|---:|---:|---:|---|
 | train | 2.377 [1.243, 3.640] | 5.145 [3.953, 6.481] | **+2.768 [2.059, 3.618]** | bias уже есть в local и усиливается rollout |
 | val | 0.160 [-1.280, 1.601] | 2.093 [0.817, 3.473] | **+1.932 [1.106, 2.814]** | bias создаётся rollout training |
@@ -2435,17 +2435,17 @@ B_{S,32}^{TF}(\theta)=\sum_{k=0}^{31}b_{S,k}^{TF}(\theta).
 
 По seeds результат однороден:
 
-| Split | Local \(B_{32,z}^{TF}\), mm, seeds 0/1/2 | H32 \(B_{32,z}^{TF}\), mm, seeds 0/1/2 |
+| Split | Local $B_{32,z}^{TF}$, mm, seeds 0/1/2 | H32 $B_{32,z}^{TF}$, mm, seeds 0/1/2 |
 |---|---:|---:|
 | train | [2.551, 2.544, 2.036] | [4.799, 4.961, 5.674] |
 | val | [0.160, 0.211, 0.110] | [1.849, 2.056, 2.372] |
 | test | [-0.338, -0.268, 0.067] | [3.369, 3.110, 4.219] |
 
-Rollout increment объясняет 53.8% итогового H32 \(z\)-bias на train, 92.3% на
+Rollout increment объясняет 53.8% итогового H32 $z$-bias на train, 92.3% на
 validation и 105.0% на test; значение выше 100% на test возникает потому, что
 local mean слегка отрицателен.
 
-Band-wise \(v_z\) в mm на один шаг показывает, где появляется отличие:
+Band-wise $v_z$ в mm на один шаг показывает, где появляется отличие:
 
 | Split/arm | Steps 1--8 | Steps 9--16 | Steps 17--24 | Steps 25--32 |
 |---|---:|---:|---:|---:|
@@ -2461,7 +2461,7 @@ Band-wise \(v_z\) в mm на один шаг показывает, где поя
 
 То есть rollout fine-tuning не просто добавляет constant offset: на всех split
 он сдвигает поздние contact increments, особенно steps 17--32, в устойчивое
-положительное \(v_z\)-направление.
+положительное $v_z$-направление.
 
 ![Frozen local vs H32 signed bias](../runs/local-vs-h32-signed-bias-v1/local_vs_h32_signed_bias.png)
 
@@ -2469,44 +2469,44 @@ Band-wise \(v_z\) в mm на один шаг показывает, где поя
 
 Идеальная бинарная картина из гипотезы выполняется на validation и test:
 
-\[
+$$
 B_{32,z}^{TF}(local)\approx0,
 \qquad
 B_{32,z}^{TF}(H32)>0,
 \qquad
 \Delta B_{32,z}^{TF}>0.
-\]
+$$
 
 На train local checkpoint уже имеет подтверждённый положительный bias. Поэтому
 архитектурный/local-objective источник полностью исключить нельзя. Однако
 paired increment rollout training строго положителен на **каждом** split и
 примерно удваивает train bias:
 
-\[
+$$
 2.377\ {\rm mm}\longrightarrow5.145\ {\rm mm}.
-\]
+$$
 
 Следовательно, наиболее точный итог:
 
-\[
+$$
 \boxed{
 \text{local train bias существует, но rollout fine-tuning является}
 \atop
 \text{доказанным причинным источником большей части H32 signed drift.}
 }
-\]
+$$
 
 Это даёт основание первым следующим обучающим ablation проверять local
 anchoring
 
-\[
+$$
 \mathcal L=\mathcal L_{AR}+\lambda_{TF}\mathcal L_{TF},
 \qquad
 \mathcal L_{TF}=\frac1N\sum_{k=0}^{N-1}
 d_X^2\!\left(
 R_\theta(x_k^*,\bar a_{k+1}),x_{k+1}^*
 \right),
-\]
+$$
 
 а не начинать с полной смены архитектуры. В рамках данного теста этот loss не
 добавлялся и retrain не выполнялся.
@@ -2535,35 +2535,35 @@ frozen local initialization не менялись. Эксперимент вып
 
 Для каждого допустимого triplet
 
-\[
+$$
 x_{k-1}^*\longrightarrow x_k^*\longrightarrow x_{k+1}^*
-\]
+$$
 
 считались две обучаемые ветки. Обычная local-ветка:
 
-\[
+$$
 \hat x_{k+1}^{\rm loc}
 =R_\theta(x_k^*,\bar a_{k+1},\phi).
-\]
+$$
 
 Pushforward-ветка сначала строила model-induced вход с остановленным
 градиентом:
 
-\[
+$$
 \tilde x_k
 =\operatorname{sg}\!\left[
 R_\theta(x_{k-1}^*,\bar a_k,\phi)
 \right],
-\]
+$$
 
-\[
+$$
 \hat x_{k+1}^{\rm PF}
 =R_\theta(\tilde x_k,\bar a_{k+1},\phi).
-\]
+$$
 
 Итоговый objective:
 
-\[
+$$
 \boxed{
 \mathcal L
 =\mathcal L_{\rm loc}
@@ -2571,25 +2571,25 @@ R_\theta(x_{k-1}^*,\bar a_k,\phi)
 +\lambda_K\mathcal L_K,
 \qquad \lambda_{\rm PF}=\lambda_K=1.
 }
-\]
+$$
 
 Градиент проходил через local-вызов и второй PF-вызов, но не через вызов,
-создающий \(\tilde x_k\). В отличие от прежнего H4--H32 BPTT, это был только
+создающий $\tilde x_k$. В отличие от прежнего H4--H32 BPTT, это был только
 двухшаговый training signal; autoregressive rollout не использовался для
 model selection. Best checkpoint выбирался по
 
-\[
+$$
 m_{val}=\frac12\left(
 \mathbb E[d_X^{\rm loc}]
 +\mathbb E[d_X^{\rm PF}]
 \right).
-\]
+$$
 
 ### 22.2 Local и pushforward validation
 
 На полном active validation set:
 
-| Модель | Local \(d_X\) | PF \(d_X\) | \(m_{val}\) |
+| Модель | Local $d_X$ | PF $d_X$ | $m_{val}$ |
 |---|---:|---:|---:|
 | frozen local | 0.031132 | 0.037858 | 0.034495 |
 | detached PF | **0.030018** | **0.036752** | **0.033385** |
@@ -2603,7 +2603,7 @@ One-step validation улучшился на 3.58%, то есть огранич�
 После обучения три checkpoints — frozen local, прежний unconstrained H32 BPTT
 и detached PF — были применены autoregressively на одинаковых trajectories.
 
-| Модель | Train terminal \(d_X\) | Val terminal \(d_X\) | Test terminal \(d_X\) |
+| Модель | Train terminal $d_X$ | Val terminal $d_X$ | Test terminal $d_X$ |
 |---|---:|---:|---:|
 | frozen local | 0.313571 | 0.234227 | 0.263065 |
 | old unconstrained BPTT | **0.276592** | **0.171675** | **0.204097** |
@@ -2620,17 +2620,17 @@ Test terminal decomposition:
 Paired hierarchical bootstrap по object и trajectory для единственного seed
 дал:
 
-\[
+$$
 E_{test}^{PF}-E_{test}^{local}
 =-0.007901,
 \qquad 95\%\ {\rm CI}=[-0.017557,-0.001483],
-\]
+$$
 
-\[
+$$
 E_{test}^{PF}-E_{test}^{old\ BPTT}
 =+0.051067,
 \qquad 95\%\ {\rm CI}=[0.030362,0.072249].
-\]
+$$
 
 Таким образом, detached PF статистически улучшил frozen local, но остался
 существенно хуже полного BPTT.
@@ -2639,13 +2639,13 @@ E_{test}^{PF}-E_{test}^{old\ BPTT}
 
 Для вертикальной accumulated teacher-forced компоненты
 
-\[
+$$
 B_{32,z}^{TF}
 =\sum_{k=0}^{31}\mathbb E\!\left[
 \Log\!\left((q_{k+1}^*)^{-1}
 R_\theta(x_k^*,\bar a_{k+1})_q\right)_z
 \right]
-\]
+$$
 
 получены значения в mm:
 
@@ -2671,55 +2671,55 @@ raw samples: [`samples.npz`](../runs/ablation-pushforward-stopgrad/samples.npz).
 
 Следующий эксперимент вернул полный differentiable curriculum
 
-\[
+$$
 H4\longrightarrow H8\longrightarrow H16\longrightarrow H32,
-\]
+$$
 
 но ограничил функциональное отклонение fine-tuned operator от исходного
-frozen local operator \(R_{\theta_0}\) на реальных teacher-forced contact
+frozen local operator $R_{\theta_0}$ на реальных teacher-forced contact
 states:
 
-\[
+$$
 D_{\rm loc}(\theta)
 =\mathbb E_{(x_k^*,\bar a_{k+1})}
 d_X^2\!\left(
 R_\theta(x_k^*,\bar a_{k+1}),
 \operatorname{sg}[R_{\theta_0}(x_k^*,\bar a_{k+1})]
 \right).
-\]
+$$
 
 Заранее, до test evaluation, был зафиксирован радиус material-v2 simulator
 floor:
 
-\[
+$$
 \boxed{
 D_{\rm loc}\le\varepsilon^2,
 \qquad
 \varepsilon=0.0029910004.
 }
-\]
+$$
 
-Пусть \(c=D_{\rm loc}-\varepsilon^2\). Training objective имел вид
+Пусть $c=D_{\rm loc}-\varepsilon^2$. Training objective имел вид
 
-\[
+$$
 \mathcal L
 =\mathcal L_{\rm rollout}
 +\lambda_K\mathcal L_K
 +\Psi(c;\mu,\rho),
-\]
+$$
 
 где использовался projected Hestenes--Powell--Rockafellar term
 
-\[
+$$
 \Psi(c;\mu,\rho)
 =\frac{\max(0,\mu+\rho c)^2-\mu^2}{2\rho},
-\]
+$$
 
-\[
+$$
 \mu\leftarrow\max(0,\mu+\rho c),
 \qquad
 \rho=\varepsilon^{-2}=111780.758.
-\]
+$$
 
 Ограничение пересчитывалось точно по всем 62 231 active train transitions
 после каждой эпохи. Архитектура, `gap + aperture`, material-v2 data, SDF, FK,
@@ -2728,7 +2728,7 @@ seed 0 из того же frozen local checkpoint, что и раздел 22.
 
 ### 23.2 Результаты curriculum и допустимость
 
-| Horizon | Val terminal \(d_X\) | \(D_{\rm loc}/\varepsilon^2\) | Выбранный checkpoint |
+| Horizon | Val terminal $d_X$ | $D_{\rm loc}/\varepsilon^2$ | Выбранный checkpoint |
 |---:|---:|---:|---|
 | H4 | 0.015226 | 0.9749 | допустимый H4 update |
 | H8 | 0.034694 | 0.8913 | допустимый H8 update |
@@ -2741,7 +2741,7 @@ Curriculum был выполнен полностью, но ни один улу
 
 ### 23.3 Сравнение с frozen local и старым BPTT
 
-| Модель | Val terminal \(d_X\) | Test terminal \(d_X\) |
+| Модель | Val terminal $d_X$ | Test terminal $d_X$ |
 |---|---:|---:|
 | frozen local | 0.234227 | 0.263065 |
 | old unconstrained BPTT | **0.171675** | **0.204097** |
@@ -2749,12 +2749,12 @@ Curriculum был выполнен полностью, но ни один улу
 
 Trust-region улучшил test относительно frozen local только на
 
-\[
+$$
 0.263065-0.262169=0.000896\quad (0.34\%),
-\]
+$$
 
-но оказался хуже old BPTT на \(0.058072\). На validation он ухудшил frozen
-local на \(0.001925\).
+но оказался хуже old BPTT на $0.058072$. На validation он ухудшил frozen
+local на $0.001925$.
 
 Test terminal components:
 
@@ -2766,7 +2766,7 @@ Test terminal components:
 
 ### 23.4 Signed bias и итог
 
-Для той же величины \(B_{32,z}^{TF}\) из раздела 22 получено, mm:
+Для той же величины $B_{32,z}^{TF}$ из раздела 22 получено, mm:
 
 | Модель | Train | Val | Test |
 |---|---:|---:|---:|
@@ -2775,21 +2775,21 @@ Test terminal components:
 | trust-region BPTT | 2.713 | 0.209 | -0.499 |
 
 Относительно frozen local trust-region изменил signed bias лишь на
-\(+0.048\) mm на validation и \(-0.162\) mm на test, тогда как old BPTT
-изменил его на \(+1.689\) и \(+3.707\) mm соответственно.
+$+0.048$ mm на validation и $-0.162$ mm на test, тогда как old BPTT
+изменил его на $+1.689$ и $+3.707$ mm соответственно.
 
 Эксперимент показал явный trade-off:
 
-\[
+$$
 \boxed{
 \text{радиус simulator floor сохраняет local resolvent и signed bias,}
 \atop
 \text{но блокирует почти всё полезное H16--H32 улучшение.}
 }
-\]
+$$
 
 Следовательно, большой H32 gain старого BPTT достигается за пределами
-\(D_{\rm loc}\le\varepsilon^2\). На одном seed нельзя делать межseedовый
+$D_{\rm loc}\le\varepsilon^2$. На одном seed нельзя делать межseedовый
 статистический вывод, однако training dynamics однозначно показывает, что
 выбранный физически малый радиус слишком строг для long-horizon adaptation.
 
@@ -2808,89 +2808,89 @@ samples: [`samples.npz`](../runs/ablation-local-trust-region/seed-0/samples.npz)
 В этом ablation архитектура `gap + aperture`, material-v2 dataset, SDF, FK,
 contact gate, state/feasibility losses, optimizer и differentiable curriculum
 
-\[
+$$
 H4\longrightarrow H8\longrightarrow H16\longrightarrow H32
-\]
+$$
 
 не менялись. Единственным изменением стало определение trust-region
 constraint. В разделе 23 ограничивалось расстояние до выхода frozen local
 operator. Теперь frozen-output cache вообще не строился, а использовалась
 ошибка относительно настоящего simulator successor:
 
-\[
+$$
 L_{\rm phys}(\theta)
 =\mathbb E_{\mathcal A_{\rm train}}
 d_X^2\!\left(
 R_\theta(x_k^*,u_{k+1}),x_{k+1}^*
 \right),
-\]
+$$
 
-\[
+$$
 d_X^2=
 \frac{\|\Delta p\|^2}{L^2}
 +\theta(R,R^*)^2
 +\frac16\sum_{m=1}^6
 \left(\frac{\Delta r_m}{s_m}\right)^2,
-\]
+$$
 
-\[
+$$
 \boxed{
 c(\theta)=L_{\rm phys}(\theta)-L_{\rm phys}(\theta_0)\le0.
 }
-\]
+$$
 
-Здесь \(\mathcal A_{\rm train}\) — полный набор из 62 231 active train
-transitions, \(L\) — gripper length scale, \(s_m\) — travel range joint
-\(m\), а \(\theta_0\) — один и тот же frozen local seed-0 checkpoint.
-Feasibility не входит в \(L_{\rm phys}\), но остаётся в исходном rollout
+Здесь $\mathcal A_{\rm train}$ — полный набор из 62 231 active train
+transitions, $L$ — gripper length scale, $s_m$ — travel range joint
+$m$, а $\theta_0$ — один и тот же frozen local seed-0 checkpoint.
+Feasibility не входит в $L_{\rm phys}$, но остаётся в исходном rollout
 objective.
 
 Использован тот же projected Hestenes--Powell--Rockafellar term:
 
-\[
+$$
 \mathcal L
 =\mathcal L_{\rm rollout}+\lambda_K\mathcal L_K
 +\Psi(c;\mu,\rho),
-\]
+$$
 
-\[
+$$
 \Psi(c;\mu,\rho)
 =\frac{\max(0,\mu+\rho c)^2-\mu^2}{2\rho},
 \qquad
 \mu\leftarrow\max(0,\mu+\rho c).
-\]
+$$
 
 Scale-aware coefficient вычислен из baseline:
 
-\[
+$$
 L_{\rm phys}(\theta_0)=0.00376753082,
 \qquad
 \rho=L_{\rm phys}(\theta_0)^{-1}=265.425831.
-\]
+$$
 
 Baseline decomposition:
 
-| Train component of \(d_X^2\) | Frozen local \(\theta_0\) |
+| Train component of $d_X^2$ | Frozen local $\theta_0$ |
 |---|---:|
 | Translation | 0.001922173 |
 | Rotation | 0.000486931 |
 | Joints | 0.001358426 |
-| **Total \(L_{\rm phys}\)** | **0.003767531** |
+| **Total $L_{\rm phys}$** | **0.003767531** |
 
 После каждой эпохи constraint пересчитывался sample-weighted по всем 62 231
 active train transitions. Checkpoint считался допустимым при
 
-\[
+$$
 L_{\rm phys}(\theta)\le L_{\rm phys}(\theta_0)+10^{-8};
-\]
+$$
 
-среди допустимых выбирался только минимальный validation terminal \(d_X\).
+среди допустимых выбирался только минимальный validation terminal $d_X$.
 Test split в model selection не использовался. Выполнен один заранее
 зафиксированный run, seed 0; control arms не переобучались.
 
 ### 24.2 Curriculum и активность ограничения
 
-| Horizon | Best epoch | Val terminal \(d_X\) | \(L_{\rm phys}/L_{\rm phys}(\theta_0)\) |
+| Horizon | Best epoch | Val terminal $d_X$ | $L_{\rm phys}/L_{\rm phys}(\theta_0)$ |
 |---:|---:|---:|---:|
 | H4 | 0 | 0.015003 | 0.972815 |
 | H8 | 31 | 0.032924 | 0.952550 |
@@ -2899,27 +2899,27 @@ Test split в model selection не использовался. Выполнен 
 
 В отличие от frozen-output trust region из раздела 23, новый constraint не
 заблокировал H16--H32 adaptation. Во время обучения он был активен: отдельные
-epochs давали \(L_{\rm phys}/L_0>1\), после чего возрастал multiplier
-\(\mu\). Однако выбранный H32 checkpoint оказался строго допустимым:
+epochs давали $L_{\rm phys}/L_0>1$, после чего возрастал multiplier
+$\mu$. Однако выбранный H32 checkpoint оказался строго допустимым:
 
-\[
+$$
 L_{\rm phys}^{\rm new,train}=0.003504420
 =0.930164\,L_{\rm phys}(\theta_0).
-\]
+$$
 
-Это улучшение aggregate train one-step loss на \(6.98\%\) относительно local
-и на \(2.17\%\) относительно old unconstrained BPTT. Следовательно, финальный
+Это улучшение aggregate train one-step loss на $6.98\%$ относительно local
+и на $2.17\%$ относительно old unconstrained BPTT. Следовательно, финальный
 constraint не был активной границей, но изменил траекторию оптимизации.
 
 ![Physical one-step trust training](../runs/ablation-physical-one-step-trust/seed-0/physical_one_step_trust_training.png)
 
 ### 24.3 True one-step error на полных active splits
 
-В таблице \(T,R,J\) — соответственно translation, rotation и joint слагаемые
-в \(d_X^2\), а `mean` — \(\mathbb E[d_X]\), не
-\(\sqrt{\mathbb E[d_X^2]}\).
+В таблице $T,R,J$ — соответственно translation, rotation и joint слагаемые
+в $d_X^2$, а `mean` — $\mathbb E[d_X]$, не
+$\sqrt{\mathbb E[d_X^2]}$.
 
-| Model | Split | Transitions | \(L_{\rm phys}=\mathbb E[d_X^2]\) | mean \(d_X\) | \(T\) | \(R\) | \(J\) |
+| Model | Split | Transitions | $L_{\rm phys}=\mathbb E[d_X^2]$ | mean $d_X$ | $T$ | $R$ | $J$ |
 |---|---|---:|---:|---:|---:|---:|---:|
 | frozen local | train | 62 231 | 0.003767531 | 0.035737 | 0.001922173 | 0.000486931 | 0.001358426 |
 | frozen local | val | 9 168 | 0.001758599 | 0.031132 | 0.000309485 | 0.000159592 | 0.001289523 |
@@ -2942,10 +2942,10 @@ train, validation и test. Но преимущество над old BPTT сно�
 
 Полная inference выполнена на 2 800 trajectories: 2 200 train, 300 validation
 и 300 test. Значения checkpoint selection и повторной full inference могут
-различаться на \(10^{-5}\) из-за порядка batch accumulation; для дальнейшего
+различаться на $10^{-5}$ из-за порядка batch accumulation; для дальнейшего
 сравнения используются full-inference числа.
 
-| Model | Val terminal \(d_X\) | Test terminal \(d_X\) |
+| Model | Val terminal $d_X$ | Test terminal $d_X$ |
 |---|---:|---:|
 | frozen local | 0.234227 | 0.263065 |
 | old unconstrained BPTT | **0.171675** | **0.204097** |
@@ -2961,24 +2961,24 @@ Test terminal decomposition:
 | frozen-output trust | 23.997 | 0.104732 | 0.079991 | 3.334 | **16.266** |
 | physical-error trust | 17.127 | 0.103232 | 0.076356 | 3.960 | 17.782 |
 
-Paired object \(\to\) trajectory bootstrap, 10 000 repetitions, seed 0:
+Paired object $\to$ trajectory bootstrap, 10 000 repetitions, seed 0:
 
-\[
+$$
 E_{test}^{new}-E_{test}^{local}
 =-0.052510,
 \qquad
 95\%\ {\rm CI}=[-0.087362,-0.025113],
-\]
+$$
 
-\[
+$$
 E_{test}^{new}-E_{test}^{old\ BPTT}
 =+0.006458,
 \qquad
 95\%\ {\rm CI}=[+0.000646,+0.011715].
-\]
+$$
 
 Таким образом, gain над frozen local статистически подтверждён и составляет
-\(19.96\%\), но новый вариант статистически хуже old BPTT на \(3.16\%\).
+$19.96\%$, но новый вариант статистически хуже old BPTT на $3.16\%$.
 Результат одинаков по знаку на каждом из трёх unseen test objects:
 
 | Test object | New - local | New - old BPTT |
@@ -2991,19 +2991,19 @@ E_{test}^{new}-E_{test}^{old\ BPTT}
 
 Критическая величина оставалась той же:
 
-\[
+$$
 B_{32}^{TF}
 =\sum_{k=0}^{31}\mathbb E\!\left[
 \Log\!\left((q_{k+1}^*)^{-1}
 R_\theta(x_k^*,u_{k+1})_q\right)
 \right],
-\]
+$$
 
-где первые три компоненты \([v_x,v_y,v_z]\) измеряются в метрах, а последние
-\([\omega_x,\omega_y,\omega_z]\) — в радианах. Для наиболее устойчивой
+где первые три компоненты $[v_x,v_y,v_z]$ измеряются в метрах, а последние
+$[\omega_x,\omega_y,\omega_z]$ — в радианах. Для наиболее устойчивой
 вертикальной компоненты получено:
 
-| Model | Train \(B_{32,z}^{TF}\), mm | Val, mm | Test, mm |
+| Model | Train $B_{32,z}^{TF}$, mm | Val, mm | Test, mm |
 |---|---:|---:|---:|
 | frozen local | 2.551 | 0.160 | -0.338 |
 | old unconstrained BPTT | 4.799 | 1.849 | 3.369 |
@@ -3012,40 +3012,40 @@ R_\theta(x_k^*,u_{k+1})_q\right)
 
 Заранее заданный bias-preservation statistic:
 
-\[
+$$
 D_{\rm bias,S}
 =|B_{z,S}^{new}-B_{z,S}^{local}|
 -|B_{z,S}^{old}-B_{z,S}^{local}|.
-\]
+$$
 
 Результаты bootstrap:
 
-\[
+$$
 D_{\rm bias,val}=+0.614\ {\rm mm},
 \qquad 95\%\ {\rm CI}=[+0.188,+1.018]\ {\rm mm},
-\]
+$$
 
-\[
+$$
 D_{\rm bias,test}=+0.569\ {\rm mm},
 \qquad 95\%\ {\rm CI}=[+0.288,+0.844]\ {\rm mm}.
-\]
+$$
 
 Обе CI находятся строго выше нуля: physical-error constraint сохранил signed
 bias не лучше, а хуже old BPTT. Terminal AR translation bias нового варианта
-также имеет положительный \(z\): 2.365 mm на validation и 3.818 mm на test.
+также имеет положительный $z$: 2.365 mm на validation и 3.818 mm на test.
 Полные terminal AR twists нового варианта:
 
-\[
+$$
 b_{32,val}^{AR}
 =([0.762,-0.092,2.365]\ {\rm mm},
 [-0.001003,0.004881,-0.001729]\ {\rm rad}),
-\]
+$$
 
-\[
+$$
 b_{32,test}^{AR}
 =([0.540,0.407,3.818]\ {\rm mm},
 [-0.000452,-0.002233,-0.007402]\ {\rm rad}).
-\]
+$$
 
 ### 24.6 Вывод ablation
 
@@ -3053,11 +3053,11 @@ b_{32,test}^{AR}
 
 1. Ограничение по настоящему successor значительно менее разрушительно, чем
    ограничение по frozen output: оно допускает полноценное H32 улучшение и
-   даёт test \(d_X=0.210555\) вместо 0.262169.
-2. Scalar aggregate \(L_{\rm phys}=\mathbb E[d_X^2]\) недостаточен для
+   даёт test $d_X=0.210555$ вместо 0.262169.
+2. Scalar aggregate $L_{\rm phys}=\mathbb E[d_X^2]$ недостаточен для
    различения физически корректного и систематически смещённого operator.
    Новый checkpoint имеет лучший one-step loss на каждом split, но больший
-   signed \(z\)-bias и худший H32 test result, чем old BPTT.
+   signed $z$-bias и худший H32 test result, чем old BPTT.
 
 Итог заранее заданных критериев:
 
@@ -3100,7 +3100,7 @@ baseline contract:
 [`best-local.pt`](../runs/ablation-operator-depth-local/L1/best-local.pt)
 имеет:
 
-| Model | \(d_X\) | \(d_T\), mm | \(d_R\), rad | \(d_J\) |
+| Model | $d_X$ | $d_T$, mm | $d_R$, rad | $d_J$ |
 |---|---:|---:|---:|---:|
 | L1 shared local | 0.037451 | 1.4033 | 0.006495 | 0.032299 |
 | identity pose | - | 1.0559 | 0.006103 | - |
@@ -3112,7 +3112,7 @@ baseline contract:
 сводится к общей неисправности optimizer или data loader.
 
 Ещё более сильный диагностический результат даёт predictor
-\(\Delta q_{k+1}=\Delta q_k\): mean pose error 0.009285 против 0.011742 у
+$\Delta q_{k+1}=\Delta q_k$: mean pose error 0.009285 против 0.011742 у
 identity и 0.014678 у L1; 83.1% переходов лучше identity. Между соседними
 инкрементами медианный cosine равен 0.996 для translation и 0.990 для
 rotation. При этом collector явно обнуляет сохранённые object/joint velocities.
@@ -3131,7 +3131,7 @@ state space. Это различие отдельно проверено в ра
 | Pose и joints дают противоположные gradients | per-loss gradient cosine | median shared cosine pose–joints = +0.604: систематического конфликта знака нет |
 | Pose подавлен масштабом multitask gradients | gradient norms и pose-only fit | joint gradient в 46.2 раза, feasibility в 21.9 раза больше pose; pose-only decoupled дал 1.0206 mm, но rotation осталась хуже identity. Это важный вторичный механизм |
 | В `SE(3)` update неверно зашита пространственная связь | замена left spatial exponential на product retraction | translation улучшилась 1.4033 → 1.1645 mm; rotation почти не изменилась. Ошибка реальна, но недостаточна |
-| Для joints не хватает actual current contact geometry | `trial_gap` → `trial_current_gap` | \(d_J\) 0.032299 → 0.028176, но pose не улучшилась. Это подтверждённая причина части ошибки \(r\) |
+| Для joints не хватает actual current contact geometry | `trial_gap` → `trial_current_gap` | $d_J$ 0.032299 → 0.028176, но pose не улучшилась. Это подтверждённая причина части ошибки $r$ |
 | History содержит информацию о локальном направлении | conditioning на предыдущий pose increment | pose-only: 0.8829 mm и 0.005631 rad, 81.4% transitions лучше identity. Predictive value подтверждена; физическая неполнота snapshot state этим не доказана |
 
 Heavy-tail диагностика дополнительно показала, что верхние 0.1% train pose
@@ -3140,16 +3140,16 @@ translation step достигает 613 mm. Robust loss поэтому оста�
 опцией, но применять его как самостоятельное исправление причин нет оснований.
 
 Пространственный left `SE(3)` update также оказался физически значимым
-несоответствием постановке: медиана \(|\omega\times p|\) сопоставима с
-медианой настоящего \(|\Delta p|\). Поэтому rotation residual создавал
+несоответствием постановке: медиана $|\omega\times p|$ сопоставима с
+медианой настоящего $|\Delta p|$. Поэтому rotation residual создавал
 искусственный translation около world origin. В product update эти две
 величины предсказываются независимо:
 
-\[
+$$
 p_{k+1}=p_k+\ell\,\hat v_k,
 \qquad
 R_{k+1}=\exp([\hat\omega_k]_\times)R_k.
-\]
+$$
 
 ### 25.3 Экспериментальный history-dependent ablation
 
@@ -3161,24 +3161,24 @@ R_{k+1}=\exp([\hat\omega_k]_\times)R_k.
    контакта.
 2. Global head получает безразмерный history feature
 
-   \[
+   $$
    h_k=\left[
    \frac{p_k-p_{k-1}}{\ell},
    \operatorname{Log}(R_kR_{k-1}^{T})
    \right].
-   \]
+   $$
 
    Для первого шага истории он равен нулю; в autoregressive rollout
    предыдущим является предыдущий предсказанный state.
 3. Pose применяется product retraction выше, без зависимости translation от
    абсолютного положения объекта.
 4. На local stage используются gradient-calibrated
-   \(\lambda_J=0.025\), \(\lambda_{feas}=0.05\). На rollout stage веса снова
+   $\lambda_J=0.025$, $\lambda_{feas}=0.05$. На rollout stage веса снова
    равны 1: один набор весов не имеет одинакового смысла для one-step и BPTT.
 
 Результат clean local ablation:
 
-| Model | \(d_X\) | \(d_T\), mm | \(d_R\), rad | \(d_J\) |
+| Model | $d_X$ | $d_T$, mm | $d_R$, rad | $d_J$ |
 |---|---:|---:|---:|---:|
 | L1 baseline | 0.037451 | 1.4033 | 0.006495 | 0.032299 |
 | + current gap | 0.033816 | 1.4050 | 0.006375 | 0.028176 |
@@ -3187,7 +3187,7 @@ R_{k+1}=\exp([\hat\omega_k]_\times)R_k.
 | **balanced history + current gap + decoupled pose** | **0.029247** | **0.8740** | **0.005730** | **0.025245** |
 
 Относительно исходного L1 комбинированный вариант улучшает test
-\(d_X\) на 21.9%, translation на 37.7%, rotation на 11.8% и joints на 21.8%.
+$d_X$ на 21.9%, translation на 37.7%, rotation на 11.8% и joints на 21.8%.
 Медианный pose/identity ratio равен 0.699, 81.5% transitions лучше identity;
 для joints медианный contact/free ratio равен 0.288, 94.6% transitions лучше
 free-motion predictor. Это первый вариант в серии, который улучшает все
@@ -3204,8 +3204,8 @@ directional bias для второго. Физическая немарково�
 ### 25.4 Короткая проверка совместимости с rollout
 
 Сначала local weights 0.025/0.05 были ошибочно сохранены внутри BPTT. Это
-вызвало ожидаемый joint collapse: test terminal \(d_J=0.1605\) и
-\(d_X=0.261\). Эксперимент подтвердил необходимость stage-specific loss
+вызвало ожидаемый joint collapse: test terminal $d_J=0.1605$ и
+$d_X=0.261$. Эксперимент подтвердил необходимость stage-specific loss
 contract. После возврата rollout weights к 1 и короткого curriculum
 H4/H8/H16/H32 новый checkpoint не дал статистически содержательного общего
 H32 выигрыша над production, но сохранил улучшенную translation и оказался
@@ -3213,8 +3213,8 @@ H32 выигрыша над production, но сохранил улучшенну
 
 | Test quantity, sample-weighted | production rollout | history rollout | change |
 |---|---:|---:|---:|
-| mean-step \(d_X\) | 0.087772 | 0.089589 | +2.1% |
-| H32 \(d_X\) | 0.207812 | 0.208063 | +0.1% |
+| mean-step $d_X$ | 0.087772 | 0.089589 | +2.1% |
+| H32 $d_X$ | 0.207812 | 0.208063 | +0.1% |
 | mean translation | 0.059395 | 0.058518 | -1.5% |
 | H32 translation | - | - | -2.2% |
 | mean rotation | 0.049590 | 0.052559 | +6.0% |
@@ -3222,8 +3222,8 @@ H32 выигрыша над production, но сохранил улучшенну
 | mean joints | 0.027748 | 0.028875 | +4.1% |
 
 После короткого BPTT checkpoint всё ещё превосходит L1 на one-step test:
-\(d_X=0.032280\), \(d_T=0.9279\) mm, \(d_R=0.006071\),
-\(d_J=0.028172\). Следовательно, новая state representation совместима с
+$d_X=0.032280$, $d_T=0.9279$ mm, $d_R=0.006071$,
+$d_J=0.028172$. Следовательно, новая state representation совместима с
 rollout и не уничтожается BPTT, но короткий эксперимент не является
 доказательством улучшения long-horizon score. Полный стандартный retrain не
 запускался: это был бы длинный эксперимент без необходимости для
@@ -3258,9 +3258,9 @@ rollout и не уничтожается BPTT, но короткий экспе�
 value здесь установлена собственным predictor test и controlled ablation.
 Результат не следует интерпретировать как доказательство скрытой памяти PhysX:
 сохранённые velocities нулевые, а reset diagnostics не отделяют simulator
-hidden state от repeatability floor. Корректный узкий вывод — \(q_{k-1}\)
+hidden state от repeatability floor. Корректный узкий вывод — $q_{k-1}$
 помогает предсказывать локальное направление; определяет ли то же направление
-точный snapshot \((q_k,r_k,u_k)\), имеющийся dataset проверить плотно не
+точный snapshot $(q_k,r_k,u_k)$, имеющийся dataset проверить плотно не
 позволяет.
 
 ### 25.6 Реализация и воспроизводимость
@@ -3311,7 +3311,7 @@ History ablation подтверждает, что локальное напра�
 восстанавливается исходным shared operator, но не устанавливает
 фундаментальную неполноту Markov state. Более поздний тест раздела 27 не нашёл
 разных successors у machine-near повторов и показал слишком разреженное
-покрытие val/test для такого доказательства. Для \(r\) actual current gap
+покрытие val/test для такого доказательства. Для $r$ actual current gap
 остаётся подтверждённым полезным сигналом; дополнительно pose подавлялся
 несбалансированными gradient scales. Left spatial pose update и heavy-tail
 squared loss были реальными, но вторичными дефектами.
@@ -3337,16 +3337,16 @@ local failure.
 Переходы не выбирались по ошибке checkpoint. Использован только ground-truth
 pose motion:
 
-\[
+$$
 d_{\Delta q,k}
 =\sqrt{
 \left(\frac{\|p_{k+1}-p_k\|}{L}\right)^2
 +d_{SO(3)}(R_k,R_{k+1})^2
 },
 \qquad L=0.1114999652\ {\rm m}.
-\]
+$$
 
-Переход помечался jump при \(d_{\Delta q,k}>0.05\). Граница соответствует
+Переход помечался jump при $d_{\Delta q,k}>0.05$. Граница соответствует
 примерно 5.6 mm при чистой translation или 2.86 degrees при чистой rotation и
 проходит около медианы ground-truth motion верхних 5% absolute pose-error
 переходов. Threshold был зафиксирован до обучения и одинаков для всех splits.
@@ -3396,7 +3396,7 @@ object-balanced sampler и early stopping, что clean full-data L1. Отлич
 
 Equal-object metrics на полном наборе, включая ранее удалённые transitions:
 
-| Split | Model | \(d_X\) | pose | translation, mm | rotation, rad | joints |
+| Split | Model | $d_X$ | pose | translation, mm | rotation, rad | joints |
 |---|---|---:|---:|---:|---:|---:|
 | train | full-trained L1 | 0.036210 | 0.017976 | 1.3930 | 0.010591 | 0.027585 |
 | train | smooth-trained L1 | **0.034228** | 0.017989 | 1.3955 | **0.010481** | **0.024720** |
@@ -3405,12 +3405,12 @@ Equal-object metrics на полном наборе, включая ранее �
 | test | full-trained L1 | 0.037451 | 0.014687 | 1.4033 | 0.006495 | 0.032299 |
 | test | smooth-trained L1 | **0.034252** | **0.014064** | **1.3280** | **0.006289** | **0.028860** |
 
-На полном test это \(-8.54\%\) по \(d_X\), но decomposition важнее:
-pose \(-4.24\%\), translation \(-5.37\%\), rotation \(-3.17\%\), joints
-\(-10.65\%\). На train pose практически не изменился (+0.07%), тогда как
+На полном test это $-8.54\%$ по $d_X$, но decomposition важнее:
+pose $-4.24\%$, translation $-5.37\%$, rotation $-3.17\%$, joints
+$-10.65\%$. На train pose практически не изменился (+0.07%), тогда как
 joints улучшились на 10.39%. Значит основной выигрыш не состоит в том, что
-stateless operator внезапно выучил \(q\): удаление больших pose gradients
-освободило capacity/optimization прежде всего для \(r\).
+stateless operator внезапно выучил $q$: удаление больших pose gradients
+освободило capacity/optimization прежде всего для $r$.
 
 Test pose gain также не одинаков по unseen objects: −0.99% для Hercules oats,
 −0.31% для orange/raisin cookies и −11.52% для Baikal water. Поэтому single-seed
@@ -3418,14 +3418,14 @@ aggregate −4.24% нельзя считать универсальным pose i
 
 ### 26.3 Matched smooth и removed-jump evaluation
 
-| Test subset | Model | \(d_X\) | pose | translation, mm | rotation, rad | joints |
+| Test subset | Model | $d_X$ | pose | translation, mm | rotation, rad | joints |
 |---|---|---:|---:|---:|---:|---:|
 | retained smooth, 9 257 | full-trained | 0.034743 | 0.012131 | 1.1662 | 0.005350 | 0.031293 |
 | retained smooth, 9 257 | smooth-trained | **0.031484** | **0.011407** | **1.0781** | **0.005144** | **0.027901** |
 | removed jumps, 217 | full-trained | 0.155713 | **0.126029** | **11.7903** | 0.055463 | 0.077088 |
 | removed jumps, 217 | smooth-trained | **0.155611** | 0.130539 | 12.3534 | **0.055267** | **0.071474** |
 
-На smooth subset improvement ожидаемо больше: \(d_X\) −9.38%, pose −5.97%,
+На smooth subset improvement ожидаемо больше: $d_X$ −9.38%, pose −5.97%,
 joints −10.84%. На удалённых transitions aggregate практически одинаков
 (−0.065%), однако pose становится хуже на 3.58%, translation — на 4.78%; падение
 joints на 7.28% случайно компенсирует pose degradation в aggregate.
@@ -3439,7 +3439,7 @@ discontinuous contact map.
 Ранее найденный `history + trial/current gap + decoupled pose + balanced local
 losses` checkpoint, обученный на всех transitions, был оценён на тех же masks:
 
-| Test subset | \(d_X\) | pose | translation, mm | rotation, rad | joints |
+| Test subset | $d_X$ | pose | translation, mm | rotation, rad | joints |
 |---|---:|---:|---:|---:|---:|
 | full | **0.029247** | **0.010244** | **0.8740** | **0.005730** | **0.025245** |
 | retained smooth | **0.026630** | **0.007676** | **0.6330** | **0.004620** | **0.024349** |
@@ -3475,9 +3475,9 @@ curriculum `smooth first, jumps later` остаются разумными optim
 
 ### 26.6 Итог
 
-Удаление \(d_{\Delta q}>0.05\) улучшает full-test L1 aggregate на 8.54%, в
+Удаление $d_{\Delta q}>0.05$ улучшает full-test L1 aggregate на 8.54%, в
 основном через joints, и немного улучшает smooth pose. Но оно не исправляет
-исходную проблему \(q\), ухудшает pose на самих jumps и уступает
+исходную проблему $q$, ухудшает pose на самих jumps и уступает
 экспериментальному history candidate на обоих regimes. Практический вывод:
 такой index полезен как diagnostic или первая фаза curriculum, но не как
 окончательная замена полного dataset.
@@ -3512,12 +3512,12 @@ audit было принято явное практическое решение
 
 Для каждого из 80 873 active transitions ближайший сосед искался только среди
 других trajectories того же объекта и того же command step. Поэтому object SDF
-и \(\bar a_{k+1}\) в каждой группе строго одинаковы. Сравнивались:
+и $\bar a_{k+1}$ в каждой группе строго одинаковы. Сравнивались:
 
 1. фактический вход production operator: trial-gap vector и scalar current
    aperture;
 2. trial gap плюс current-gap vector;
-3. полный записанный snapshot \((q_k,r_k)\);
+3. полный записанный snapshot $(q_k,r_k)$;
 4. reranking ближайших snapshots по предыдущему pose/full-state increment;
 5. reranking по реально сохранённым incoming diagnostics: `contact_count`,
    approximate maximum applied actuator effort, residual linear/angular
@@ -3531,29 +3531,29 @@ audit было принято явное практическое решение
 
 Target divergence измерялась между one-step increments двух transitions:
 
-\[
+$$
 d_{\Delta q}
 =\sqrt{\left\|
 (\Delta p_i-\Delta p_j)/L
 \right\|^2
 +d_{SO(3)}(\Delta R_i,\Delta R_j)^2}.
-\]
+$$
 
 ### 27.2 Точных неоднозначных повторов не найдено
 
 Machine-near snapshot определён как translation difference не более
-0.1 micrometre, rotation не более \(10^{-6}\) rad и normalized joint RMS не
-более \(10^{-6}\). В train найдено 14 направленных samples, то есть семь
+0.1 micrometre, rotation не более $10^{-6}$ rad и normalized joint RMS не
+более $10^{-6}$. В train найдено 14 направленных samples, то есть семь
 симметричных пар. Их successor pose divergence:
 
-- mean \(1.49\cdot10^{-5}\);
-- maximum \(1.04\cdot10^{-4}\);
+- mean $1.49\cdot10^{-5}$;
+- maximum $1.04\cdot10^{-4}$;
 - joint divergence строго 0.
 
 В val/test таких повторов нет. Machine-near дубликатов production operator
 input и `operator + current gap` также нет. Следовательно, dataset не содержит
-прямого примера \(x_i\simeq x_j\), \(u_i=u_j\), но
-\(F(x_i,u_i)\ne F(x_j,u_j)\). Физическая многозначность или скрытая solver
+прямого примера $x_i\simeq x_j$, $u_i=u_j$, но
+$F(x_i,u_i)\ne F(x_j,u_j)$. Физическая многозначность или скрытая solver
 memory этим тестом **не подтверждена**.
 
 Это не является доказательством Markov sufficiency: val/test просто слишком
@@ -3569,9 +3569,9 @@ target spread выбранного representation.
 
 | Representation / predictor | Test pose divergence |
 |---|---:|
-| identity increment \(\Delta q=0\) | 0.012042 |
+| identity increment $\Delta q=0$ | 0.012042 |
 | previous-increment persistence | **0.009516** |
-| nearest full snapshot \((q,r)\) | 0.015513 |
+| nearest full snapshot $(q,r)$ | 0.015513 |
 | nearest production operator input | 0.015168 |
 | nearest `operator + current gap` | 0.015011 |
 | constrained previous-pose rerank | 0.014462 |
@@ -3603,7 +3603,7 @@ snapshot pairs outgoing count и так одинаков в 97.9% случаев
 
 ### 27.4 History не разрешает jumps
 
-Разложение test по исходному порогу \(d_{\Delta q}>0.05\):
+Разложение test по исходному порогу $d_{\Delta q}>0.05$:
 
 | Method | Smooth pose spread, 8 980 | Jump pose spread, 217 |
 |---|---:|---:|
@@ -3625,7 +3625,7 @@ oracle остаётся на 0.533/8.8%. Ни один сохранённый co
 ### 27.5 Исправленный причинный вывод
 
 Тест отвергает прежнюю слишком сильную формулировку «главная причина —
-доказанная немарковость \((q,r,u)\)». Текущие данные поддерживают более узкую
+доказанная немарковость $(q,r,u)$». Текущие данные поддерживают более узкую
 картину:
 
 1. **Machine-near повторы детерминированы.** Прямого evidence физически разных
@@ -3642,16 +3642,16 @@ oracle остаётся на 0.533/8.8%. Ни один сохранённый co
    forces. `actuator_effort` является approximate applied drive torque, а не
    contact reaction.
 
-Поэтому наиболее подтверждённое объяснение слабого \(q\) сейчас — сочетание
+Поэтому наиболее подтверждённое объяснение слабого $q$ сейчас — сочетание
 редкого покрытия discontinuity boundary и representation, не содержащего
 явного contact-mode/event signal. Скрытая PhysX memory остаётся возможной, но
-не является подтверждённым главным bottleneck. Для \(r\) geometry-based
+не является подтверждённым главным bottleneck. Для $r$ geometry-based
 neighbours значительно лучше full-snapshot neighbours, что согласуется с
 предыдущим выигрышем actual current gap.
 
 Следующий решающий data experiment должен быть не полным `srno sim collect`, а
 малой targeted коллекцией около 10--20 известных jump-boundary states: точные
-повторы, малые perturbations \((q,r)\), preserve/reset histories и per-link
+повторы, малые perturbations $(q,r)$, preserve/reset histories и per-link
 contact identities/forces до и после increment. Без таких labels очередной
 history feature или hard filtering не сможет различить deterministic mode
 boundary и действительно hidden contact state.
@@ -3712,25 +3712,25 @@ implicit violation loss ([Bianchini et al.](https://proceedings.mlr.press/v168/b
 transitions QP минимальной коррекции при linearized nonpenetration решил только
 205 случаев; 95 были infeasible или не сошлись. На решённых случаях свободный
 trial имел mean minimum gap -7.183 mm, тогда как target имел +1.207 mm.
-Одношаговая проекция перебрасывала состояние до +3.101 mm и ухудшала \(d_X\)
+Одношаговая проекция перебрасывала состояние до +3.101 mm и ухудшала $d_X$
 с 0.04810 до 0.39874 (+729%). Translation/rotation/joints ухудшились на
 4266%/2323%/235%. Причина — глубокая trial penetration и локальная
 линеаризация SDF, а не отсутствие QP solver.
 
 **Повторная nonlinear soft projection исправляет в основном joints.**
 Validation выбрал без test leakage `penalty=10, pose_weight=100`. На независимой
-300-sample test подвыборке \(d_X\) уменьшился 0.07727 -> 0.05337 (-30.93%),
+300-sample test подвыборке $d_X$ уменьшился 0.07727 -> 0.05337 (-30.93%),
 joint error — на 34.40%, но translation и rotation стали хуже на 7.03% и
 2.22%. Следовательно, одна геометрическая feasibility хорошо задаёт закрытие
 пальцев, но почти не задаёт ветвь motion объекта.
 
 **Contact cone достаточно выразителен, если известны multipliers.** Oracle
-NNLS искал неотрицательные \(\lambda_i\) для тех же 300 test transitions, не
+NNLS искал неотрицательные $\lambda_i$ для тех же 300 test transitions, не
 являясь predictive model. При `pose_weight=10` проекция target correction на
-положительный cone trial contact Jacobians дала \(d_X=0.01072\), то есть
+положительный cone trial contact Jacobians дала $d_X=0.01072$, то есть
 -86.13% относительно free trial; translation/rotation/joints улучшились на
 49.49%/35.36%/89.74%. Значит основной architecture bottleneck — не отсутствие
-нужного направления в \(J^T\lambda\), а восстановление правильных contact
+нужного направления в $J^T\lambda$, а восстановление правильных contact
 pressures и выбор pose branch.
 
 Эти три результата совместно отвергают две крайности: `hard projection` не
@@ -3741,46 +3741,46 @@ pressures и выбор pose branch.
 
 Введены dimensionless product coordinates
 
-\[
+$$
 z=\left[\Delta p/L,\;\omega,\;(r-r_{\rm free})/s_r\right]\in\mathbb R^{12},
 \qquad
 J_i=\frac{\partial(h_i/s_{\rm sdf})}{\partial z}.
-\]
+$$
 
-Полный \(J_i\), включая translation, rotation moment arm и производные всех
+Полный $J_i$, включая translation, rotation moment arm и производные всех
 шести joints через analytic FK, вычисляется в `float32`. Его finite-difference
 test проверяет все 12 columns. Для каждого из 256 canonical gripper points
 двухпроходный permutation-equivariant DeepSets encoder получает gap,
-координату point и \(J_i\), затем предсказывает
+координату point и $J_i$, затем предсказывает
 
-\[
+$$
 \lambda_i={\rm softplus}(f_\theta(e_i,e_{\rm global},u))\ge 0,
 \qquad
 g=\frac1M\sum_i J_i^T\lambda_i.
-\]
+$$
 
-Conditioned mobility задаётся как \(B_\theta=C_\theta C_\theta^T\succ0\), а
-correction — \(z=B_\theta g\). Поэтому сеть больше не может непосредственно
+Conditioned mobility задаётся как $B_\theta=C_\theta C_\theta^T\succ0$, а
+correction — $z=B_\theta g$. Поэтому сеть больше не может непосредственно
 выдать произвольный 12-vector: correction лежит в positive-metric image
-обобщённых contact normals. При этом \(f_\theta\) и \(B_\theta\) зависят от
+обобщённых contact normals. При этом $f_\theta$ и $B_\theta$ зависят от
 state, поэтому эта конструкция **сама по себе не гарантирует** глобальную
 монотонность или firm non-expansiveness.
 
 Friction arm дополнительно предсказывает две tangent components с
 
-\[
+$$
 \|\lambda_{t,i}\|_2\le\mu\lambda_{n,i},\qquad \mu=2.4,
-\]
+$$
 
 но это soft cone parameterization, а не max-dissipation/complementarity solve.
-Сложность encoder уменьшена с \(O(M^2)\) у pairwise integral layer до \(O(M)\).
+Сложность encoder уменьшена с $O(M^2)$ у pairwise integral layer до $O(M)$.
 Inactive/free bypass остался точным.
 
 ### 28.4 Почему чистая cone cell всё ещё почти оставляет pose равной identity
 
 Короткий unbalanced normal-cone run был вручную остановлен после 22 записанных
 epochs, когда основной вывод уже стабилизировался. На полном equal-object test
-он улучшил \(d_X\) на 30.08% и joints на 36.61%, но translation только на
+он улучшил $d_X$ на 30.08% и joints на 36.61%, но translation только на
 13.78%, а rotation ухудшил на 0.65%. Относительно identity pose его median
 pose-error/motion остался 1.00095; лишь 49.82% transitions стали лучше identity,
 а по rotation — 42.49%. При этом median joint-error/free-error равна 0.2339 и
@@ -3801,24 +3801,24 @@ continuation, но не определяет contact switch.
 Поскольку сохранённый previous increment является подтверждённым smooth branch
 signal, для active-contact branch введён parameter-free predictor
 
-\[
+$$
 p_{\rm pred}=p_k+\alpha(p_k-p_{k-1}),\qquad
 R_{\rm pred}=\exp\!\left(\alpha\log(R_kR_{k-1}^T)\right)R_k.
-\]
+$$
 
-Grid \(\alpha\in\{0,.25,.5,.75,1,1.25\}\) выбирался **только по validation
-mean \(d_X\)**; выбран \(\alpha=0.75\). На test выбор не повторялся. Huber +
+Grid $\alpha\in\{0,.25,.5,.75,1,1.25\}$ выбирался **только по validation
+mean $d_X$**; выбран $\alpha=0.75$. На test выбор не повторялся. Huber +
 balanced joint loss позволил одной end-to-end cell улучшить pose, но ослабил
 joints. Поэтому наиболее устойчивый вариант разделяет роли:
 
-- \(q_{k+1}\) берётся из causal continuation predictor;
-- \(r_{k+1}\) берётся из обученной stateless normal-cone cell;
-- learned cone correction для \(q\) в этом режиме отключена;
-- inactive branch сохраняет \(q_k\) и exact free-joint bypass.
+- $q_{k+1}$ берётся из causal continuation predictor;
+- $r_{k+1}$ берётся из обученной stateless normal-cone cell;
+- learned cone correction для $q$ в этом режиме отключена;
+- inactive branch сохраняет $q_k$ и exact free-joint bypass.
 
 Это `pose_corrector="predictor_only"`. `split_resolvent` не является новым
 переобученным checkpoint: это parameter-compatible view того же
-`normal_cone/best-local.pt` с validation-selected \(\alpha=0.75\). После
+`normal_cone/best-local.pt` с validation-selected $\alpha=0.75$. После
 обнаруженной при проверке ошибки `rollout()` теперь передаёт previous state и
 для continuation predictor, даже если learned `history_conditioning="none"`.
 
@@ -3830,7 +3830,7 @@ joints. Поэтому наиболее устойчивый вариант ра
 normal cone 22, history 15, balanced 22, full-state balanced 19, friction 14,
 continuation-Huber 15.
 
-| Test arm | \(d_X\) | translation, mm | rotation, rad | joints |
+| Test arm | $d_X$ | translation, mm | rotation, rad | joints |
 |---|---:|---:|---:|---:|
 | direct L1 baseline | 0.037120 | 1.3151 | 0.006486 | 0.032368 |
 | normal cone | 0.025955 | 1.1339 | 0.006528 | 0.020517 |
@@ -3842,14 +3842,14 @@ continuation-Huber 15.
 | **split-resolvent** | **0.025361** | **0.7933** | **0.004743** | **0.020517** |
 
 Относительно direct L1 итоговый split-resolvent даёт на validation
-\(d_X/T/R/J\) изменения -37.15%/-51.28%/-30.58%/-39.22%, а на test
+$d_X/T/R/J$ изменения -37.15%/-51.28%/-30.58%/-39.22%, а на test
 **-31.68%/-39.68%/-26.86%/-36.61%**. Таким образом, требование о существенно
 большем чем 10--20% эффекте выполнено для каждого компонента, а не только для
 aggregate. Он также лучше identity baseline на test translation примерно на
 24.9% и rotation на 22.3%.
 
-Есть важное ограничение интерпретации: \(r\) здесь действительно выучен
-contact-cone network, тогда как лучший \(q\) даёт причинный continuation prior,
+Есть важное ограничение интерпретации: $r$ здесь действительно выучен
+contact-cone network, тогда как лучший $q$ даёт причинный continuation prior,
 а не выученные multipliers. Кроме того, в ходе всей исследовательской серии
 test неоднократно использовался диагностически для сравнения гипотез. Поэтому
 эти test gains являются сильным exploratory evidence, но не финальной
@@ -3901,7 +3901,7 @@ test неоднократно использовался диагностиче�
 Следующий этап начался с независимой проверки записки
 `pasted-text.txt`, литературы и текущего кода. Главный тезис записки оказался
 верным: `normal_cone` из раздела 28 параметризует только stationarity direction
-(B_\theta J^T\lambda_\theta), но не обеспечивает primal feasibility,
+$B_\theta J^T\lambda_\theta$, но не обеспечивает primal feasibility,
 complementarity и совместное решение multipliers. Поэтому это не contact
 resolvent в строгом смысле.
 
@@ -3909,7 +3909,7 @@ resolvent в строгом смысле.
 
 Подтверждены следующие положения:
 
-- NN следует учить constitutive part, например SPD resistance (Q_\theta), а
+- NN следует учить constitutive part, например SPD resistance $Q_\theta$, а
   multipliers получать из KKT/VI solve;
 - actuator должен входить как query/linear term convex program, а не только как
   дополнительный feature свободной output-head;
@@ -3922,13 +3922,13 @@ resolvent в строгом смысле.
 
 1. **Нельзя линеаризовать QP в полностью закрытом free-trial.** Предыдущий
    диагностический QP стартовал из mean penetration (-7.183) mm, решил лишь
-   205/300 случаев и ухудшил (d_X) на 729%. Это не опровержение VI, а неверная
+   205/300 случаев и ухудшил $d_X$ на 729%. Это не опровержение VI, а неверная
    точка линеаризации. И
    [CQDC](https://arxiv.org/html/2206.10787), и
    [ContactSDF](https://arxiv.org/html/2408.09612v2) вычисляют gap/Jacobians в
    текущем состоянии и помещают command в objective/query.
 2. **Локальный convex resolvent не доказывает global maximal monotonicity.**
-   При фиксированных (x_k,Q_\theta) metric projection на convex tangent set
+   При фиксированных $x_k,Q_\theta$ metric projection на convex tangent set
    firmly nonexpansive в соответствующей метрике. Но set, SDF linearization и
    learned metric меняются с state, geometry и active set; глобальное
    утверждение из этого не следует.
@@ -3945,47 +3945,46 @@ resolvent в строгом смысле.
 
 В dimensionless product coordinates
 
-\[
+$$
 z=\left[\Delta p/L,\;\Delta\omega,\;\Delta r/s_r\right]\in\mathbb R^{12}
-\]
+$$
 
 введён actuator/history query
 
-\[
+$$
 u_k=\left[
 \alpha\frac{p_k-p_{k-1}}L,\;
 \alpha\operatorname{Log}(R_kR_{k-1}^{T}),\;
 \frac{r_{\rm free}(a_{k+1})-r_k}{s_r}
 \right].
-\]
+$$
 
-При (\alpha=0) это stateless quasi-static arm. При (\alpha>0) предыдущий
+При $\alpha=0$ это stateless quasi-static arm. При $\alpha>0$ предыдущий
 pose increment является затухающим unforced object query той же VI, а не
 отдельным continuation output-head. Active branch решает
 
-\[
+$$
 \boxed{
 z^*=\arg\min_z\frac12(z-u_k)^TQ_\theta(x_k,u^r_k,\phi)(z-u_k)
 \quad\text{s.t.}\quad
 h_{\rm geom}(x_k)+s_{\rm sdf}J(x_k)z\ge0
 }
-\]
+$$
 
-вместе с upper/lower bounds всех joints. Здесь (Q_\theta=C_\theta C_\theta^T
-\succ0), а network предсказывает только bounded Cholesky factor. KKT system
+вместе с upper/lower bounds всех joints. Здесь $Q_\theta=C_\theta C_\theta^T\succ0$, а network предсказывает только bounded Cholesky factor. KKT system
 
-\[
+$$
 Q_\theta(z-u_k)-J^T\lambda=0,\qquad
 0\le\lambda\perp Jz-b\ge0
-\]
+$$
 
 решается batched dual FISTA. Используется 128 итераций; это численная
 аппроксимация convex resolvent, а не заявление об exact finite-depth map.
-На 300 validation samples её zero-initialized output дал (d_X=0.01793)
+На 300 validation samples её zero-initialized output дал $d_X=0.01793$
 против (0.01765) у high-accuracy OSQP, расхождение 1.6% по aggregate.
 
 Free branch по-прежнему является точным: free-trial используется только для
-contact gate, а VI линеаризуется в (x_k). Геометрическая constraint boundary
+contact gate, а VI линеаризуется в $x_k$. Геометрическая constraint boundary
 равна 0; PhysX `contactOffset` используется только в gate. Analytic full
 Jacobian и state update используют одну product retraction. В ходе проверки
 было найдено и исправлено отдельное расхождение старого diagnostic script:
@@ -4001,14 +4000,14 @@ moment arm для left-SE(3) retraction.
 | free object/joint query | (d_X=0.07670, d_J=0.07301) |
 | exact normal QP, pose weight 100 | (d_X=0.01765, d_J=0.01016) |
 | 128-step differentiable solver init | (d_X=0.01793, d_J=0.01046) |
-| + history query, (\alpha=0.5) | (d_X=0.01738, T=0.963\) mm, (R=0.005945) |
+| + history query, $\alpha=0.5$ | $d_X=0.01738, T=0.963$ mm, $R=0.005945$ |
 
 Pose weight 100 выбран validation-only. History grid
-(\alpha\in\{0,.5,.75,1\}) также выбран только по validation; минимум
-aggregate был при (\alpha=.5). Test для выбора не использовался.
+$\alpha\in\{0,.5,.75,1\}$ также выбран только по validation; минимум
+aggregate был при $\alpha=.5$. Test для выбора не использовался.
 
 Polyhedral Anitescu friction screen не подтвердил friction как текущий
-bottleneck. Лучший normal-only arm имел (d_X=0.01765), лучший frictional arm
+bottleneck. Лучший normal-only arm имел $d_X=0.01765$, лучший frictional arm
 (0.01734): около 2% дополнительного выигрыша, rotation практически не
 изменилась. Поэтому friction не добавлялась в trainable MVP.
 
@@ -4016,14 +4015,14 @@ bottleneck. Лучший normal-only arm имел (d_X=0.01765), лучший fr
 
 Оба CPU run вручную остановлены после 16 записанных epochs: это architecture
 screens, а не заявления о полном scheduler convergence. Тем не менее
-оптимизация была устойчивой. У inertial arm validation (d_X) уменьшился
-(0.013947\to0.012092), а loss (6.391\cdot10^{-4}\to5.276\cdot10^{-4}).
+оптимизация была устойчивой. У inertial arm validation $d_X$ уменьшился
+$0.013947\to0.012092$, а loss $6.391\cdot10^{-4}\to5.276\cdot10^{-4}$.
 Главный выигрыш появляется уже в physical initialization, затем learned metric
 даёт дополнительное последовательное снижение.
 
 Full equal-object local evaluation:
 
-| Arm | split | (d_X) | (T), mm | (R), rad | (d_J) |
+| Arm | split | $d_X$ | $T$, mm | $R$, rad | $d_J$ |
 |---|---|---:|---:|---:|---:|
 | direct L1 | val | 0.030928 | 1.1249 | 0.006103 | 0.026529 |
 | implicit resolvent, stateless | val | 0.013436 | 0.7690 | 0.005541 | 0.008061 |
@@ -4034,18 +4033,18 @@ Full equal-object local evaluation:
 
 Изменения final arm относительно direct L1 на test:
 
-\[
+$$
 \boxed{
 d_X:-61.06\%,\quad
 T:-36.28\%,\quad
 R:-22.10\%,\quad
 d_J:-73.11\%.
 }
-\]
+$$
 
 Это первый единый mechanical solve в проекте, который даёт существенно больше
 30% по aggregate и одновременно улучшает все компоненты. Stateless arm сам по
-себе даёт (-58.22\%) по (d_X) и (-72.09\%) по joints; history-query
+себе даёт (-58.22\%) по $d_X$ и (-72.09\%) по joints; history-query
 добавляет к нему на test (-13.96\%) translation и (-13.62\%) rotation.
 
 Relative-error replay показывает, что результат не является только средним
@@ -4055,21 +4054,21 @@ free predictor, median error/contact-residual (=0.122).
 
 ### 29.5 Что осталось нерешённым: nonlocal switching jumps
 
-Для (m_q>0.05) test median pose ratio остаётся 0.953, а для верхнего 1%
+Для $m_q>0.05$ test median pose ratio остаётся 0.953, а для верхнего 1%
 displacements — 0.978. Причина теперь локализована:
 
 - 99.08% jump targets сами удовлетворяют simulator-consistent admissible gap;
 - только 25.81% jump targets удовлетворяют zero-gap tangent constraints,
-  вычисленные в (x_k);
+  вычисленные в $x_k$;
 - для верхнего 1% displacement tangent-feasible только 7.37%; median maximum
   linearization error равна 8.875 mm против 0.0238 mm на smooth subset.
 
 Следовательно, target jump обычно лежит на другой нелокальной equilibrium
-branch. Его нельзя получить обучением (Q_\theta) внутри одного tangent
+branch. Его нельзя получить обучением $Q_\theta$ внутри одного tangent
 resolvent. Проверка 2--4 sequential relinearizations также не помогла:
-validation (d_X) изменился (0.017083\to0.017141), jump (d_X) остался
+validation $d_X$ изменился $0.017083\to0.017141$, jump $d_X$ остался
 0.12852. Pose weight 1 дал лишь около 6% выигрыша на jumps ценой примерно 48%
-ухудшения общего (d_X).
+ухудшения общего $d_X$.
 
 Таким образом, подтверждённая граница вывода следующая:
 
@@ -4153,26 +4152,26 @@ equilibrium evolution при медленном loading.
 
 Обозначим
 
-\[
+$$
 y=(q,r)\in SE(3)\times\mathbb R^6,
 \qquad
 \mathcal C_\phi=\{y:h_\phi(y)\geq0\},
-\]
+$$
 
 и известную actuator energy
 
-\[
+$$
 \mathcal E_{\rm act}(r;\bar r)
 =\frac12(r-\bar r)^T K(r-\bar r).
-\]
+$$
 
 Для ассоциативной rate-independent системы естественна inclusion
 
-\[
+$$
 0\in\partial\Psi_0(\dot y)
 +D_y\mathcal E_{\rm act}(y;\bar r(t))
 +N_{\mathcal C_\phi}(y).
-\]
+$$
 
 Однако nonconvex feasible geometry создаёт скачки между локальными
 equilibrium branches. Теория
@@ -4180,11 +4179,11 @@ equilibrium branches. Теория
 jumps описываются не произвольным выбором следующего global minimum, а
 vanishing-viscosity limit
 
-\[
+$$
 0\in\partial\Psi_0(\dot y)+\varepsilon V(y)\dot y
 +D_y\mathcal E_t(y)+N_{\mathcal C_\phi}(y),
 \qquad \varepsilon\downarrow0,
-\]
+$$
 
 с локальной stability и energy--dissipation balance. В jump point физическая
 траектория разворачивается по внутреннему arclength/pseudo-time, хотя внешний
@@ -4193,27 +4192,27 @@ mode: target допустим, но лежит на другой нелокал�
 принадлежит tangent cone в начальном state.
 
 Обычный scalar dissipation potential всё же недостаточен. Для относительной
-contact velocity (v=(v_n,v_t)) и reaction
-\(\lambda=(\lambda_n,\lambda_t)\) полный Coulomb graph **не является даже
+contact velocity $v=(v_n,v_t)$ и reaction
+$\lambda=(\lambda_n,\lambda_t)$ полный Coulomb graph **не является даже
 монотонным**, не только cyclically monotone. Это доказано и явно сформулировано
 в [теории Coulomb bipotential](https://arxiv.org/pdf/0802.1140). Его корректное
 представление имеет вид
 
-\[
+$$
 b_\mu(v,\lambda)
 =\mu\lambda_n\|v_t\|
 +\chi_{K_\mu}(\lambda)
 +\chi_{K_0^*}(v),
-\]
+$$
 
-\[
+$$
 b_\mu(v,\lambda)\geq\langle v,\lambda\rangle,
 \qquad
 b_\mu(v,\lambda)=\langle v,\lambda\rangle
 \iff (v,\lambda)\ \text{удовлетворяет Coulomb law}.
-\]
+$$
 
-Функция (b_\mu) convex отдельно по (v) и (\lambda), но не обязана быть
+Функция $b_\mu$ convex отдельно по $v$ и $\lambda$, но не обязана быть
 jointly convex или separable. Именно это снимает ошибочное требование, что
 frictional response должен быть gradient одного convex potential.
 
@@ -4237,7 +4236,7 @@ frictional response должен быть gradient одного convex potential
 signal, а jumps в среднем сопровождаются существенно большим release.
 
 Target-state static balance проверялся после исключения неизвестных contact
-force magnitudes с помощью NNLS. При friction pyramid с \(\mu=2.4\) и
+force magnitudes с помощью NNLS. При friction pyramid с $\mu=2.4$ и
 2 mm contact support 77.0% targets имеют relative equilibrium residual ниже
 0.1; normal-only вариант — только 9.67%. При широком 8 mm support доля для
 friction достигает 98%, но это уже только compatibility upper bound, а не
@@ -4246,7 +4245,7 @@ friction достигает 98%, но это уже только compatibility u
 из 256 SDF samples не идентифицированы.
 
 Отдельный target-error oracle между direct, split-continuation и implicit-QP
-candidates дал validation (d_X=0.011086) против (0.012092) лучшего
+candidates дал validation $d_X=0.011086$ против (0.012092) лучшего
 одиночного arm, то есть лишь -8.32%. Поэтому простой mixture/energy selector
 между уже имеющимися predictors был отвергнут до обучения: у него недостаточно
 representational headroom.
@@ -4258,25 +4257,25 @@ representational headroom.
 ### 30.4 Две общие operator hypotheses и их фальсификация
 
 Были реализованы два contact-independent по происхождению класса. Оба получают
-current SDF gaps, полный analytic (J_q,J_r), current aperture и optional
+current SDF gaps, полный analytic $J_q,J_r$, current aperture и optional
 previous pose increment. Command не смешивается с geometry context, а входит
 как generalized query.
 
 **Hypothesis A: gradient convex dual potential.** Для фиксированного context
 
-\[
+$$
 T_\theta(f;c)=\nabla_f\Psi_\theta^*(f;c),
-\]
+$$
 
 где diagonal quadratic part и normalized softplus ridges параметризованы так,
 что
 
-\[
+$$
 0\preceq \nabla T_\theta\prec I,
 \qquad T_\theta(0;c)=0.
-\]
+$$
 
-Следовательно, (T_\theta) firmly nonexpansive и является точной resolvent
+Следовательно, $T_\theta$ firmly nonexpansive и является точной resolvent
 некоторого maximal monotone operator при фиксированном context. DCT basis
 смешивает pose и joint coordinates уже при initialization; coordinate-axis
 basis предварительно оказался trapped у identity pose.
@@ -4284,17 +4283,17 @@ basis предварительно оказался trapped у identity pose.
 **Hypothesis B: non-cyclic monotone resolvent.** Чтобы снять symmetry gradient
 map, context предсказывает
 
-\[
+$$
 A_\theta(c)=S_\theta(c)+W_\theta(c),
 \quad S_\theta=L_\theta L_\theta^T\succeq0,
 \quad W_\theta^T=-W_\theta,
-\]
+$$
 
 а layer возвращает
 
-\[
+$$
 T_\theta(f;c)=(I+A_\theta(c))^{-1}f.
-\]
+$$
 
 Это exact resolvent maximal monotone linear operator, но уже не gradient
 scalar potential. Такая symmetric/skew decomposition также встречается в
@@ -4304,7 +4303,7 @@ diagnostic hypothesis, не заявлением новизны.
 
 Полный equal-object replay:
 
-| Arm | split | (d_X) | (T), mm | (R), rad | (d_J) |
+| Arm | split | $d_X$ | $T$, mm | $R$, rad | $d_J$ |
 |---|---|---:|---:|---:|---:|
 | direct L1 | val | 0.030928 | 1.1249 | 0.006103 | 0.026529 |
 | contact QP + history query | val | **0.012092** | **0.6100** | **0.004573** | **0.007780** |
@@ -4318,12 +4317,12 @@ diagnostic hypothesis, не заявлением новизны.
 | convex dual + history query | test | 0.017805 | 0.9864 | 0.005483 | 0.012323 |
 
 Convergence signals были большими по aggregate: convex-dual validation
-(d_X) уменьшился (0.060786\to0.015626), а history-query arm
-(0.060285\to0.015829). Но decomposition отвергает удобную интерпретацию:
+$d_X$ уменьшился $0.060786\to0.015626$, а history-query arm
+$0.060285\to0.015829$. Но decomposition отвергает удобную интерпретацию:
 zero-query arm почти оставляет pose у identity, и основная доля выигрыша
 получена по joints. Явный history query относительно zero-query arm уменьшает
 test translation на 5.87% и rotation на 10.58%, но ухудшает joints на 7.88% и
-aggregate на 1.00%. Non-cyclic monotone arm уменьшает direct (d_X) только на
+aggregate на 1.00%. Non-cyclic monotone arm уменьшает direct $d_X$ только на
 21.0%, одновременно ухудшая translation на 10.7% и rotation на 37.9%.
 
 Следовательно:
@@ -4345,44 +4344,44 @@ aggregate на 1.00%. Non-cyclic monotone arm уменьшает direct (d_X) т
 не ещё одним contact QP, а **lifted bivariational solution operator**. Рабочее
 название: Balanced Bipotential Neural Resolvent (BBNR).
 
-Один macro transition разворачивается в (S=4\ldots8) shared pseudo-time
-substeps. На substep (s) состояние (y_s), load coordinate \(\alpha_s\) и
-contact reactions \(\lambda_s\) определяются совместно:
+Один macro transition разворачивается в $S=4\ldots8$ shared pseudo-time
+substeps. На substep $s$ состояние $y_s$, load coordinate $\alpha_s$ и
+contact reactions $\lambda_s$ определяются совместно:
 
-\[
+$$
 v_{s,i}=J_i(y_s)z_s+\frac{h_i(y_s)}{\tau_s}n_i,
-\]
+$$
 
-\[
+$$
 g_{s,i}=b_\mu(v_{s,i},\lambda_{s,i})
 -\langle v_{s,i},\lambda_{s,i}\rangle\geq0,
-\]
+$$
 
-\[
+$$
 D_y\mathcal E_{\rm act}(y_s;\bar r(\alpha_s))
 -J(y_s)^T\lambda_s+\varepsilon_s M_\theta(c_s)z_s=0.
-\]
+$$
 
-Здесь geometry, (J), actuator energy и analytic Coulomb bipotential известны;
+Здесь geometry, $J$, actuator energy и analytic Coulomb bipotential известны;
 network сначала учит только:
 
-- SPD vanishing-viscosity/compliance metric (M_\theta(c_s));
-- positive pseudo-time increments \(\tau_s\) или normalized internal clock;
+- SPD vanishing-viscosity/compliance metric $M_\theta(c_s)$;
+- positive pseudo-time increments $\tau_s$ или normalized internal clock;
 - при наличии новых данных — low-dimensional internal contact-mode state
-  \(\zeta_s\), а не unrestricted pose correction.
+  $\zeta_s$, а не unrestricted pose correction.
 
-Primal (z_s) и dual \(\lambda_s\) находятся alternating convex minimization
+Primal $z_s$ и dual $\lambda_s$ находятся alternating convex minimization
 по двум blocks либо semismooth root solve. Unrolled MVP использует фиксированное
 малое число iterations; после проверки forward solver возможна implicit
 differentiation, как в общих
 [differentiable implicit layers](https://arxiv.org/abs/2010.07078). State
-обновляется product retraction на (SE(3)\times\mathbb R^6), после чего SDF и
+обновляется product retraction на $SE(3)\times\mathbb R^6$, после чего SDF и
 Jacobians вычисляются заново. Это принципиально отличается от повторения MLP
 при неизменной геометрии и от одной tangent projection.
 
 Endpoint objective должен быть
 
-\[
+$$
 \begin{aligned}
 \mathcal L={}&d_X^2(y_S,y_{k+1}^*)
 +\lambda_b\sum_{s,i}g_{s,i}
@@ -4395,13 +4394,13 @@ Endpoint objective должен быть
 \right|\\
 &+\lambda_{feas}\sum_s\|\operatorname{ReLU}(-h_\phi(y_s))\|^2.
 \end{aligned}
-\]
+$$
 
 Это objective на constitutive graph, equilibrium и energy--dissipation, а не
 только endpoint imitation. Для будущего learned correction к analytic
 bipotential допустимы только separately-convex nonnegative blocks, например
-conditional ICNN по (v) при фиксированном \(\lambda\) и по \(\lambda\) при
-фиксированном (v), с явной проверкой (b_\theta\geq\langle v,\lambda\rangle).
+conditional ICNN по $v$ при фиксированном $\lambda$ и по $\lambda$ при
+фиксированном $v$, с явной проверкой $b_\theta\geq\langle v,\lambda\rangle$.
 Сразу учить две свободные scalar функции energy/dissipation не следует:
 [VONNs](https://arxiv.org/abs/2112.09085) дают полезный variational template,
 но также подчёркивают их non-identifiability; в SRNO эта проблема сильнее из-за
@@ -4415,7 +4414,7 @@ non-monotone. Это generalized bivariational/implicit solution operator; сл�
 ### 30.6 Почему следующий experiment требует малой targeted collection
 
 Текущий dataset хранит только settled endpoints, approximate actuator effort и
-coarse contact count. В нём нет \((v_i,\lambda_i)\) pairs, contact identities,
+coarse contact count. В нём нет $(v_i,\lambda_i)$ pairs, contact identities,
 normals, tangential impulses или stick/slip labels. Поэтому bipotential gap и
 energy--dissipation balance нельзя проверить на jump path, а latent reactions
 имеют множество допустимых разложений. Это не неудобство implementation, а
@@ -4425,7 +4424,7 @@ energy--dissipation balance нельзя проверить на jump path, а l
 Полный `srno sim collect` пока не нужен. Минимальный решающий dataset:
 
 1. 10--20 уже известных jump-boundary states;
-2. exact repeats и малые perturbations (q,r,\bar r) по обе стороны event;
+2. exact repeats и малые perturbations $q,r,\bar r$ по обе стороны event;
 3. preserve/reset branches;
 4. на каждом physics substep: contact pair identity, point, normal, separation,
    normal/tangential relative velocity, normal/tangential impulse/reaction,
@@ -4433,12 +4432,12 @@ energy--dissipation balance нельзя проверить на jump path, а l
 5. два load refinements для проверки rate-independent/BV consistency.
 
 До появления этих labels допустим только BBNR smooth-transition prototype с
-analytic (b_\mu). Jump claim по старому endpoint dataset был бы снова
+analytic $b_\mu$. Jump claim по старому endpoint dataset был бы снова
 непроверяемой генерацией модели.
 
 Acceptance criterion для следующего local experiment следует зафиксировать
 до test: не менее 40% снижения pose aggregate относительно direct L1,
-одновременное снижение (T) и (R), не более 5% деградации joints
+одновременное снижение $T$ и $R$, не более 5% деградации joints
 относительно implicit-QP и не менее 30% снижения jump-pose error. Только после
 этого имеет смысл rollout.
 
@@ -4492,10 +4491,10 @@ mass-conditioned RKHS улучшил point estimate, но не решил зад
 **[Derivation]** При скрытых физических коэффициентах и contact/history mode
 наблюдаемая задача естественно задаёт multifunction
 
-\[
+$$
   \mathcal S(q)=\{Y(\xi):\pi(\xi)=q\}
   \subset (SE(3)\times\mathbb R^6)^{32},
-\]
+$$
 
 а не обязательно единственный smooth map. Реализованный непараметрический
 estimator возвращает конечное множество complete physical train paths,

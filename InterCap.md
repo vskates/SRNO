@@ -14,35 +14,35 @@
 
 Предлагается не восстанавливать скрытую форму и не предсказывать один scalar grasp-success score. Вместо этого следует учить **условный закон минимальных геометрических событий взаимодействия**, которые gripper может проверить своим телом и губками: попадание скрытой поверхности в запрещённый swept volume, существование доступной пары противоположных контактов в заданной margin-ячейке, несовместимость ширины и т. п.
 
-Полная скрытая геометрия при фиксированном grasp (g) детерминированно порождает конечное множество таких **interaction witnesses**. Из-за окклюзии это множество случайно условно на единственном RGB-D observation. Его закон предлагается представлять не mesh, SDF, occupancy grid или point samples, а **capacity functional** — вероятностями hit/miss для небольших gripper-shaped query sets.
+Полная скрытая геометрия при фиксированном grasp $g$ детерминированно порождает конечное множество таких **interaction witnesses**. Из-за окклюзии это множество случайно условно на единственном RGB-D observation. Его закон предлагается представлять не mesh, SDF, occupancy grid или point samples, а **capacity functional** — вероятностями hit/miss для небольших gripper-shaped query sets.
 
 Ключевой learning objective — **joint capacity log score**:
 
-\[
+$$
 \mathcal L_{\mathrm{cap}}
 =
 -\mathbb E\log p_\theta
 \!\left(h_g(S)\mid X,g\right),
-\]
+$$
 
 где $h_g(S)\in\{0,1\}^m$ — совместный hit pattern на $m$ непересекающихся ячейках interaction space. В отличие от $m$ независимых BCE, objective является strictly proper для **совместного** закона событий и тем самым сохраняет корреляции между скрытыми контактами и collision. Эти корреляции принципиальны для формулы вида «body misses **и** существует согласованная левая–правая contact pair».
 
 Эффективная параметризация — conditional nonnegative-rank factorization вероятностного тензора:
 
-\[
+$$
 p_\theta(h\mid X,g)
 =
 \sum_{k=1}^{K}\pi_k(X,g)
 \prod_{j=1}^{m}
 a_{kj}(X,g)^{h_j}
 \bigl(1-a_{kj}(X,g)\bigr)^{1-h_j}.
-\]
+$$
 
 Это гарантированно задаёт корректный joint distribution и, следовательно, корректную completely-alternating capacity на конечной query algebra; стоимость — $O(Km)$, без $2^m$-head, shape samples и 3-D decoding. $K=1$ ровно даёт слабый independent-events baseline, а при $K\le 2^m$ семейство способно точно представить любой закон на $\{0,1\}^m$.
 
 **Почему это кандидат на ICLR, а не ещё один grasp pipeline:** центральный объект обучения — условная capacity неизвестного random set по partial observation; роботизированный grasp является строгим и полезным instantiation. Из постановки следуют properness, capacity coherence, decision sufficiency и plug-in decision-regret bound. Архитектура — лишь эффективный conditional estimator этого нового объекта.
 
-**Почему это может быть сильнее существующих методов:** reconstruction-based методы тратят capacity на геометрию, которая никогда не пересекается с gripper queries; direct scalar scorers не моделируют joint event law и не могут менять collision/contact criterion после обучения. InterCap учит ровно тот quotient скрытой формы, который достаточен для выбора grasp, и аналитически marginalizes (K) interaction modes за (O(Km)).
+**Почему это может быть сильнее существующих методов:** reconstruction-based методы тратят capacity на геометрию, которая никогда не пересекается с gripper queries; direct scalar scorers не моделируют joint event law и не могут менять collision/contact criterion после обучения. InterCap учит ровно тот quotient скрытой формы, который достаточен для выбора grasp, и аналитически marginalizes $K$ interaction modes за $O(Km)$.
 
 ---
 
@@ -61,31 +61,31 @@ a_{kj}(X,g)^{h_j}
 
 Вход метода:
 
-\[
+$$
 X=(P, V),
-\]
+$$
 
-где (P) — сегментированное noisy partial point cloud target/foreground/shelf, а (V) — компактное описание known-free / occluded rays из depth image. Маска target считается данным upstream input; open-vocabulary grounding не является вкладом.
+где $P$ — сегментированное noisy partial point cloud target/foreground/shelf, а $V$ — компактное описание known-free / occluded rays из depth image. Маска target считается данным upstream input; open-vocabulary grounding не является вкладом.
 
 Кандидат:
 
-\[
+$$
 g\in \mathrm{SE}(3)\times [w_{\min},w_{\max}].
-\]
+$$
 
-Candidate generator намеренно не является вкладом. Для чистого сравнения все rerankers получают один и тот же set (G(X)), сгенерированный сильной существующей моделью и дополненный локальными perturbations.
+Candidate generator намеренно не является вкладом. Для чистого сравнения все rerankers получают один и тот же set $G(X)$, сгенерированный сильной существующей моделью и дополненный локальными perturbations.
 
 Выход InterCap — не grasp trajectory и не shape. Для каждого $g$ это условный закон небольшого hit pattern и derived score:
 
-\[
+$$
 \operatorname{score}_\alpha(g)
 =
 \sup\bigl\{\tau:
 \Pr_\theta(C_g=0,\ M_g\ge \tau\mid X,g)\ge 1-\alpha
 \bigr\}.
-\]
+$$
 
-Здесь (C_g) означает terminal/small-sweep collision, а (M_g) — дискретизированный antipodal-contact margin. Это **не** исполнимость всего approach/lift cycle.
+Здесь $C_g$ означает terminal/small-sweep collision, а $M_g$ — дискретизированный antipodal-contact margin. Это **не** исполнимость всего approach/lift cycle.
 
 ### 2.2 Что paper утверждает
 
@@ -115,7 +115,7 @@ Candidate generator намеренно не является вкладом. Д�
 - [Contact-GraspNet](https://arxiv.org/abs/2103.14127) генерирует distribution of 6-DoF parallel-jaw grasps прямо из depth, привязывая grasp к наблюдаемому contact point; на structured clutter сообщено более 90% success. Это сильный generator, но скрытый контакт, отсутствующий в point cloud, не получает отдельного probabilistic event law.
 - [Graspness/GSNet](https://openaccess.thecvf.com/content/ICCV2021/html/Wang_Graspness_Discovery_in_Clutters_for_Fast_and_Accurate_Grasp_Detection_ICCV_2021_paper.html) показывает, что ранняя фильтрация graspable regions даёт более 30 AP улучшения и высокую скорость. Это аргумент за общий сильный candidate set, но не решение ambiguity скрытой формы.
 - [AnyGrasp](https://arxiv.org/abs/2212.08333) сообщает 93.3% bin-clearing success и устойчивость к depth noise; его цель — dense spatial-temporal grasp perception, не условный закон скрытых contact/collision events.
-- [OrbitGrasp](https://proceedings.mlr.press/v270/hu25b.html) моделирует непрерывную grasp-quality function на (S^2) через spherical harmonics и показывает преимущество SE(3)-equivariance. Это сильное основание использовать canonical/equivariant query encoder, но output остаётся quality function, а не coherent joint uncertainty law.
+- [OrbitGrasp](https://proceedings.mlr.press/v270/hu25b.html) моделирует непрерывную grasp-quality function на $S^2$ через spherical harmonics и показывает преимущество SE(3)-equivariance. Это сильное основание использовать canonical/equivariant query encoder, но output остаётся quality function, а не coherent joint uncertainty law.
 
 **Gap:** эти методы в основном решают generation/ranking по видимой геометрии. Простое добавление ещё одного scalar success head не является новым objective.
 
@@ -155,11 +155,11 @@ Candidate generator намеренно не является вкладом. Д�
 
 ### 3.6 Random closed sets и capacity
 
-Для random closed set (W) capacity functional
+Для random closed set $W$ capacity functional
 
-\[
+$$
 T(K)=\Pr(W\cap K\ne\varnothing)
-\]
+$$
 
 играет роль CDF. Choquet–Kendall–Matheron theorem утверждает, что при стандартных topological assumptions закон random closed set однозначно определяется normalized, upper-semicontinuous, completely-alternating capacity. Краткая формулировка условий доступна в [Algorithmic Randomness and Capacity of Closed Sets](https://arxiv.org/abs/1106.2993); современная работа также прямо формулирует уникальность закона по capacity [здесь](https://www.sciencedirect.com/science/article/abs/pii/S0165011421003699).
 
@@ -186,7 +186,7 @@ Random closed sets применялись в старой робототехни
 **Почему казался разумным:** прост, быстр, легко калибруется.  
 **Почему отвергнут:** $p(\text{success}\mid X,g)$ — обычная supervised classification; conformal layer не создаёт substantial new knowledge. Scalar не отвечает, *почему* hidden geometry делает grasp рискованным, и не переносится на другой friction/width criterion.
 
-### Вариант C: neural process над целой grasp-quality function (q_S(g))
+### Вариант C: neural process над целой grasp-quality function $q_S(g)$
 
 **Почему казался разумным:** coherent function samples вместо независимых scores.  
 **Почему отвергнут:** generic conditional neural process уже известен. Для risk-neutral выбора одного grasp expected regret относительно shape-specific oracle имеет тот же argmax, что и expected score; поэтому заявленная joint-function сложность часто не меняет решение. Minimax regret добавляет известный robust-decision objective, но не новую grasp-relevant structure.
@@ -216,19 +216,19 @@ Random closed sets применялись в старой робототехни
 
 ### 5.1 Общая постановка
 
-Пусть latent world (S) наблюдается через many-to-one sensing map:
+Пусть latent world $S$ наблюдается через many-to-one sensing map:
 
-\[
+$$
 X\sim p(X\mid S).
-\]
+$$
 
-Action (g) не требует знать весь (S); он взаимодействует с ним через детерминированный **witness operator**
+Action $g$ не требует знать весь $S$; он взаимодействует с ним через детерминированный **witness operator**
 
-\[
+$$
 \mathcal W_g:S\mapsto W_g(S)\subseteq \mathcal E_g,
-\]
+$$
 
-где (mathcal E_g) — компактное canonical interaction space. При partial observation (W_g(S)) становится conditional random closed set.
+где $\mathcal E_g$ — компактное canonical interaction space. При partial observation $W_g(S)$ становится conditional random closed set.
 
 **Open ML question:** можно ли выучить $\mathcal L(W_g\mid X)$ только через action-shaped set queries и proper scoring, не восстанавливая $S$, причём так, чтобы:
 
@@ -249,47 +249,47 @@ Grasping — наглядный special case, но тот же objective при�
 
 ### 6.1 Witness space
 
-Для каждого grasp (g) переводим gripper и локальную observed geometry в canonical gripper frame. Full mesh нужен **только offline** для вычисления witness set.
+Для каждого grasp $g$ переводим gripper и локальную observed geometry в canonical gripper frame. Full mesh нужен **только offline** для вычисления witness set.
 
 Определим disjoint-union space
 
-\[
+$$
 \mathcal E_g
 =
 \mathcal E_g^{\mathrm{pair}}
 \;\sqcup\;
 \mathcal E_g^{\mathrm{forbid}}.
-\]
+$$
 
 - $\mathcal E_g^{\mathrm{pair}}$ содержит только пары first-reachable jaw contacts, представленные compact contact-pair descriptor: closure coordinate, pad coordinate и antipodal/friction margin.
 - $\mathcal E_g^{\mathrm{forbid}}$ содержит intersections hidden solid с terminal gripper body и очень коротким final insertion/closing sweep.
 
 Не нужно предсказывать эти coordinates как dense field. Пространство заранее разбивается на $m$ непересекающихся, физически определённых cells:
 
-\[
+$$
 \mathcal P_g=\{K_1(g),\ldots,K_m(g)\}.
-\]
+$$
 
 Пример для $m=12$: одна collision cell; восемь contact-pair cells по closure/antipodal-margin; три cells для pad-edge/width slack. Конкретная partition — hyperparameter, а не набор новых latent scene variables.
 
 ### 6.2 Hit vector
 
-\[
+$$
 h_{g,j}(S)
 =
 \mathbf 1\!\left[W_g(S)\cap K_j(g)\ne\varnothing\right],
 \qquad j=1,\dots,m.
-\]
+$$
 
 Поскольку $S$ неизвестна после observation, target объекта обучения:
 
-\[
+$$
 p^*(h\mid X,g),\qquad h\in\{0,1\}^{m}.
-\]
+$$
 
-Для любого subset (A\subseteq[m]) avoidance functional на union cells равен
+Для любого subset $A\subseteq[m]$ avoidance functional на union cells равен
 
-\[
+$$
 Q^*_{X,g}(A)
 =
 \Pr\!\left(
@@ -298,40 +298,40 @@ W_g\cap\bigcup_{j\in A}K_j=\varnothing
 \right)
 =
 \sum_{h:\,h_j=0\ \forall j\in A}p^*(h\mid X,g),
-\]
+$$
 
-а capacity (T^*=1-Q^*). Таким образом joint hit law и capacity на конечной algebra эквивалентны через Möbius/inclusion–exclusion relations.
+а capacity $T^*=1-Q^*$. Таким образом joint hit law и capacity на конечной algebra эквивалентны через Möbius/inclusion–exclusion relations.
 
 ### 6.3 Grasp event без длинной state formulation
 
 Пусть cell $K_0$ — forbidden collision, а $R_\tau\subseteq\{1,\dots,m-1\}$ — contact-pair cells с analytic margin не меньше $\tau$. Тогда
 
-\[
+$$
 \Phi_{g,\tau}(h)
 =
 \neg h_0
 \;\wedge\;
 \bigvee_{j\in R_\tau}h_j.
-\]
+$$
 
 Это ровно terminal geometric viability: gripper body не пересекает скрытую geometry и существует reachable antipodal pair требуемого качества. Ни trajectory state, ни full-scene SDF, ни causal failure taxonomy не вводятся.
 
 ### 6.4 Risk-aware selection
 
-\[
+$$
 P_{\theta,\tau}(g\mid X)
 =
 \Pr_\theta(\Phi_{g,\tau}=1\mid X,g).
-\]
+$$
 
 Выбираем не максимальный mean analytic score, а максимальный posterior lower margin:
 
-\[
+$$
 g^*
 =
 \arg\max_{g\in G(X)}
 \sup\{\tau:P_{\theta,\tau}(g\mid X)\ge1-\alpha\}.
-\]
+$$
 
 $\alpha$ задаёт reliability level. Tie-breaker — larger $P_{\theta,0}$, затем observed clearance.
 
@@ -343,26 +343,26 @@ $\alpha$ задаёт reliability level. Tie-breaker — larger $P_{\theta,0}$, 
 
 Joint probability tensor $p(h\mid X,g)$ имеет $2^m$ cells. InterCap использует conditional mixture of product Bernoullis:
 
-\[
+$$
 p_\theta(h\mid X,g)
 =
 \sum_{k=1}^{K}\pi_{\theta k}(X,g)
 \prod_{j=1}^{m}
 a_{\theta kj}(X,g)^{h_j}
 \bigl(1-a_{\theta kj}(X,g)\bigr)^{1-h_j}.
-\]
+$$
 
 $\pi_k\ge0$, $\sum_k\pi_k=1$, $a_{kj}\in(0,1)$. Shared component $k$ — не shape sample; это low-dimensional **interaction mode**, определённый только через hit statistics.
 
 Вероятность grasp event вычисляется точно:
 
-\[
+$$
 P_{\theta,\tau}(g\mid X)
 =
 \sum_{k=1}^{K}\pi_k
 (1-a_{k0})
 \left[1-\prod_{j\in R_\tau}(1-a_{kj})\right].
-\]
+$$
 
 Никакого Monte Carlo at inference не требуется.
 
@@ -370,7 +370,7 @@ P_{\theta,\tau}(g\mid X)
 
 Основной loss:
 
-\[
+$$
 \boxed{
 \mathcal L_{\mathrm{CapLog}}(\theta)
 =
@@ -382,7 +382,7 @@ a_{\theta kj}^{h_{g,j}(S)}
 (1-a_{\theta kj})^{1-h_{g,j}(S)}
 \right]
 }
-\]
+$$
 
 Важно обучать log probability **целого pattern**, а не сумму независимых BCE после marginalization. Сумма BCE правильна только для $K=1$ / условной независимости hit cells и не штрафует неверные correlations.
 
@@ -417,7 +417,7 @@ a_{\theta kj}^{h_{g,j}(S)}
 
 Любой $p_\theta(h\mid X,g)$ из mixture model является корректным probability distribution на hit patterns. Индуцированные $T_\theta(A)=1-Q_\theta(A)$ normalized, monotone и completely alternating на конечной algebra cells.
 
-**Смысл:** модель не может выдать логически несовместимые ответы вроде (T(K_1)>T(K_1\cup K_2)), если union queries вычисляются из joint law.
+**Смысл:** модель не может выдать логически несовместимые ответы вроде $T(K_1)>T(K_1\cup K_2)$, если union queries вычисляются из joint law.
 
 ### Proposition 2: strict propriety
 
@@ -431,17 +431,17 @@ a_{\theta kj}^{h_{g,j}(S)}
 
 Пусть downstream utility имеет вид
 
-\[
+$$
 u(S,g)=\tilde u(h_g(S),g).
-\]
+$$
 
 Тогда Bayes-optimal action зависит от latent-shape posterior $p(S\mid X)$ только через $p(h_g\mid X,g)$:
 
-\[
+$$
 \mathbb E[u(S,g)\mid X]
 =
 \sum_h \tilde u(h,g)p(h\mid X,g).
-\]
+$$
 
 Две hidden shapes, порождающие одинаковые witness patterns для всех $g\in G$, decision-equivalent. Их различия не должны занимать representation capacity. Это формализует «не реконструировать task-irrelevant geometry» без нестрогой information-bottleneck риторики.
 
@@ -449,11 +449,11 @@ u(S,g)=\tilde u(h_g(S),g).
 
 Если $u\in[0,1]$ и для всех candidates
 
-\[
+$$
 \operatorname{TV}
 \bigl(p_\theta(h\mid X,g),p^*(h\mid X,g)\bigr)
 \le\varepsilon,
-\]
+$$
 
 то regret grasp, выбранного plug-in maximization, не превосходит $2\varepsilon$. Это напрямую связывает качество conditional capacity с downstream selection и даёт осмысленную calibration metric.
 
@@ -470,30 +470,30 @@ u(S,g)=\tilde u(h_g(S),g).
 
 ### 9.1 Observation encoder
 
-Один sparse point encoder обрабатывает (P) с тремя token types: target surface, foreground/shelf surface, free/occluded ray evidence. Можно использовать sparse point transformer; архитектурный claim не должен зависеть от конкретного fashionable backbone.
+Один sparse point encoder обрабатывает $P$ с тремя token types: target surface, foreground/shelf surface, free/occluded ray evidence. Можно использовать sparse point transformer; архитектурный claim не должен зависеть от конкретного fashionable backbone.
 
 Выход:
 
-- global context token (z_X);
+- global context token $z_X$;
 - point/ray tokens с positions и local features.
 
 ### 9.2 Canonical grasp-query encoder
 
-Для каждого (g):
+Для каждого $g$:
 
 1. локальные tokens переводятся в gripper frame;
-2. (m) query cells кодируются своими границами и mark type;
-3. cell tokens cross-attend только к (k_{nn}) nearby observation tokens;
-4. permutation-invariant pooling формирует (z_{X,g,j}).
+2. $m$ query cells кодируются своими границами и mark type;
+3. cell tokens cross-attend только к $k_{nn}$ nearby observation tokens;
+4. permutation-invariant pooling формирует $z_{X,g,j}$.
 
 Canonicalization даёт exact invariance к совместному rigid transform input+grasp; полноценный equivariant backbone можно проверить ablation, но не делать обязательным.
 
 ### 9.3 Low-rank capacity head
 
 - mode head: $\pi_{1:K}=\operatorname{softmax}(f_\pi(z_X,z_g))$;
-- hit head: (a_{kj}=\sigma(f_a(z_X,z_g,z_{X,g,j},e_j,k))).
+- hit head: $a_{kj}=\sigma(f_a(z_X,z_g,z_{X,g,j},e_j,k))$.
 
-Один observation encoding переиспользуется для всех (M) candidates. При (M=128,m=12,K=8) head вычисляет всего (12{,}288) Bernoulli parameters до batching overhead.
+Один observation encoding переиспользуется для всех $M$ candidates. При $M=128,m=12,K=8$ head вычисляет всего (12{,}288) Bernoulli parameters до batching overhead.
 
 ### 9.4 Analytic event layer
 
@@ -501,11 +501,11 @@ Event layer не имеет trainable parameters. Она получает тре
 
 ### 9.5 Почему это не implicit reconstruction
 
-- нет function (o(x):\mathbb R^3\to[0,1]);
+- нет function $o(x):\mathbb R^3\to[0,1]$;
 - нет SDF/mesh/point-cloud decoder;
 - нельзя визуализировать complete object без решения новой inverse problem;
 - supervision существует только на gripper-induced interaction cells;
-- compute растёт с (M m K), а не с (N_{voxels}) или числом shape samples.
+- compute растёт с (M m K), а не с $N_{voxels}$ или числом shape samples.
 
 Если reviewer всё равно назовёт representation «task-space implicit geometry», ответ должен быть: да, она хранит ровно task-equivalence class, но не идентифицирует world geometry; Theorem 1 показывает, почему эта потеря информации сознательна и достаточна.
 
@@ -521,7 +521,7 @@ Event layer не имеет trainable parameters. Она получает тре
 2. render wrist RGB-D с RealSense-like missing depth, quantization, axial/lateral noise;
 3. vary visible fraction target, например 15–80%;
 4. получить общий candidate set;
-5. для каждого (g) exact mesh queries дают (W_g(S)) и hit pattern (h_g(S)).
+5. для каждого $g$ exact mesh queries дают $W_g(S)$ и hit pattern $h_g(S)$.
 
 Label generation — parallel ray casting/collision checking. Physics rollout не нужен для основного label; короткий lift simulation используется только как secondary label/evaluation.
 
@@ -555,7 +555,7 @@ Training queries должны включать:
 - hard negatives, которые проходят observed collision filter, но проваливаются из-за hidden geometry;
 - oracle-good hidden-shape grasps только для диагностики candidate recall, не как test-time input.
 
-Если oracle-good grasp отсутствует в (G(X)), reranker не может помочь. Поэтому candidate recall@full-mesh-success должен сообщаться отдельно.
+Если oracle-good grasp отсутствует в $G(X)$, reranker не может помочь. Поэтому candidate recall@full-mesh-success должен сообщаться отдельно.
 
 ### 10.5 Масштаб
 
@@ -580,9 +580,9 @@ Primary metrics:
 
 1. top-1 short-lift success;
 2. collision-free antipodal success по full mesh;
-3. selected-grasp regret к full-mesh oracle внутри общего (G(X));
+3. selected-grasp regret к full-mesh oracle внутри общего $G(X)$;
 4. negative log-likelihood полного hit pattern;
-5. ECE/Brier для (Phi_{g,0});
+5. ECE/Brier для $\Phi_{g,0}$;
 6. risk–coverage curve: success среди grasps с predicted lower margin $\ge\tau$;
 7. latency и peak memory.
 
@@ -592,24 +592,24 @@ Primary metrics:
 
 1. original generator score (GSNet/OrbitGrasp-class baseline);
 2. scalar success BCE reranker, тот же observation backbone;
-3. independent per-cell BCE, тот же InterCap encoder, (K=1);
+3. independent per-cell BCE, тот же InterCap encoder, $K=1$;
 4. deep ensemble / MC-dropout scalar reranker;
 5. local occupancy completion + analytic evaluator;
 6. stochastic shape completion + Monte Carlo robust score;
 7. implicit collision query + scalar contact score;
-8. InterCap (K>1).
+8. InterCap $K>1$.
 
 Отдельно, где code/data позволяют, сравнить с Local Occupancy-Enhanced, NeuGraspNet, PCF-Grasp и adapted TOSC. Не следует выдавать dexterous-only CADGrasp/TOSC за perfectly matched baselines; они важны для related-work and representation comparison.
 
 ### 11.3 Critical ablations
 
 - joint CapLog vs sum of marginal BCE;
-- (K=1,2,4,8,16);
+- $K=1,2,4,8,16$;
 - coarse vs fine atomic partitions;
 - без occlusion-ray tokens;
 - без hard negatives hidden by blocker;
 - canonical frame vs ordinary concatenation of pose;
-- fixed risk-neutral (P(success)) vs lower-margin selection;
+- fixed risk-neutral $P(success)$ vs lower-margin selection;
 - reconstruction auxiliary loss added: гипотеза — он не помогает или ухудшает compute/decision efficiency.
 
 ### 11.4 Real robot
@@ -698,7 +698,7 @@ InterCap соединяет эти факты не как robotics pipeline, а 
 
 ### «Mixture components не соответствуют shapes»
 
-И не должны. Они non-identifiable low-rank factors joint event tensor. Нельзя интерпретировать component (k) как конкретную completion. Это преимущество по compute и ограничение по explainability.
+И не должны. Они non-identifiable low-rank factors joint event tensor. Нельзя интерпретировать component $k$ как конкретную completion. Это преимущество по compute и ограничение по explainability.
 
 ### «Simulator contacts не переносятся в reality»
 
@@ -706,7 +706,7 @@ InterCap соединяет эти факты не как robotics pipeline, а 
 
 ### «Candidate generator не предлагает grasp на скрытой стороне»
 
-Это ограничение recall. Paper про **selection**, не generation. Нужно измерять oracle recall общего (G(X)); при необходимости добавить generic uniform/perturbed candidates, не новую learned generator architecture.
+Это ограничение recall. Paper про **selection**, не generation. Нужно измерять oracle recall общего $G(X)$; при необходимости добавить generic uniform/perturbed candidates, не новую learned generator architecture.
 
 ---
 
@@ -752,11 +752,11 @@ High, если метод одновременно:
 
 ### Phase 0: kill test до большой модели
 
-На 2-D procedural shapes построить (m=8) query cells и сравнить:
+На 2-D procedural shapes построить $m=8$ query cells и сравнить:
 
 - scalar success BCE;
 - independent hits;
-- InterCap (K=4);
+- InterCap $K=4$;
 - occupancy reconstruction.
 
 Проверить joint NLL, union consistency, criterion transfer, selection regret. Если InterCap не выигрывает при сильной multimodal ambiguity, не масштабировать.
@@ -792,8 +792,8 @@ Paired randomized trials, predefined protocol, fixed checkpoint.
 ## 18. Главные риски проекта
 
 1. **Insufficient novelty perception:** mitigated general random-set benchmark + criterion transfer + formal objective.
-2. **Witness discretization loses decisive geometry:** multi-resolution partition and adaptive cell boundaries; report convergence with (m).
-3. **Low-rank underfit:** compare (K), autoregressive oracle head и full categorical head при малом (m).
+2. **Witness discretization loses decisive geometry:** multi-resolution partition and adaptive cell boundaries; report convergence with $m$.
+3. **Low-rank underfit:** compare $K$, autoregressive oracle head и full categorical head при малом $m$.
 4. **Mode collapse:** batch-level mode-usage monitoring, multiple restarts; не обещать semantic modes.
 5. **Sim-to-real gap:** geometry-derived labels, noise randomization, real calibration, paired tests.
 6. **Candidate recall bottleneck:** report oracle recall, keep generator common across methods.
@@ -815,7 +815,7 @@ Paired randomized trials, predefined protocol, fixed checkpoint.
 
 Главная формула всей идеи:
 
-\[
+$$
 \boxed{
 \text{partial RGB-D}
 \longrightarrow
@@ -825,7 +825,7 @@ p_\theta(\text{interaction-hit algebra}\mid X,g)
 \quad
 \text{without }\hat S
 }
-\]
+$$
 
 Именно переход от «predict hidden shape» к «properly learn the conditional law of action-induced set events» является broad, open и потенциально ICLR-level вкладом.
 

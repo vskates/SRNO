@@ -9,13 +9,13 @@
 
 Предлагается сменить сам предсказываемый объект. Вместо одной наиболее вероятной скрытой формы, occupancy/SDF либо одного усреднённого grasp score модель должна учить **условное распределение над целой функцией физического grasp-сертификата**:
 
-\[
+$$
 \Pi_y
 =
 \operatorname{Law}\!\left(C_X(\cdot)\mid Y=y\right),
 \qquad
 C_X:\mathcal G\to\mathbb R,
-\]
+$$
 
 где $X$ — неизвестная полная форма target-а, $Y$ — одно частично окклюдированное RGB-D наблюдение, $g\in\mathcal G\subset SE(3)\times\mathbb R_+$ — parallel-jaw grasp, а $C_X(g)$ — signed local certificate: положительное значение означает одновременно допустимую ширину, отсутствие запрещённого пересечения gripper-а и робастный antipodal/force-closure margin; отрицательное — величину нарушения. 
 
@@ -96,8 +96,8 @@ C_X:\mathcal G\to\mathbb R,
 Пусть:
 
 - $X\sim P_X$ — полная rigid target geometry из shape distribution;
-- (A) — foreground occluder и shelf geometry;
-- (M) — camera pose/intrinsics и visibility operator;
+- $A$ — foreground occluder и shelf geometry;
+- $M$ — camera pose/intrinsics и visibility operator;
 - $\eta$ — RGB-D noise;
 - $Y=\mathcal R_M(X,A)+\eta$ — single RGB-D observation с target/occluder masks;
 - $g=(R,t,w)\in\mathcal G\subset SE(3)\times[0,w_{max}]$ — candidate parallel-jaw grasp;
@@ -109,7 +109,7 @@ Target mask допустимо считать данным от upstream segment
 
 На полном training mesh офлайн вычисляется
 
-\[
+$$
 C_X(g)=
 \min_{\delta\in\Delta}
 \min\left\{
@@ -117,7 +117,7 @@ C_X(g)=
 \frac{d_{\mathrm{body}}(X,g\oplus\delta)}{s_d},
 \frac{w_{max}-w_X(g\oplus\delta)}{s_w}
 \right\}.
-\]
+$$
 
 Здесь:
 
@@ -131,15 +131,15 @@ C_X(g)=
 
 Полная geometry создаёт функцию
 
-\[
+$$
 C_X:\mathcal G\to\mathbb R.
-\]
+$$
 
-Из-за окклюзии (X) неизвестен, поэтому для одного (y) эта функция случайна. Целевой объект обучения:
+Из-за окклюзии $X$ неизвестен, поэтому для одного $y$ эта функция случайна. Целевой объект обучения:
 
-\[
+$$
 \Pi_y = (X\mapsto C_X(\cdot))_\# P(X\mid Y=y),
-\]
+$$
 
 то есть posterior push-forward на function space.
 
@@ -147,22 +147,22 @@ C_X:\mathcal G\to\mathbb R.
 
 Для risk level $\alpha\in(0,0.5)$:
 
-\[
+$$
 g^*(y)
 =
 \arg\max_{g\in\mathcal C(y)}
 Q_\alpha\!\left[C_X(g)\mid Y=y\right],
-\]
+$$
 
 где $\mathcal C(y)$ — candidate set после exact rejection по observed shelf/occluder points. Если лучший calibrated lower quantile не положителен, система возвращает `no certified grasp`; можно отдельно сообщить лучший forced-choice grasp для benchmark, где abstention запрещён.
 
 При точном conditional law и непрерывном распределении
 
-\[
+$$
 Q_\alpha[C_X(g)\mid y]>0
 \Longrightarrow
 P(C_X(g)>0\mid y)\ge 1-\alpha.
-\]
+$$
 
 У learned model это только model-based statement. Distribution-free conditional guarantee невозможна без дополнительных assumptions; поэтому paper не должен называть raw quantile «гарантией». Реальный false-safe risk калибруется на held-out scenes, а под distribution shift показывается degradation.
 
@@ -170,17 +170,17 @@ P(C_X(g)>0\mid y)\ge 1-\alpha.
 
 Для любого local downstream loss вида
 
-\[
+$$
 L(g,X)=\widetilde L(g,C_X(g))
-\]
+$$
 
 conditional Bayes risk равен
 
-\[
+$$
 \mathbb E[L(g,X)\mid Y=y]
 =
 \int \widetilde L(g,c(g))\,d\Pi_y(c).
-\]
+$$
 
 Следовательно, два posteriors над geometry, имеющие одинаковый push-forward $\Pi_y$, decision-equivalent для всей семьи таких losses. Реконструировать различия между ними статистически и вычислительно избыточно.
 
@@ -190,15 +190,15 @@ conditional Bayes risk равен
 
 ### 4.1. Почему loss должен видеть несколько grasps одной формы
 
-Один hidden shape одновременно определяет качества всех grasпов. Training item поэтому должен быть не ((y,g,c)), а
+Один hidden shape одновременно определяет качества всех grasпов. Training item поэтому должен быть не $(y,g,c)$, а
 
-\[
+$$
 \left(y,G,\mathbf c_X(G)\right),
 \quad
 G=(g_1,\ldots,g_B),
 \quad
 \mathbf c_X(G)=(C_X(g_1),\ldots,C_X(g_B)).
-\]
+$$
 
 Design $G\sim\nu(\cdot\mid y)$ рандомизируется каждый step и смешивает:
 
@@ -213,7 +213,7 @@ Sampling weights должны быть зафиксированы до test eval
 
 RJPN берёт shared noise $e^{(s)}\sim\mathcal N(0,I)$ и выдаёт sample общей функции:
 
-\[
+$$
 \widehat{\mathbf c}^{(s)}
 =
 \left(
@@ -221,7 +221,7 @@ f_\theta(y,g_1,e^{(s)}),\ldots,
 f_\theta(y,g_B,e^{(s)})
 \right),
 \qquad s=1,\ldots,S.
-\]
+$$
 
 Один и тот же $e^{(s)}$ используется для всех $g_j$. Independent noise per grasp запрещён в основной модели, потому что разрушает common-hidden-shape semantics.
 
@@ -229,12 +229,12 @@ f_\theta(y,g_B,e^{(s)})
 
 Чтобы отрицательные margins и область около нуля влияли сильнее без потери propriety, вводится монотонная биекция
 
-\[
+$$
 h_\gamma(c)
 =
 c-\gamma\tau\operatorname{softplus}(-c/\tau),
 \qquad \gamma>0,\;\tau>0.
-\]
+$$
 
 Её производная $1+\gamma\sigma(-c/\tau)>0$, значит преобразование invertible и не смешивает разные distributions. Оно растягивает adverse $c<0$ tail, а не меняет target law на эвристически reweighted outcome distribution.
 
@@ -244,7 +244,7 @@ c-\gamma\tau\operatorname{softplus}(-c/\tau),
 
 Monte Carlo training loss:
 
-\[
+$$
 \mathcal L_{\mathrm{ES}}
 =
 \frac1S\sum_{s=1}^{S}
@@ -253,15 +253,15 @@ Monte Carlo training loss:
 \frac{1}{2S(S-1)}
 \sum_{s\ne r}
 \left\|H(\widehat{\mathbf c}^{(s)})-H(\widehat{\mathbf c}^{(r)})\right\|_2.
-\]
+$$
 
-Первый член требует accuracy, второй вознаграждает только diversity, подтверждаемую данными, и препятствует collapse. Energy score — multivariate strictly proper scoring rule при finite first moment; он применим к implicit ensemble без tractable density. Биективный (H) сохраняет идентифицируемость distribution. [Gneiting & Raftery, proper scoring rules](https://stat.uw.edu/research/tech-reports/strictly-proper-scoring-rules-prediction-and-estimation-revised), [Scoring-rule training of generative networks](https://arxiv.org/abs/2112.08217).
+Первый член требует accuracy, второй вознаграждает только diversity, подтверждаемую данными, и препятствует collapse. Energy score — multivariate strictly proper scoring rule при finite first moment; он применим к implicit ensemble без tractable density. Биективный $H$ сохраняет идентифицируемость distribution. [Gneiting & Raftery, proper scoring rules](https://stat.uw.edu/research/tech-reports/strictly-proper-scoring-rules-prediction-and-estimation-revised), [Scoring-rule training of generative networks](https://arxiv.org/abs/2112.08217).
 
 ### 4.5. Variogram component для ranking dependence
 
 Energy score может быть относительно нечувствителен к ошибочной correlation structure. Поэтому добавляется proper variogram score:
 
-\[
+$$
 \mathcal L_{\mathrm{VS}}
 =
 \sum_{j<k} a_{jk}
@@ -271,13 +271,13 @@ Energy score может быть относительно нечувствите
 \frac1S\sum_s
 |h_\gamma(\hat c_j^{(s)})-h_\gamma(\hat c_k^{(s)})|^p
 \right)^2,
-\]
+$$
 
 где $0<p\le2$, а $a_{jk}=\exp[-d_{\mathcal G}(g_j,g_k)^2/\ell^2]$ сильнее связывает соседние grasps. Variogram score известен большей чувствительностью к dependencies; сумма с strictly proper ES остаётся strictly proper из-за ES term. [Variogram scoring rules](https://journals.ametsoc.org/abstract/journals/mwre/143/4/mwr-d-14-00269.1.xml).
 
 Итог:
 
-\[
+$$
 \boxed{
 \mathcal L_{\mathrm{process}}
 =
@@ -287,7 +287,7 @@ Energy score может быть относительно нечувствите
 +\lambda_v\mathcal L_{\mathrm{VS}}
 \right]
 }
-\]
+$$
 
 Никакого reconstruction, Chamfer, occupancy или hidden-point loss в основной модели нет.
 
@@ -300,13 +300,13 @@ Energy score может быть относительно нечувствите
 1. conditional certificate process имеет separable sample paths и finite first moments;
 2. distribution $\nu$ имеет support на всех open subsets compact query domain $\mathcal G_0$;
 3. model family projectively consistent;
-4. (H) — биекция, а ES metric имеет strong negative type.
+4. $H$ — биекция, а ES metric имеет strong negative type.
 
 Тогда population minimizer ожидаемого random-design ES совпадает с истинными finite-dimensional conditional laws
 
-\[
+$$
 \operatorname{Law}\left((C_X(g_1),\ldots,C_X(g_B))\mid Y=y\right)
-\]
+$$
 
 для $\nu$-почти всех finite designs; при continuity это идентифицирует law процесса на $\mathcal G_0$.
 
@@ -314,7 +314,7 @@ Proof skeleton:
 
 1. Условиться на $Y=y,G$.
 2. Strict propriety ES идентифицирует transformed vector law.
-3. Invertibility (H) возвращает original vector law.
+3. Invertibility $H$ возвращает original vector law.
 4. Интегрирование по full-support random designs и continuity расширяют equality с almost-everywhere designs.
 5. Projective consistency + Kolmogorov extension связывают finite-dimensional laws с process law.
 
@@ -336,9 +336,9 @@ Occlusion — не просто missing points. RGB-D сообщает три р
 
 Для subsampled depth pixels создаются tokens
 
-\[
+$$
 r_i=(o_c,d_i,z_i,\ell_i,f_i),
-\]
+$$
 
 где $o_c,d_i$ задают camera ray, $z_i$ — terminal depth, $\ell_i\in\{\text{target},\text{occluder},\text{background}\}$, $f_i$ — local RGB/depth feature. Дополнительно задаются free interval $[0,z_i)$ и, для occluder pixels, censored interval внутри coarse target ROI behind $z_i$.
 
@@ -346,7 +346,7 @@ r_i=(o_c,d_i,z_i,\ell_i,f_i),
 
 ### 5.3. Jaw-query geometry
 
-Каждый (g) индуцирует малый фиксированный набор geometric primitives:
+Каждый $g$ индуцирует малый фиксированный набор geometric primitives:
 
 - $J_L(g),J_R(g)$: pad closing rays/strips;
 - $V_{close}(g)$: volume между fingers;
@@ -355,7 +355,7 @@ r_i=(o_c,d_i,z_i,\ell_i,f_i),
 
 Для каждой jaw primitive $j$ вычисляются relative features с camera ray $r_i$:
 
-\[
+$$
 \phi(r_i,j)=
 \left[
 d_i^\top d_j,
@@ -364,21 +364,21 @@ d_i^\top d_j,
 \mathbf 1[\text{ray tube overlap}],
 \ell_i
 \right].
-\]
+$$
 
 Все points/rays одновременно переводятся в gripper frame $g^{-1}$. Поэтому при общей rigid transform сцены и grasp query эти relative features неизменны. Получается exact query-conditioned SE(3) invariance без тяжёлого dense equivariant volume. Общая польза equivariance для rotation robustness и data efficiency подтверждается Vector Neurons, SE(3)-Transformers и complete-local-frame GNNs; в grasping OrbitGrasp уже показывает силу continuous equivariant quality functions, но остаётся deterministic. [Vector Neurons](https://openaccess.thecvf.com/content/ICCV2021/html/Deng_Vector_Neurons_A_General_Framework_for_SO3-Equivariant_Networks_ICCV_2021_paper.html), [SE(3)-Transformer](https://papers.neurips.cc/paper/2020/hash/15231a7ce4ba789d13b722cc5c955834-Abstract.html), [Complete Local Frames](https://proceedings.mlr.press/v162/du22e.html), [OrbitGrasp](https://arxiv.org/abs/2407.03531).
 
 ### 5.4. Sparse ray–jaw incidence attention
 
-Для query (g) берутся только (k) camera rays, чьи free/censored segments пересекают enlarged interaction tube
+Для query $g$ берутся только $k$ camera rays, чьи free/censored segments пересекают enlarged interaction tube
 
-\[
+$$
 T(g)=V_{close}(g)\cup V_{body}(g)\cup V_{approach}^{short}(g).
-\]
+$$
 
 Jaw tokens cross-attend к этим ray tokens с attention bias $b(\phi(r_i,j))$. Это отличает сеть и от global PointNet/Transformer, и от local surface rendering NeuGraspNet:
 
-- сеть не спрашивает «какая поверхность находится в 3D point (p)?»;
+- сеть не спрашивает «какая поверхность находится в 3D point $p$?»;
 - сеть спрашивает «какое observed/free/censored ray evidence релевантно контактному и collision tube этого grasp query?»;
 - hidden surface никогда не materialize-ится.
 
@@ -388,21 +388,21 @@ Global target token из всех visible target points добавляется �
 
 Scene encoder выдаёт context $e_y$. Conditional normalizing flow либо lightweight diffusion-free transport генерирует
 
-\[
+$$
 z=T_\theta(\epsilon;e_y),
 \qquad \epsilon\sim\mathcal N(0,I),
 \qquad z\in\mathbb R^{d_z},\;d_z\approx16\text{--}32.
-\]
+$$
 
 Затем для любого query
 
-\[
+$$
 \widehat C(g;z,y)
 =
 D_\theta\bigl(e_y,e_{inc}(g,y),e_g,z\bigr).
-\]
+$$
 
-Ключевое ограничение: decoder одного (g) не принимает другие members candidate set. Поэтому добавление, удаление или permutation queries не меняет уже полученные samples; один shared (z) определяет одну функцию. Это обеспечивает:
+Ключевое ограничение: decoder одного $g$ не принимает другие members candidate set. Поэтому добавление, удаление или permutation queries не меняет уже полученные samples; один shared $z$ определяет одну функцию. Это обеспечивает:
 
 - permutation equivariance по queries;
 - projective consistency finite query distributions;
@@ -415,18 +415,18 @@ Conditional Neural Processes и Functional Neural Processes показывают
 
 Не надо заставлять stochastic network учить очевидную геометрию. Из measured points/free space аналитически вычисляются:
 
-\[
+$$
 c_{obs}(y,g)=
 \min\{d(g,V_{shelf}),d(g,P_{occluder}),d(g,P_{visible\ target\ noncontact})\}.
-\]
+$$
 
 Итоговый sample:
 
-\[
+$$
 \widehat C_{final}(g;z,y)
 =
 \min\{\widehat C_{hidden}(g;z,y),c_{obs}(y,g)/s_d\}.
-\]
+$$
 
 Так сеть отвечает только за distributional ambiguity скрытой target geometry. Это снижает sample complexity и делает failure analysis физически понятным, не превращая модель в causal failure-mode system.
 
@@ -438,14 +438,14 @@ c_{obs}(y,g)=
 2. coarse SE(3) seeds в target ROI, включая occlusion cone;
 3. local gradient refinement нижнего empirical quantile RJPN.
 
-Для (S) shared latent samples:
+Для $S$ shared latent samples:
 
-\[
+$$
 \widehat q_\alpha(g)
 =
 \operatorname{Quantile}_\alpha
 \{\widehat C(g;z_s,y)\}_{s=1}^{S}.
-\]
+$$
 
 Так paper проверяет именно selection under ambiguity, а не скрывает gain в proposal heuristic. Отдельной extension может быть end-to-end proposal head.
 
@@ -453,9 +453,9 @@ c_{obs}(y,g)=
 
 При $N$ input rays, $B$ candidates, $k\ll N$ relevant rays/query и $S$ process samples:
 
-\[
+$$
 \text{cost}\approx O(\operatorname{Enc}(N))+O(Bk)+O(SB),
-\]
+$$
 
 без $O(R^3)$ voxel grid, marching cubes или multi-camera ray marching. Это пока hypothesis, а не доказанный speedup. Design target: $N=2048$, $B=512$, $k=48$, $S=16$, менее 100 ms ranking после candidate generation на современной GPU. В paper надо сообщить end-to-end wall time, peak memory и energy, а не только decoder time.
 
@@ -467,7 +467,7 @@ ACRONYM содержит 17.7M physics-labeled parallel-jaw grasps для 8,872 
 
 ### 6.2. Synthetic observation generation
 
-Для каждого (X):
+Для каждого $X$:
 
 1. Поместить один target на shelf, без clutter.
 2. Поместить один foreground occluder между wrist camera и target.
@@ -484,13 +484,13 @@ Train/val/test split обязателен по object instance и предпоч
 
 Строятся families $\{X_1,\ldots,X_K\}$, для которых при одном camera/occluder:
 
-\[
+$$
 d_{vis}(Y(X_i),Y(X_j))<\varepsilon,
 \quad
 \text{но}
 \quad
 \|\mathbf C_{X_i}(G)-\mathbf C_{X_j}(G)\|>\Delta.
-\]
+$$
 
 Два способа:
 
@@ -499,7 +499,7 @@ d_{vis}(Y(X_i),Y(X_j))<\varepsilon,
 
 Controlled variants нужны прежде всего для falsification benchmark, а не для заявления photorealism. В real test используются обычные предметы.
 
-При minibatch training полезно помещать несколько members одной fiber family с одинаковым (y), чтобы proper score видел реальные multi-modal conditional samples, а не надеялся восстановить modes только из smoothness across unrelated observations.
+При minibatch training полезно помещать несколько members одной fiber family с одинаковым $y$, чтобы proper score видел реальные multi-modal conditional samples, а не надеялся восстановить modes только из smoothness across unrelated observations.
 
 ### 6.4. Почему labels дешевле reconstruction
 
@@ -515,22 +515,22 @@ Controlled variants нужны прежде всего для falsification benc
 
 После freeze RJPN и candidate generator на calibration scenes исполняется вся selection policy. Вводится nested family:
 
-\[
+$$
 \pi_\lambda(y)=
 \begin{cases}
 g^*(y), & \widehat q_\alpha(g^*)\ge\lambda,\\
 \texttt{abstain}, & \text{иначе}.
 \end{cases}
-\]
+$$
 
 Loss, например,
 
-\[
+$$
 \ell_\lambda(y,X)
 =
 \mathbf 1[\pi_\lambda(y)\ne\texttt{abstain}]
 \mathbf 1[C_X(\pi_\lambda(y))\le0].
-\]
+$$
 
 С увеличением $\lambda$ система становится более conservative. Conformal Risk Control умеет контролировать ожидаемое значение monotone loss и tight до $O(1/n)$ при exchangeability. Здесь корректный claim — population false-safe risk среди deployment draws/с учётом выбранной normalisation, а не per-scene conditional guarantee. [Conformal Risk Control, ICLR 2024](https://proceedings.iclr.cc/paper_files/paper/2024/file/f3549ef9b5ff520a7e41ff3cc306ab2b-Paper-Conference.pdf), [risk-controlling prediction sets](https://arxiv.org/abs/2101.02703).
 
@@ -555,10 +555,10 @@ Loss, например,
 Минимальный набор:
 
 1. **Direct Bernoulli:** тот же encoder/decoder, BCE по $\mathbf 1[C>0]$; Dex-Net-like scientific baseline.
-2. **Deterministic margin:** Huber/MSE по (C).
+2. **Deterministic margin:** Huber/MSE по $C$.
 3. **Independent quantiles:** pinball/CRPS per grasp без shared latent.
 4. **Deep ensemble:** 5 deterministic margin networks.
-5. **Completion + same certificate evaluator:** PSSNet/ZeroGrasp-like multiple completions, затем analytic (C).
+5. **Completion + same certificate evaluator:** PSSNet/ZeroGrasp-like multiple completions, затем analytic $C$.
 6. **NeuGraspNet:** implicit completion + quality, retrained on the same isolated-occluder data.
 7. **S4G/GSNet/Contact-GraspNet/AnyGrasp:** standard single-view detectors where technically compatible.
 8. **OrbitGrasp-style deterministic continuous quality field:** closest function-valued, but non-stochastic baseline.
@@ -593,7 +593,7 @@ Loss, например,
 - variogram score;
 - pairwise rank correlation of sampled certificate landscapes;
 - mode coverage на occlusion-equivalence families;
-- smoothness/local Lipschitz diagnostics в (SE(3)), не как target metric.
+- smoothness/local Lipschitz diagnostics в $SE(3)$, не как target metric.
 
 **Efficiency:**
 
@@ -607,7 +607,7 @@ Loss, например,
 
 - shared $z$ vs independent $z_g$;
 - ES vs ES+VS;
-- identity (H) vs tail transform;
+- identity $H$ vs tail transform;
 - ray tokens vs terminal 3D points only;
 - incidence sparse attention vs global cross-attention;
 - gripper-frame canonicalization vs augmentation only;
@@ -649,7 +649,7 @@ Loss, например,
 
 ### Kill test B: exact same observation, two hidden shapes
 
-Дать буквально одинаковый (y) с двумя/четырьмя equally likely certificate landscapes. Правильная модель должна sample-ить эти landscapes, а не их pointwise average. Это unit test objective, не benchmark performance.
+Дать буквально одинаковый $y$ с двумя/четырьмя equally likely certificate landscapes. Правильная модель должна sample-ить эти landscapes, а не их pointwise average. Это unit test objective, не benchmark performance.
 
 ### Kill test C: candidate dependence necessity
 

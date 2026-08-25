@@ -16,21 +16,21 @@ response against compact jaw-, pad-, and approach-local kernels for every
 continuous grasp query.
 
 The broad ML problem is learning a decision from a controlled observation in
-which the informative stratum has probability mass \(O(\epsilon)\), although
-its displacement-normalized weak derivative remains \(O(1)\).  The precise
+which the informative stratum has probability mass $O(\epsilon)$, although
+its displacement-normalized weak derivative remains $O(1)$.  The precise
 novelty claim is the conjunction of an action-generated RGB-D birth stratum, a
 displacement-normalized measure queried by continuous grasp actions, and an
 equal-token-budget grasp-regret separation.  It is not a claim of first active
 view selection, first two-view fusion, or information superiority over the raw
 pair.
 
-The efficient-learnability mechanism is explicit: with \(K\) unstratified
+The efficient-learnability mechanism is explicit: with $K$ unstratified
 auxiliary tokens, distinguishing two hidden grasp cases requires
-\(K=\Omega(1/\epsilon)\) under the sparse-mixture model, whereas conditioning
+$K=\Omega(1/\epsilon)$ under the sparse-mixture model, whereas conditioning
 the same learned token budget on the action-registered birth stratum removes
 that dilution.  The proposed learned component is candidate-local and compact;
-registration and visibility comparison cost \(O(n)\), and \(m\) kernel queries
-over \(K\) retained tokens cost \(O(mK)\).
+registration and visibility comparison cost $O(n)$, and $m$ kernel queries
+over $K$ retained tokens cost $O(mK)$.
 
 The credible performance target is Pareto-SOTA in physical top-one success
 versus camera motion, latency, learned FLOPs, and memory at matched candidates
@@ -139,11 +139,11 @@ unidentifiable hidden counterfactuals.
 Proposal: predict the sharp utility interval or vertical sensitivity of a grasp
 along the null directions of the RGB-D rendering map,
 
-\[
+$$
 \omega(o,g)=\sup_{z,z'\in R^{-1}(o)}|Q(z,g)-Q(z',g)|,
 \qquad
 \|P_{\ker DR(z)}\nabla_z Q(z,g)\|.
-\]
+$$
 
 Rejection: this is a local/nonlinear restatement of goal-oriented inverse-problem
 uncertainty and partial identification. Selecting a grasp by its lower endpoint
@@ -214,19 +214,19 @@ Source: https://proceedings.mlr.press/v108/sessa20a.html
 
 ### 11. Observation-conditioned guaranteed wrench core
 
-Proposal: for latent scene \(z\), grasp \(g\), and feasible grasp-wrench body
-\(W(z,g)\subset\mathbb R^6\), learn
+Proposal: for latent scene $z$, grasp $g$, and feasible grasp-wrench body
+$W(z,g)\subset\mathbb R^6$, learn
 
-\[
+$$
 K(o,g)=\bigcap_{z:R(z)\simeq o} W(z,g).
-\]
+$$
 
 A compact implementation would predict the gauge of this convex body. The exact
 identity
 
-\[
+$$
 p_{K(o,g)}(w)=\sup_{z:R(z)\simeq o}p_{W(z,g)}(w)
-\]
+$$
 
 would permit supervision with scalar wrench queries and avoid full meshes/SDFs.
 
@@ -268,8 +268,8 @@ Sources:
 
 ### 13. Learned antipodal support jets
 
-Proposal: for a convex object, the support function \(h(u)\), its spherical
-gradient, and its Hessian at \(u\) and \(-u\) determine antipodal contact
+Proposal: for a convex object, the support function $h(u)$, its spherical
+gradient, and its Hessian at $u$ and $-u$ determine antipodal contact
 locations and local curvatures. Predict these compact support jets from a
 partial observation instead of reconstructing an SDF.
 
@@ -282,7 +282,7 @@ convex geometry would therefore purchase novelty by excluding central cases.
 ### 14. Persistent topology of the feasible-grasp set
 
 Proposal: learn the persistent homology of superlevel sets of a grasp field on
-\(SE(3)/\mathbb Z_2\), preserving distinct stable grasp components and returning
+$SE(3)/\mathbb Z_2$, preserving distinct stable grasp components and returning
 at least one candidate from each persistent component.
 
 Rejection: grasp moduli spaces and persistent-homology-based grasp/cage
@@ -326,28 +326,28 @@ Sources:
 
 ## Candidate C: information-isotonic affordance bounds (rejected)
 
-Represent an RGB-D observation as a set \(E\) of occupied/free-space ray
+Represent an RGB-D observation as a set $E$ of occupied/free-space ray
 constraints. Define refinement by reverse inclusion of the compatible latent
 worlds:
 
-\[
+$$
 E_1\preceq E_2 \quad\Longleftrightarrow\quad
 \mathcal C(E_2)\subseteq\mathcal C(E_1).
-\]
+$$
 
-For a grasp \(g\), the sharp utility endpoints
+For a grasp $g$, the sharp utility endpoints
 
-\[
+$$
 L(E,g)=\inf_{z\in\mathcal C(E)}Q(z,g),\qquad
 U(E,g)=\sup_{z\in\mathcal C(E)}Q(z,g)
-\]
+$$
 
 obey an information-order law:
 
-\[
+$$
 E_1\preceq E_2\Rightarrow
 L(E_1,g)\le L(E_2,g)\le U(E_2,g)\le U(E_1,g).
-\]
+$$
 
 Thus additional consistent sensor evidence can only contract an affordance
 interval. Ordinary expected-success or evidential grasp scores have no such
@@ -375,7 +375,7 @@ Current risks:
 1. Monotone set networks are established; the architecture alone is not novel.
 2. The endpoints remain partial-identification intervals, a direction already
    judged too close to goal-oriented uncertainty quantification.
-3. With an overly broad admissible hidden-shape class, \(L\) is identically zero
+3. With an overly broad admissible hidden-shape class, $L$ is identically zero
    for most single-view grasps.
 4. A learned monotone output is not automatically a valid physical bound;
    coverage still depends on the twin family and calibration.
@@ -401,9 +401,9 @@ Closest sources found during the rejection audit:
 ### 17. Low-rank bilateral contact-compatibility operator
 
 Proposal: represent the intrinsically two-sided parallel-jaw decision by a
-pairwise kernel between left and right contact evidence. Factor a rank-\(r\)
-kernel so that all contact-pair scores can be computed in \(O(Nr)\) rather than
-\(O(N^2)\).
+pairwise kernel between left and right contact evidence. Factor a rank-$r$
+kernel so that all contact-pair scores can be computed in $O(Nr)$ rather than
+$O(N^2)$.
 
 Rejection: this is an efficient architecture, not a new learning problem.
 PhyGrasp already predicts per-point pair embeddings and an explicit grasp-pair
@@ -416,11 +416,11 @@ Sources:
 - https://proceedings.mlr.press/v205/cai23a.html
 - https://haojhuang.github.io/edge_grasp_page/
 
-### 18. Learned admissible branch-and-bound over \(SE(3)\)
+### 18. Learned admissible branch-and-bound over $SE(3)$
 
-Proposal: learn a supremum oracle \(U(o,B)\) for cells \(B\) of continuous grasp
+Proposal: learn a supremum oracle $U(o,B)$ for cells $B$ of continuous grasp
 space and use best-first subdivision until the returned grasp is
-\(\epsilon\)-optimal.
+$\epsilon$-optimal.
 
 Rejection: without a physically sound upper bound the guarantee concerns only a
 possibly wrong learned score. Making the bound physically valid requires neural
@@ -436,9 +436,9 @@ Sources:
 
 ### 19. Difference-body / neural width geometry
 
-Proposal: for a convex body \(K\), learn only its difference body
-\(D=K+(-K)\). Its support function is the directional width
-\(h_D(n)=h_K(n)+h_K(-n)\), and a support point of \(D\) is the chord between the
+Proposal: for a convex body $K$, learn only its difference body
+$D=K+(-K)$. Its support function is the directional width
+$h_D(n)=h_K(n)+h_K(-n)$, and a support point of $D$ is the chord between the
 two first parallel-jaw contacts. This is a translation-free, embodiment-specific
 quotient of shape.
 
@@ -484,35 +484,35 @@ field can be much lower-dimensional. A learner should model the pushforward of
 sensor ambiguity into action-utility space, rather than reconstruct hidden shape
 or predict unrelated scalar uncertainty for every action.
 
-Let \(R:\mathcal Z\to\mathcal O\) be the RGB-D sensor map and let
-\(Q:\mathcal Z\to L^2(\mathcal G)\) map a latent scene to its closure-and-small-
+Let $R:\mathcal Z\to\mathcal O$ be the RGB-D sensor map and let
+$Q:\mathcal Z\to L^2(\mathcal G)$ map a latent scene to its closure-and-small-
 lift utility function. On a differentiable visibility stratum, define the
 **sensor-null action operator**
 
-\[
+$$
 A_z = DQ_z\big|_{\ker DR_z}:\ker DR_z\longrightarrow L^2(\mathcal G).
-\]
+$$
 
 Its image contains exactly the first-order changes in the entire grasp field that
 the sensor cannot observe. Its singular values form the **sensor-null action
-spectrum**, and the numerical rank at tolerance \(\delta\) is the action
+spectrum**, and the numerical rank at tolerance $\delta$ is the action
 ambiguity dimension. This is not the dimension of hidden shape and not the
 uncertainty of one selected grasp.
 
-The finite, nonlinear counterpart for observation \(o\) is
+The finite, nonlinear counterpart for observation $o$ is
 
-\[
+$$
 \mathcal U(o)=\{Q(z,\cdot):z\in\mathcal C_\varepsilon(o)\},
-\]
+$$
 
 with centered Kolmogorov width
 
-\[
+$$
 d_r(\mathcal U(o))=
 \inf_{\mu,\,\dim V\le r}\;
 \sup_{q\in\mathcal U(o)}\inf_{v\in V}
 \|q-\mu-v\|.
-\]
+$$
 
 The central empirical claim is not assumed for free: measure whether these widths
 decay rapidly for realistic occluded-object families, and reject the project if
@@ -521,86 +521,86 @@ they do not.
 ### Why smoothing can make the hypothesis true
 
 The operational target should be success probability under the robot's actual
-small pose perturbation \(\xi\),
+small pose perturbation $\xi$,
 
-\[
+$$
 Q_z^\sigma(g)=\mathbb E_\xi[Y_z(g\circ\xi)],
-\]
+$$
 
 not an infinitely sharp binary contact indicator. On a compact action manifold,
 isotropic perturbation is heat-kernel smoothing. If
-\(Y_z=\sum_j c_{zj}e_j\) in Laplace--Beltrami eigenfunctions with eigenvalues
-\(\lambda_j\), then
+$Y_z=\sum_j c_{zj}e_j$ in Laplace--Beltrami eigenfunctions with eigenvalues
+$\lambda_j$, then
 
-\[
+$$
 Q_z^\sigma=\sum_j e^{-\sigma^2\lambda_j/2}c_{zj}e_j.
-\]
+$$
 
-Consequently, uniformly \(L^2\)-bounded raw success fields admit the spectral
+Consequently, uniformly $L^2$-bounded raw success fields admit the spectral
 truncation bound
 
-\[
+$$
 \|Q_z^\sigma-P_rQ_z^\sigma\|_2
 \le e^{-\sigma^2\lambda_{r+1}/2}\|Y_z\|_2.
-\]
+$$
 
-Weyl growth \(\lambda_r\asymp r^{2/d}\) gives exponentially decreasing error in
-\(r^{2/d}\). This does not prove that \(r\) is tiny in practice, but it supplies a
+Weyl growth $\lambda_r\asymp r^{2/d}$ gives exponentially decreasing error in
+$r^{2/d}$. This does not prove that $r$ is tiny in practice, but it supplies a
 falsifiable mechanism: finite pads and execution noise remove action frequencies
 that no robot can exploit reliably.
 
 ### Efficient model: a sensor-null action ellipsoid
 
 The model should follow the operator rather than merely attach a low-rank head
-to a grasp network.  A radius-\(c\) ball of infinitesimal sensor-null
-perturbations is mapped by \(A_z\) to an ellipsoid in action-function space.  Its
+to a grasp network.  A radius-$c$ ball of infinitesimal sensor-null
+perturbations is mapped by $A_z$ to an ellipsoid in action-function space.  Its
 truncated SVD is
 
-\[
+$$
 A_z h\simeq \sum_{j=1}^r s_j u_j\langle v_j,h\rangle .
-\]
+$$
 
 This motivates an observation-conditioned **sensor-null action ellipsoid
 (SNAE)**, not independent uncertainty intervals.  For a candidate set
-\(G_o=\{g_m\}_{m=1}^M\) generated solely from the shared observation, a point/ray
+$G_o=\{g_m\}_{m=1}^M$ generated solely from the shared observation, a point/ray
 encoder and gripper-query decoder output
 
-\[
+$$
 \mu_m=\mu_\theta(o,g_m),\qquad
 U_{mj}=u_{\theta,j}(o,g_m),\qquad d_j\ge 0,\qquad \rho\ge0.
-\]
+$$
 
-A weighted thin QR or polar layer makes \(U^TWU=I_r\).  The radii \(d_j\) are
+A weighted thin QR or polar layer makes $U^TWU=I_r$.  The radii $d_j$ are
 kept separate from the directions, fixing the scale ambiguity.  The predicted
 functional set is
 
-\[
+$$
 \widehat{\mathcal U}_r(o)=
 \left\{\mu+U\operatorname{diag}(d)a+e:
 \|a\|_2\le1,\ \|e\|_\infty\le\rho\right\}.
-\]
+$$
 
-The coefficient \(a\) indexes an observation-preserving hidden perturbation and
+The coefficient $a$ indexes an observation-preserving hidden perturbation and
 is never inferred at deployment.  The robust lower score is the support
 function of the ellipsoid and is therefore closed-form:
 
-\[
+$$
 \widehat L_m
 =\inf_{q\in\widehat{\mathcal U}_r(o)}q_m
 =\mu_m-
 \sqrt{\sum_{j=1}^r d_j^2U_{mj}^2}-\rho .
-\]
+$$
 
-After clipping to \([0,1]\), select \(\arg\max_m\widehat L_m\), or abstain when
-its value is below a declared threshold.  Inference is \(O(Mr+Mr^2)\), returns
-only \(r+2\) scalars per queried grasp, and never predicts a mesh, voxel grid,
+After clipping to $[0,1]$, select $\arg\max_m\widehat L_m$, or abstain when
+its value is below a declared threshold.  Inference is $O(Mr+Mr^2)$, returns
+only $r+2$ scalars per queried grasp, and never predicts a mesh, voxel grid,
 or scene SDF.
 
-For training group \(b\), let \(q_{b,s}\in[0,1]^M\) be the perturbation-smoothed
-utility vector of hidden twin \(s\).  The exact finite-sample target is a
-minimum-width rank-\(r\) enclosing ellipsoid with an \(L^\infty\) residual:
+For training group $b$, let $q_{b,s}\in[0,1]^M$ be the perturbation-smoothed
+utility vector of hidden twin $s$.  The exact finite-sample target is a
+minimum-width rank-$r$ enclosing ellipsoid with an $L^\infty$ residual:
 
-\[
+$$
 \begin{aligned}
 \min_{\mu,U,d,\rho,\{a_s\}}\quad &
  \rho+\lambda_w\frac1M\sum_{m=1}^M
@@ -610,17 +610,17 @@ minimum-width rank-\(r\) enclosing ellipsoid with an \(L^\infty\) residual:
 &\|q_{b,s}-\mu-U\operatorname{diag}(d)a_s\|_\infty\le\rho
 \quad\forall s.
 \end{aligned}
-\]
+$$
 
 The first two terms directly minimize the uniform error and actionwise robust
 half-width used by the downstream selector.  The log-volume term is only a
 tightness regularizer; an ablation must show that it does not manufacture
-overconfidence.  In implementation, projected inner updates for \(a_s\), a
+overconfidence.  In implementation, projected inner updates for $a_s$, a
 log-sum-exp approximation of the largest residual, and alternating
 network/coefficient steps make the program differentiable and minibatchable.
 Hard residual mining restores the worst twin/candidate pairs lost by softening.
 
-Sparse utility labels \(\Omega_{b,s}\subset[M]\) can be used in the inner fit,
+Sparse utility labels $\Omega_{b,s}\subset[M]$ can be used in the inner fit,
 with disjoint held-out candidate entries controlling reconstruction.  This is a
 testable sample-efficiency claim, not a guarantee obtained merely from the
 factorization.  The required baseline is a direct lower-envelope head with the
@@ -640,10 +640,10 @@ an enclosing action-function image whose support function is the decision rule.
 Given the current basis, search only inside the RGB-D shadow volume for a hidden
 deformation whose utility field has the largest residual outside the span:
 
-\[
+$$
 z^*=\arg\max_{z:\,d(R(z),o)\le\varepsilon}
 \|(I-P_\Phi)(Q(z,G_o)-\mu)\|.
-\]
+$$
 
 Add this counterexample to the twin group and repeat. This is a greedy reduced-
 basis construction in task space, not shape completion at inference. In practice
@@ -653,72 +653,71 @@ render/contact surrogates only as a secondary stress test.
 ### Immediate theory targets
 
 1. **Sensor-twin lower bound.** For two equally likely latent scenes with
-   observation laws \(P_0,P_1\), suppose choosing the other scene's optimal
-   action costs at least \(\Delta\). Every observation-only (even randomized)
+   observation laws $P_0,P_1$, suppose choosing the other scene's optimal
+   action costs at least $\Delta$. Every observation-only (even randomized)
    selector then has expected regret at least
 
-   \[
+   $$
    \frac{\Delta}{2}\big(1-\operatorname{TV}(P_0,P_1)\big),
-   \]
+   $$
 
    by reduction to binary testing and Le Cam's bound. Exact twins have
-   \(P_0=P_1\), so more model capacity cannot remove the gap.
+   $P_0=P_1$, so more model capacity cannot remove the gap.
 2. **Factorization criterion.** If fibers are connected and
-   \(DQ_g\ker DR=0\) everywhere, then \(Q_g=\bar Q_g\circ R\); zero action rank
+   $DQ_g\ker DR=0$ everywhere, then $Q_g=\bar Q_g\circ R$; zero action rank
    is exactly local-to-global action identifiability.
-3. **Local nonlinear width bound.** Let \(\psi:B_{\mathcal H}(c)\to
-   \mathcal C(o)\) be a chart of one smooth sensor fiber, set
-   \(F=Q^\sigma\circ\psi\), and assume \(\|D^2F\|\le K\).  If \(V_r\) is
-   spanned by the first \(r\) left singular functions of \(A=DF(0)\), Taylor's
+3. **Local nonlinear width bound.** Let $\psi:B_{\mathcal H}(c)\to \mathcal C(o)$ be a chart of one smooth sensor fiber, set
+   $F=Q^\sigma\circ\psi$, and assume $\|D^2F\|\le K$.  If $V_r$ is
+   spanned by the first $r$ left singular functions of $A=DF(0)$, Taylor's
    theorem and SVD optimality give
 
-   \[
+   $$
    \sup_{\|h\|\le c}
    \operatorname{dist}\big(F(h)-F(0),V_r\big)
    \le c\,s_{r+1}(A)+\tfrac12Kc^2.
-   \]
+   $$
 
    The spectrum therefore controls local nonlinear ambiguity up to an explicit
    curvature term; it is not only a visualization of a Jacobian.
 4. **Spectrum-to-decision identity.** On a finite shared candidate set, let
-   \(e_m\) evaluate candidate \(m\).  For the linearized fiber ball
-   \(q(h)=q_0+Ah,\ \|h\|\le c\), the exact robust utility is
+   $e_m$ evaluate candidate $m$.  For the linearized fiber ball
+   $q(h)=q_0+Ah,\ \|h\|\le c$, the exact robust utility is
 
-   \[
+   $$
    \inf_{\|h\|\le c}e_m^Tq(h)
    =q_{0,m}-c\|A^Te_m\|_2
    =q_{0,m}-c\sqrt{\sum_j s_j^2u_j(m)^2}.
-   \]
+   $$
 
-   Retaining \(r\) modes and subtracting
-   \(cs_{r+1}+Kc^2/2\) gives a conservative lower score under the preceding
+   Retaining $r$ modes and subtracting
+   $cs_{r+1}+Kc^2/2$ gives a conservative lower score under the preceding
    curvature assumption.  This identity is the reason for the row-norm in SNAE;
    the ellipsoid is not a decorative uncertainty head.
 5. **Heat-compressibility bound.** If the raw sensor-null derivative is a bounded
-   operator \(B_z\) and operational utility applies heat smoothing \(H_t\), then
-   \(A_z=H_tB_z\) is compact and
+   operator $B_z$ and operational utility applies heat smoothing $H_t$, then
+   $A_z=H_tB_z$ is compact and
 
-   \[
+   $$
    s_j(A_z)\le \|B_z\|e^{-t\lambda_j}.
-   \]
+   $$
 
    Thus measured execution precision supplies an upper bound on effective
    action-space rank; the claim should be tested across noise scales.  A uniform
-   version is available for action selection: with \(K_t(g,g)\) the heat-kernel
+   version is available for action selection: with $K_t(g,g)$ the heat-kernel
    diagonal,
 
-   \[
+   $$
    \|(I-P_r)H_tf\|_\infty
    \le \sup_g K_t(g,g)^{1/2}
    e^{-t\lambda_{r+1}/2}\|f\|_2.
-   \]
+   $$
 
-   This separates the \(L^2\) spectral diagnostic from the uniform error needed
+   This separates the $L^2$ spectral diagnostic from the uniform error needed
    by a maximization over actions.
 6. **Robust-selection stability.** If the learned and true functional sets are
-   within \(\delta\) in Hausdorff \(L^\infty\) distance, their lower envelopes
-   differ by at most \(\delta\), and maximizing the learned lower envelope has at
-   most \(2\delta\) maximin regret.
+   within $\delta$ in Hausdorff $L^\infty$ distance, their lower envelopes
+   differ by at most $\delta$, and maximizing the learned lower envelope has at
+   most $2\delta$ maximin regret.
 
 Together, items 1 and 4 form an impossibility--compressibility sandwich:
 non-injective sensing creates irreducible decision loss, but the resulting family
@@ -765,13 +764,13 @@ programs, and report its own effective rank.  Before training a neural model:
 
 1. Compute centered SVD spectra of every twin-by-candidate utility matrix for raw
    binary outcomes and for operationally smoothed success probabilities.
-2. Require rank \(r\le8\) to explain at least 90% of centered energy and to keep
+2. Require rank $r\le8$ to explain at least 90% of centered energy and to keep
    the 90th-percentile per-candidate error below 0.05 in at least 70% of held-out
    visible-shell groups.  Also solve the uniform enclosing-factor objective: a
-   favorable Frobenius SVD alone does not establish the \(L^\infty\) accuracy
+   favorable Frobenius SVD alone does not establish the $L^\infty$ accuracy
    needed by action maximization.
 3. Compare oracle maximin selection on the full matrix with selection after
-   rank-\(r\) truncation. A loss larger than 5 percentage points kills the
+   rank-$r$ truncation. A loss larger than 5 percentage points kills the
    reduced-basis route even if average reconstruction looks good.
 4. Require a nontrivial regime: ordinary mean-score selection should trail the
    oracle common-grasp selector by at least about 10 points, while an oracle
@@ -799,48 +798,48 @@ Closest general sources for the audit:
 
 The inverse problem caused by single-view occlusion is unnecessarily hard because grasping does not require the hidden shape itself. It requires the image of the hidden-shape ambiguity under the grasp utility functional.
 
-Let (z\in\mathcal Z) be a complete latent object/scene, (R(z)) its RGB-D rendering, and (Q(z,g)\in[0,1]) the closure-and-small-load utility of grasp (g). For an observation (o), its sensor fiber is
+Let $z\in\mathcal Z$ be a complete latent object/scene, $R(z)$ its RGB-D rendering, and $Q(z,g)\in[0,1]$ the closure-and-small-load utility of grasp $g$. For an observation $o$, its sensor fiber is
 
-\[
+$$
 \mathcal C_\varepsilon(o)=\{z:d(R(z),o)\leq\varepsilon\}.
-\]
+$$
 
-Instead of reconstructing (z), learn the observation-conditioned random utility function
+Instead of reconstructing $z$, learn the observation-conditioned random utility function
 
-\[
+$$
 U_o:g\mapsto Q(Z,g),\qquad Z\sim p(\cdot\mid o),
-\]
+$$
 
-or, without a trusted probability prior, its support over (Z\in\mathcal C_\varepsilon(o)).
+or, without a trusted probability prior, its support over $Z\in\mathcal C_\varepsilon(o)$.
 
 This is a goal-oriented inverse problem whose output is a distribution/set of scalar fields on grasp space, not a distribution of 3D shapes.
 
 ### Why marginal grasp uncertainty is insufficient
 
-For candidates (G=\{g_1,\ldots,g_M\}), the relevant pushforward is the joint utility vector
+For candidates $G=\{g_1,\ldots,g_M\}$, the relevant pushforward is the joint utility vector
 
-\[
+$$
 \nu_{o,G}=\big(Q(Z,g_1),\ldots,Q(Z,g_M)\big)_\#p(Z\mid o).
-\]
+$$
 
 Independent confidence intervals for each grasp discard correlation across candidates. The hidden completion that is bad for one grasp can be good for another. A decision-aware representation must preserve entire hypothetical utility profiles.
 
 ### Compact model
 
-Predict \(K\) latent utility critics and optional weights:
+Predict $K$ latent utility critics and optional weights:
 
-\[
+$$
 f_{\theta,k}(o,g)\in[0,1],\quad \pi_{\theta,k}(o)\geq0,
 \quad\sum_k\pi_{\theta,k}=1.
-\]
+$$
 
-For any candidate set, row (k),
+For any candidate set, row $k$,
 
-\[
+$$
 \big(f_{\theta,k}(o,g_1),\ldots,f_{\theta,k}(o,g_M)\big),
-\]
+$$
 
-is one hypothetical utility world. A point-cloud encoder supplies observation tokens; a gripper-centric query encoder supplies a feature for (g); (K) shared scenario tokens produce utilities consistently across every queried grasp. Inference is (O(KM)) and does not generate a mesh, voxel grid, or SDF.
+is one hypothetical utility world. A point-cloud encoder supplies observation tokens; a gripper-centric query encoder supplies a feature for $g$; $K$ shared scenario tokens produce utilities consistently across every queried grasp. Inference is $O(KM)$ and does not generate a mesh, voxel grid, or SDF.
 
 Train the weighted version with a proper multivariate score such as the energy score on utility vectors. Train a prior-free support version with a soft Hausdorff/set loss.
 
@@ -848,11 +847,11 @@ Train the weighted version with a proper multivariate score such as the energy s
 
 Ordinary datasets provide one latent scene per observation and cannot identify counterfactual hidden-shape ambiguity. Construct grouped scenes
 
-\[
+$$
 \{z_{b,1},\ldots,z_{b,S}\},\qquad R(z_{b,s})=o_b,
-\]
+$$
 
-by deforming geometry only inside the camera/obstacle shadow volume while fixing visible surfaces, silhouette, texture, camera, and depth-noise realization. Generate the candidate set from (o_b), so it is identical for every twin. Simulate all twin/candidate pairs to obtain an (S\times M) utility matrix.
+by deforming geometry only inside the camera/obstacle shadow volume while fixing visible surfaces, silhouette, texture, camera, and depth-noise realization. Generate the candidate set from $o_b$, so it is identical for every twin. Simulate all twin/candidate pairs to obtain an $S\times M$ utility matrix.
 
 A decisive real experiment uses 3D-printed twin families with the same camera-facing shell and statistically indistinguishable wrist RGB-D, but different hidden backside/contact geometry.
 
@@ -860,29 +859,29 @@ A decisive real experiment uses 3D-printed twin families with the same camera-fa
 
 For the support formulation define
 
-\[
+$$
 d_o(g,h)=\left[\sup_{z\in\mathcal C_\varepsilon(o)}
 \big(Q(z,h)-Q(z,g)\big)\right]_+.
-\]
+$$
 
-This is a directed pseudometric: (d_o(g,g)=0) and
+This is a directed pseudometric: $d_o(g,g)=0$ and
 
-\[
+$$
 d_o(g,k)\leq d_o(g,h)+d_o(h,k).
-\]
+$$
 
-It measures the worst supported disadvantage of choosing (g) instead of (h). Worst-case oracle regret is the directed eccentricity
+It measures the worst supported disadvantage of choosing $g$ instead of $h$. Worst-case oracle regret is the directed eccentricity
 
-\[
+$$
 R_o(g)=\max_h d_o(g,h),
-\]
+$$
 
 and minimax-regret selection is a directed 1-center. The critic model gives a property-preserving approximation
 
-\[
+$$
 \widehat d_o(g,h)=
 \max_k\big[f_{\theta,k}(o,h)-f_{\theta,k}(o,g)\big]_+.
-\]
+$$
 
 This form is related to quasimetric embeddings, but here the quasimetric is derived from observation-fiber decision regret rather than imposed as a generic metric-learning device.
 
@@ -891,10 +890,10 @@ Strict minimax regret can sacrifice absolute worst-case success. It should there
 ### Candidate theory
 
 1. **Non-identifiability lower bound.** If two latent scenes have the same observation and different optimal grasps separated by a utility gap, every deterministic point predictor incurs positive regret on at least one scene.
-2. **Decision sufficiency.** For any one-shot loss depending on the latent scene only through (Q(z,\cdot)), the pushforward utility process is sufficient; the full posterior over geometry contains no additional decision-relevant information.
-3. **Support stability.** If the predicted and true utility supports are within Hausdorff distance (delta) in (\ell_\infty), every pairwise regret distance is within (2\delta), yielding a bounded excess robust-selection regret.
+2. **Decision sufficiency.** For any one-shot loss depending on the latent scene only through $Q(z,\cdot)$, the pushforward utility process is sufficient; the full posterior over geometry contains no additional decision-relevant information.
+3. **Support stability.** If the predicted and true utility supports are within Hausdorff distance $\delta$ in $\ell_\infty$, every pairwise regret distance is within $2\delta$, yielding a bounded excess robust-selection regret.
 4. **Distributional stability.** Wasserstein error of the learned joint utility law bounds error in expectations of Lipschitz decision losses.
-5. **Finite candidate approximation.** For perturbation-smoothed grasp utility that is Lipschitz on the gripper-symmetry quotient of (SE(3)), an (\epsilon)-net of grasps induces controlled decision regret.
+5. **Finite candidate approximation.** For perturbation-smoothed grasp utility that is Lipschitz on the gripper-symmetry quotient of $SE(3)$, an $\epsilon$-net of grasps induces controlled decision regret.
 
 ### Essential baselines
 
@@ -973,9 +972,9 @@ learning problem.
 
 Proposal: predict a continuous kernel
 
-\[
+$$
 K_o(x,y)=\Pr[x\text{ and }y\text{ belong to the same rigid target}\mid o]
-\]
+$$
 
 and use it to choose two jaw contacts without completing a mesh.
 
@@ -1030,12 +1029,12 @@ match to a broad ICLR thesis.
 
 Proposal: learn
 
-\[
+$$
 g\succeq_o h
 \quad\Longleftrightarrow\quad
 Q(z,g)\ge Q(z,h)\quad
 \text{for every }z\text{ compatible with }o,
-\]
+$$
 
 instead of learning scalar scores.
 
@@ -1134,9 +1133,9 @@ Sources:
 
 ### 30. Mechanical-similarity equivariant grasp fields
 
-Proposal: use Buckingham-\(\Pi\) groups for object scale, jaw stiffness,
+Proposal: use Buckingham-$\Pi$ groups for object scale, jaw stiffness,
 closing force, mass, and gravity, and require the grasp field to transform
-according to mechanical similarity rather than merely \(SE(3)\) equivariance.
+according to mechanical similarity rather than merely $SE(3)$ equivariance.
 
 Rejection: it is a promising inductive bias for cross-scale transfer, but the
 required dimensionless groups contain mass, stiffness, and friction that the
@@ -1244,103 +1243,103 @@ broader than grasping and distinct from learning a faster simulator.
 
 ### 1. A refinement family, not a simulator ensemble
 
-Let \(z\) be a complete scene used only by the offline simulator, \(o=R(z)\)
+Let $z$ be a complete scene used only by the offline simulator, $o=R(z)$
 the RGB-D observation, and
 
-\[
+$$
 \mathcal G = SE(3)/C_2
-\]
+$$
 
 the parallel-jaw pose space after quotienting the finger-swap symmetry.  Width
-can either be included in \(g\) or deterministically obtained by closure.
+can either be included in $g$ or deterministically obtained by closure.
 
 Fix:
 
-- one continuous compliant-contact model \(\mathcal M\);
+- one continuous compliant-contact model $\mathcal M$;
 - one terminal execution protocol;
-- one distribution \(\Xi\) of *physical* pose/control perturbations;
-- a collection \(\Gamma\) of numerical refinement paths that are intended to
-  approximate \(\mathcal M\).
+- one distribution $\Xi$ of *physical* pose/control perturbations;
+- a collection $\Gamma$ of numerical refinement paths that are intended to
+  approximate $\mathcal M$.
 
-A path \(\gamma\in\Gamma\) specifies meshes, timesteps, collision
-discretizations, tolerances, and solver iterations at levels \(k=1,2,\ldots\).
-Let \(\eta_{\gamma,k}\downarrow0\) denote its resolution scale.  The
+A path $\gamma\in\Gamma$ specifies meshes, timesteps, collision
+discretizations, tolerances, and solver iterations at levels $k=1,2,\ldots$.
+Let $\eta_{\gamma,k}\downarrow0$ denote its resolution scale.  The
 operationally smoothed simulator utility is
 
-\[
+$$
 q_{\gamma,k}(z,g)
 =
 \Pr_{\xi\sim\Xi}
 \left[
 Y_{\mathcal M,\gamma,k}(z,g,\xi)=1
 \right].
-\]
+$$
 
 This probability is estimated using matched perturbation seeds across
 resolutions.  Matching is important: otherwise ordinary Monte Carlo noise is
 mistaken for numerical disagreement.
 
-At a success threshold \(\tau\), every level induces a closed action set
+At a success threshold $\tau$, every level induces a closed action set
 
-\[
+$$
 S_{\gamma,k}(z;\tau)
 =
 \overline{\{g\in\mathcal G:q_{\gamma,k}(z,g)\ge\tau\}}.
-\]
+$$
 
 ### 2. The new target: inner and outer action-set limits
 
-For a metric \(d_{\mathcal G}\) on the grasp quotient, define the
+For a metric $d_{\mathcal G}$ on the grasp quotient, define the
 Painlevé--Kuratowski limits along a refinement path:
 
-\[
+$$
 \operatorname{Li} S_{\gamma,k}
 =
 \left\{
 g:\limsup_{k\to\infty}
 d_{\mathcal G}(g,S_{\gamma,k})=0
 \right\},
-\]
+$$
 
-\[
+$$
 \operatorname{Ls} S_{\gamma,k}
 =
 \left\{
 g:\liminf_{k\to\infty}
 d_{\mathcal G}(g,S_{\gamma,k})=0
 \right\}.
-\]
+$$
 
 The first contains grasps approximable by successful grasps at every
 sufficiently fine level.  The second also contains actions that are approached
 by success along only a subsequence.  Aggregate declared consistent
 refinement paths as
 
-\[
+$$
 S_{\mathrm{core}}(z;\tau)
 =
 \bigcap_{\gamma\in\Gamma}
 \operatorname{Li}S_{\gamma,k}(z;\tau),
-\]
+$$
 
-\[
+$$
 S_{\mathrm{possible}}(z;\tau)
 =
 \overline{
 \bigcup_{\gamma\in\Gamma}
 \operatorname{Ls}S_{\gamma,k}(z;\tau)
 }.
-\]
+$$
 
 The difference
 
-\[
+$$
 B_{\mathrm{num}}(z;\tau)
 =
 S_{\mathrm{possible}}(z;\tau)
 \setminus
 S_{\mathrm{core}}(z;\tau)
-\]
+$$
 
 is the numerically unresolved action band.  If all consistent schemes converge
 to the same success set, core and possible sets coincide except at the
@@ -1355,7 +1354,7 @@ but cannot define the scientific target.
 
 The observation-conditioned fields are
 
-\[
+$$
 L(o,g)
 =
 \Pr_{Z\mid o}
@@ -1365,21 +1364,21 @@ U(o,g)
 =
 \Pr_{Z\mid o}
 \left[g\in S_{\mathrm{possible}}(Z;\tau)\right].
-\]
+$$
 
-\(L\) is the probability that a queried grasp belongs to the stable success
-core; \(U-L\) is the probability that it belongs to the numerical ambiguity
+$L$ is the probability that a queried grasp belongs to the stable success
+core; $U-L$ is the probability that it belongs to the numerical ambiguity
 band.  Partial visibility and sensor noise remain ordinary input uncertainty;
 the target specifically records whether the *same complete scene and grasp*
 changes label under numerical refinement.
 
 The decision rule is simply
 
-\[
+$$
 \hat g(o)=\arg\max_{g\in G(o)}L_\theta(o,g),
-\]
+$$
 
-possibly with \(U_\theta-L_\theta\le\beta\) as a coverage constraint.  No
+possibly with $U_\theta-L_\theta\le\beta$ as a coverage constraint.  No
 trajectory, full scene representation, or causal failure taxonomy is
 predicted.
 
@@ -1389,79 +1388,79 @@ Use a point/ray encoder on a fixed physical-radius crop around the queried
 gripper closing region.  Cross-attention with a compact gripper query produces
 six nonnegative or unconstrained scalars:
 
-\[
+$$
 a_\theta,\quad b^-_\theta,b^+_\theta,\quad
 c^-_\theta,c^+_\theta,\quad p^-_\theta,p^+_\theta.
-\]
+$$
 
 One parsimonious refinement model is
 
-\[
+$$
 \ell_\theta(o,g,\eta)
 =
 \sigma\!\left(
 a_\theta-b^-_\theta-c^-_\theta\eta^{p^-_\theta}
 \right),
-\]
+$$
 
-\[
+$$
 u_\theta(o,g,\eta)
 =
 \sigma\!\left(
 a_\theta+b^+_\theta+c^+_\theta\eta^{p^+_\theta}
 \right),
-\]
+$$
 
-with \(b^\pm,c^\pm\ge0\) and \(p^\pm\) constrained to a plausible positive
+with $b^\pm,c^\pm\ge0$ and $p^\pm$ constrained to a plausible positive
 range.  As resolution improves, the lower envelope can only rise and the
 upper envelope can only fall.  At the formal limit,
 
-\[
+$$
 L_\theta(o,g)=\sigma(a_\theta-b^-_\theta),
 \qquad
 U_\theta(o,g)=\sigma(a_\theta+b^+_\theta).
-\]
+$$
 
-Here \(c^\pm\) describe removable numerical uncertainty, while \(b^\pm\)
+Here $c^\pm$ describe removable numerical uncertainty, while $b^\pm$
 permit a residual gap across refinement paths.  A single scalar
-\(\eta\) is acceptable only for a prescribed path.  For independent timestep,
+$\eta$ is acceptable only for a prescribed path.  For independent timestep,
 mesh, and tolerance coordinates, replace the power law by a small monotone
 lattice; do not pretend incomparable discretizations have a canonical scalar
 order.
 
-The model remains a candidate-query field with \(O(M)\) inference for \(M\)
+The model remains a candidate-query field with $O(M)$ inference for $M$
 grasps.  It does not run a simulator or reconstruct geometry at deployment.
 
 ### 5. Finite supervision
 
-For each fixed \((z,g)\), run matched perturbation trials at levels
-\((\gamma,k)\).  From the binomial observations form finite-sample lower and
+For each fixed $(z,g)$, run matched perturbation trials at levels
+$(\gamma,k)$.  From the binomial observations form finite-sample lower and
 upper confidence bounds
 
-\[
+$$
 \operatorname{LCB}_{\gamma,k}(z,g),
 \qquad
 \operatorname{UCB}_{\gamma,k}(z,g).
-\]
+$$
 
-At refinement level \(k\), empirical tail envelopes are
+At refinement level $k$, empirical tail envelopes are
 
-\[
+$$
 \widehat\ell_k(z,g)
 =
 \min_{\gamma,\;j\ge k}
 \operatorname{LCB}_{\gamma,j}(z,g),
-\]
+$$
 
-\[
+$$
 \widehat u_k(z,g)
 =
 \max_{\gamma,\;j\ge k}
 \operatorname{UCB}_{\gamma,j}(z,g).
-\]
+$$
 
-By construction, \(\widehat\ell_k\) is nondecreasing and
-\(\widehat u_k\) nonincreasing with \(k\).  Train the nested-envelope field on
+By construction, $\widehat\ell_k$ is nondecreasing and
+$\widehat u_k$ nonincreasing with $k$.  Train the nested-envelope field on
 all levels with a weighted proper binomial loss plus envelope regression.  A
 width penalty may be applied only subject to held-out finer-level coverage;
 otherwise the network can win by becoming confidently narrow.
@@ -1472,7 +1471,7 @@ Most labels need not use the finest solver:
 2. refine a stratified subset spanning score, object geometry, occlusion, and
    observed solver margin;
 3. allocate the most expensive level to items whose predicted tail interval
-   crosses \(\tau\) or whose observed labels fail to stabilize;
+   crosses $\tau$ or whose observed labels fail to stabilize;
 4. keep a uniformly sampled finest-level subset for unbiased evaluation of the
    allocation rule.
 
@@ -1492,13 +1491,13 @@ Consequently, LimitGrasp must declare and test a convergence class.  A
 reasonable local assumption away from contact-mode intersections is an
 asymptotic expansion of the signed distance to the success set,
 
-\[
+$$
 d_{\mathcal G}(g,S_{\gamma,k})_{\mathrm{signed}}
 =
 d_{\gamma,\infty}(g)
 +c_\gamma(g)\eta_{\gamma,k}^{p_\gamma(g)}
 +o(\eta_{\gamma,k}^{p_\gamma(g)}).
-\]
+$$
 
 At mode intersections this expansion may fail; that is exactly where the
 inner/outer set formulation is preferable to extrapolating a scalar label.
@@ -1515,11 +1514,11 @@ Potential formal results are:
    core/possible sets converge in Kuratowski distance; with compactness and
    stronger regularity this upgrades to Hausdorff convergence.
 3. **Selection stability.**  If
-   \(\sup_g|\widehat L(o,g)-L(o,g)|\le\delta\), maximizing
-   \(\widehat L\) over a fixed candidate set has at most \(2\delta\) excess
+   $\sup_g|\widehat L(o,g)-L(o,g)|\le\delta$, maximizing
+   $\widehat L$ over a fixed candidate set has at most $2\delta$ excess
    stable-core regret.
 4. **Refinement stopping.**  If a validated numerical error bound keeps a
-   candidate's entire envelope on one side of \(\tau\), finer simulation
+   candidate's entire envelope on one side of $\tau$, finer simulation
    cannot change its core classification and can be skipped.
 5. **Solver-selection dependence of ERM.**  When core and possible sets differ
    on positive measure, ordinary ERM trained from one solver converges to a
@@ -1571,7 +1570,7 @@ Generate 256--512 grasps from the same frozen observation-only generator.
 Every selected full-scene/grasp pair is then evaluated with matched physical
 perturbation seeds over a refinement grid:
 
-- timestep, including at least a \(4\times\) ratio between adjacent levels;
+- timestep, including at least a $4\times$ ratio between adjacent levels;
 - collision and compliant-pad mesh resolution;
 - contact tolerance/collision margin;
 - nonlinear/contact solver tolerance and iteration budget;
@@ -1822,17 +1821,17 @@ learning target.
 
 ### 33. One-bit persistent hand--eye calibration from grasp outcomes
 
-The proposed model treated an unknown persistent \(\Delta\in SE(3)\) as a
+The proposed model treated an unknown persistent $\Delta\in SE(3)$ as a
 shared latent variable:
 
-\[
+$$
  y_i\sim\operatorname{Bernoulli}
  \left(q_\theta(O_i,\exp(\delta)g_i)\right),
  \qquad \Delta=\exp(\delta),
-\]
+$$
 
 and used the Fisher information of the frozen grasp field to update a compact
-posterior over \(\delta\) from binary successes.  The idea is efficient and
+posterior over $\delta$ from binary successes.  The idea is efficient and
 would yield a useful system, but it is standard logistic M-estimation/system
 identification on a Lie group.  Learned uncalibrated hand--eye coordination is
 old enough to be a canonical reference
@@ -1843,8 +1842,8 @@ not make this an ICLR-level new learning problem.
 
 ### 34. A generic discretization-invariant grasp neural operator
 
-This cycle represented the visible surface as a measure \(\mu\), learned an
-operator \(T:\mu\mapsto q_\mu(\cdot)\in C(\mathcal G)\), and required the
+This cycle represented the visible surface as a measure $\mu$, learned an
+operator $T:\mu\mapsto q_\mu(\cdot)\in C(\mathcal G)$, and required the
 argmax to converge as both input samples and output grasp queries were
 refined.  It was rejected in this generic form.  Neural-operator
 discretization invariance is mature, and the additional argmax statement
@@ -1869,7 +1868,7 @@ not enough to define a new area.
 
 This cycle represented each RGB-D pixel as a finite free-space ray plus a hit
 and represented a gripper by a small family of swept line/tube primitives.
-Pairwise Pluecker invariants would drive an \(SE(3)\)-invariant cross-attention
+Pairwise Pluecker invariants would drive an $SE(3)$-invariant cross-attention
 operator.  It was rejected as the main idea for three reasons.  First, for one
 calibrated camera, endpoint plus camera origin already determines the ray, so
 the representation does not add information.  Second, Pluecker ray
@@ -1913,16 +1912,16 @@ and if PointConv plus strong augmentation does not remove the effect.
 Most point-cloud grasp models are permutation invariant.  Permutation
 invariance says
 
-\[
+$$
  f(\{x_1,\ldots,x_n\})=
  f(\{x_{\pi(1)},\ldots,x_{\pi(n)}\}),
-\]
+$$
 
 but it does not say that the result is unchanged when one surface region is
 sampled four times more densely, when the FPS budget changes, or when the
 depth-noise variance changes.  In fact, an unweighted sum converges to the
-sensor-weighted measure \(\lambda\mu\), not the declared physical reference
-measure \(\mu\).  A max over points is worse: with unbounded Gaussian depth
+sensor-weighted measure $\lambda\mu$, not the declared physical reference
+measure $\mu$.  A max over points is worse: with unbounded Gaussian depth
 noise it grows with sample count even when the physical surface is fixed.
 
 The proposed general problem is **learning decisions on acquisition-law
@@ -1941,37 +1940,37 @@ sampling-density and noise effects are amplified.
 
 ### 2. Observation model and precise scope
 
-Let \(S\subset\mathbb R^3\) be the target's visible surface and let
-\(\mu_S\) be a declared reference measure.  Surface area is one choice; the
+Let $S\subset\mathbb R^3$ be the target's visible surface and let
+$\mu_S$ be a declared reference measure.  Surface area is one choice; the
 pushforward of uniform image-plane area is another.  The choice must be fixed
 and reported, because "density invariant" is meaningless without a reference
 measure.
 
-An acquisition \(a\) produces a marked point process
+An acquisition $a$ produces a marked point process
 
-\[
+$$
  O_a=\{(x_i,\omega_i,\Sigma_i,r_i)\}_{i=1}^{N_a},
  \qquad x_i=s_i+\varepsilon_i,
  \qquad \varepsilon_i\mid s_i\sim
  \mathcal N(0,\Sigma_i).
-\]
+$$
 
-Here \(s_i\in S\), \(\omega_i\) is a quadrature/inverse-propensity weight,
-\(\Sigma_i\) is the calibrated depth uncertainty mapped into 3-D, and \(r_i\)
+Here $s_i\in S$, $\omega_i$ is a quadrature/inverse-propensity weight,
+$\Sigma_i$ is the calibrated depth uncertainty mapped into 3-D, and $r_i$
 may hold RGB or a target/obstacle mark.  A convenient theoretical model is an
 inhomogeneous Poisson process with intensity
-\(n_a\lambda_a(s)\mu_S(ds)\), for which
-\(\omega_i=(n_a\lambda_a(s_i))^{-1}\).  A real RGB-D implementation can carry
+$n_a\lambda_a(s)\mu_S(ds)$, for which
+$\omega_i=(n_a\lambda_a(s_i))^{-1}$.  A real RGB-D implementation can carry
 pixel-footprint weights through cropping and FPS instead of trying to recover
 them after preprocessing.
 
 The task is candidate-local.  Given a parallel-jaw pose
-\(g\in\mathcal G=SE(3)/H\), where \(H\) is the finite physical gripper
+$g\in\mathcal G=SE(3)/H$, where $H$ is the finite physical gripper
 symmetry, predict
 
-\[
+$$
  q^*(S,g)=P(Y=1\mid S,g)
-\]
+$$
 
 for a standardized close and millimetre-scale lift.  Motion planning to the
 pre-grasp is external.  The model does not estimate full approach-to-lift
@@ -1981,36 +1980,36 @@ is outside the proposed benchmark.
 
 ### 3. Why hard contact geometry is the wrong statistical target
 
-For closure direction \(u_g\), a naive contact proxy is
+For closure direction $u_g$, a naive contact proxy is
 
-\[
+$$
  \widehat h_{\max}(u_g)=\max_i u_g^\top x_i.
-\]
+$$
 
-If \(u_g^\top\varepsilon_i\sim\mathcal N(0,\sigma^2)\), then its noise
-contribution is of order \(\sigma\sqrt{2\log N_a}\).  Increasing the point
+If $u_g^\top\varepsilon_i\sim\mathcal N(0,\sigma^2)$, then its noise
+contribution is of order $\sigma\sqrt{2\log N_a}$.  Increasing the point
 budget can therefore make the estimated object larger.  Exact recovery of a
 hard support under fixed Gaussian error is also known to have extremely slow
 rates.  The proposal consequently does **not** claim to recover infinitesimal
 contacts.
 
-Instead define contact at a finite physical/statistical scale \(\tau>0\).  For
-a smooth gripper-local gate \(\psi_{g,k}\) and direction \(u_{g,k}\), use the
+Instead define contact at a finite physical/statistical scale $\tau>0$.  For
+a smooth gripper-local gate $\psi_{g,k}$ and direction $u_{g,k}$, use the
 entropic support functional
 
-\[
+$$
  H_{k,\tau}(S,g)
  =\tau\log
  \frac{\int_S \psi_{g,k}(s)
        \exp(u_{g,k}^\top s/\tau)\,d\mu_S(s)}
       {\int_S \psi_{g,k}(s)\,d\mu_S(s)}.
-\]
+$$
 
-As \(\tau\downarrow0\), this approaches a local support value under ordinary
-regularity conditions.  At finite \(\tau\), it is a contact-scale statistic:
+As $\tau\downarrow0$, this approaches a local support value under ordinary
+regularity conditions.  At finite $\tau$, it is a contact-scale statistic:
 it ignores sub-resolution spikes, represents a finite pad rather than an
 ideal point contact, and remains estimable.  Several scales
-\(\tau_1>\cdots>\tau_L\), bounded below by the calibrated noise level, expose
+$\tau_1>\cdots>\tau_L$, bounded below by the calibrated noise level, expose
 the useful geometry without pretending the inverse problem is well posed.
 
 The central statistical hypothesis is not "more smoothing is robust."  It is
@@ -2020,40 +2019,40 @@ for the acquisition process.
 
 ### 4. Deconvolved quadrature contact layer
 
-Let \(\kappa_{g,k}:\mathbb R^3\to\mathbb R\) be a smooth localized kernel in
+Let $\kappa_{g,k}:\mathbb R^3\to\mathbb R$ be a smooth localized kernel in
 the gripper frame.  It may be a Gaussian gate multiplied by an exponential
 linear form, a soft jaw slab, or a soft pad-boundary probe.  Define
 
-\[
+$$
  Z_k(S,g)=\int_S \kappa_{g,k}(s)\,d\mu_S(s).
-\]
+$$
 
 For Gaussian measurement error, convolution by the noise kernel is the heat
 operator.  Denote the corresponding inverse, restricted to resolvable smooth
 kernels, by
 
-\[
+$$
  \mathcal D_{\Sigma}
  =\exp\!\left(-\tfrac12\Sigma:\nabla^2\right).
-\]
+$$
 
 Then the proposed acquisition-corrected estimator is
 
-\[
+$$
  \widehat Z_k(O_a,g)
  =\sum_{i=1}^{N_a}\omega_i
    [\mathcal D_{R_g^\top\Sigma_iR_g}\kappa_k]
    (g^{-1}x_i).
-\]
+$$
 
 For the pure exponential kernel
-\(\kappa(x)=\exp(tu^\top x)\), this is the cheap closed-form correction
+$\kappa(x)=\exp(tu^\top x)$, this is the cheap closed-form correction
 
-\[
+$$
  [\mathcal D_\Sigma\kappa](x)
  =\exp\!\left(tu^\top x-
               \tfrac12t^2u^\top\Sigma u\right).
-\]
+$$
 
 Thus the geometric core is a weighted reduction, not a reconstructed field or
 an iterative inverse problem.  Gaussian-exponential bases also have analytic
@@ -2063,17 +2062,17 @@ heat flow would amplify high-frequency noise and make the proposal invalid.
 
 The layer produces a compact vector
 
-\[
+$$
  z(O_a,g)=
  [\widehat Z_1,\ldots,\widehat Z_K,
   \widehat H_{1,\tau_1},\ldots,
   \widehat H_{L,\tau_L},m_g],
-\]
+$$
 
-where \(m_g\) contains only small declared gripper parameters such as opening
+where $m_g$ contains only small declared gripper parameters such as opening
 and pad size.  Separate bases are tied to the two closure directions, pad
 interiors, fingertip boundaries, and the target/obstacle mark.  A small MLP or
-low-rank cross-query block maps \(z\) to success probability and an optional
+low-rank cross-query block maps $z$ to success probability and an optional
 local pose residual.
 
 ### 5. Efficient learnable model
@@ -2086,29 +2085,29 @@ The proposed model, provisionally called **AcqGrasp**, has four parts.
    possible; it must not hide all uncertainty inside a learned scalar.
 2. A fixed-radius spatial index retrieves only points intersecting the open
    jaw and pad neighborhoods of each candidate.
-3. The deconvolved quadrature contact layer evaluates \(K\) smooth kernels at
-   \(L\) resolvable scales in the candidate frame.
-4. A shared query head returns \(q_\theta(O,g)\).  Candidate generation is held
+3. The deconvolved quadrature contact layer evaluates $K$ smooth kernels at
+   $L$ resolvable scales in the candidate frame.
+4. A shared query head returns $q_\theta(O,g)$.  Candidate generation is held
    fixed across methods so the paper tests the new learning problem rather
    than a pipeline advantage.
 
-With \(M\) candidates, \(k\) local points, and a small fixed number \(KL\) of
-kernels, the dominant query cost is \(O(MkKL)\), parallelizable as segmented
-reductions.  Reasonable first values are \(k=64\), \(K=8\)--16, and
-\(L=3\)--4.  No voxel grid, scene SDF, mesh completion, diffusion sampling, or
+With $M$ candidates, $k$ local points, and a small fixed number $KL$ of
+kernels, the dominant query cost is $O(MkKL)$, parallelizable as segmented
+reductions.  Reasonable first values are $k=64$, $K=8$--16, and
+$L=3$--4.  No voxel grid, scene SDF, mesh completion, diffusion sampling, or
 trajectory roll-out is required.
 
 Training uses ordinary supervised labels plus paired acquisitions of the same
 latent scene:
 
-\[
+$$
  \mathcal L=
  \mathcal L_{\rm BCE}(y,q_\theta(O_a,g))
  +\lambda_{\rm acq}
   \mathbb E_{a,b,g}
   [q_\theta(O_a,g)-q_\theta(O_b,g)]^2
  +\lambda_{\rm rank}\mathcal L_{\rm rank}.
-\]
+$$
 
 The paired term is not the proposed contribution by itself.  Its role is to
 penalize finite-sample residuals after the analytical correction.  Training
@@ -2122,26 +2121,26 @@ without proof.
 
 1. **Acquisition unbiasedness.**  Under the marked Poisson model, correct
    inverse-intensity weights, a known Gaussian kernel, and an admissible
-   \(\kappa\), show
-   \(\mathbb E[\widehat Z_k\mid S]=Z_k(S,g)\) for every acquisition law in the
+   $\kappa$, show
+   $\mathbb E[\widehat Z_k\mid S]=Z_k(S,g)$ for every acquisition law in the
    declared family.
 2. **Uniform query consistency.**  For a compact grasp set and a bounded
    Lipschitz kernel family, obtain a high-probability uniform error bound over
-   \(g\).  The effective sample size must expose weight degeneracy; a bound in
-   nominal \(N\) alone would be misleading.
+   $g$.  The effective sample size must expose weight degeneracy; a bound in
+   nominal $N$ alone would be misleading.
 3. **Hard-extreme obstruction.**  Formalize the divergence or sample-count
    bias of naive max contact features under fixed unbounded noise, and relate
    it to the slow support-estimation boundary rather than presenting only an
    empirical anecdote.
 4. **Scale tradeoff.**  Bound soft-support approximation bias against the
    variance amplification of deconvolution.  The useful conclusion should be
-   a lower resolvable \(\tau(\sigma,n_{\rm eff})\), not an impossible promise
-   that \(\tau\to0\) cheaply.
+   a lower resolvable $\tau(\sigma,n_{\rm eff})$, not an impossible promise
+   that $\tau\to0$ cheaply.
 5. **Decision transfer.**  If the learned head is Lipschitz in the sketches
    and the physical score has a stated margin around its optimal set, turn the
    uniform sketch error into grasp regret or distance-to-optimal-set bounds.
 6. **Misspecified acquisition law.**  Give a perturbation bound in errors of
-   \(\omega_i\) and \(\Sigma_i\).  Real cameras will violate the ideal model;
+   $\omega_i$ and $\Sigma_i$.  Real cameras will violate the ideal model;
    robustness to moderate misspecification is necessary for the theory to
    mean anything.
 
@@ -2221,8 +2220,8 @@ consistency; each model may additionally be evaluated end to end.
 
 Core metrics are:
 
-- acquisition consistency error of \(q(O_a,g)\) over paired \(a,b\);
-- top-1 and top-\(k\) grasp identity/ranking stability;
+- acquisition consistency error of $q(O_a,g)$ over paired $a,b$;
+- top-1 and top-$k$ grasp identity/ranking stability;
 - regret relative to the fixed latent-physics candidate oracle;
 - ordinary AP/AUC and small-lift success;
 - calibration stratified by point budget and noise level;
@@ -2256,7 +2255,7 @@ The idea should be killed quickly unless the following pilot succeeds.
 5. Proceed only if the contact sketch removes at least half of the paired
    consistency error and improves regret on an unseen acquisition law, while
    losing no more than two points on the clean/native condition.
-6. Replace calibrated \(\Sigma\) and weights by values perturbed by 10--30%.
+6. Replace calibrated $\Sigma$ and weights by values perturbed by 10--30%.
    If gains vanish under mild misspecification, the real-camera proposal is
    too brittle.
 7. Reprocess the same real RGB-D frames at several budgets to test pure
@@ -2367,7 +2366,7 @@ mathematical objects came from geometry, statistics, mechanics, or general ML.
 Proposal: regard each parallel-jaw interaction as a pair of local surface germs
 plus a swept free-space corridor.  Select or procedurally synthesize a minimal
 training object library whose induced contact germs form an
-\(\varepsilon\)-net of this local interaction space.  This would replace
+$\varepsilon$-net of this local interaction space.  This would replace
 object-instance diversity by a contact-specific teaching dimension.
 
 Rejection: the underlying empirical thesis is already occupied even if the
@@ -2378,7 +2377,7 @@ https://graspnet.net/anydexgrasp/assets/files/AnyDexGrasp.pdf.  The ICLR 2026
 random-toy paper then makes procedural primitive assemblies themselves a major
 grasp-generalization result:
 https://proceedings.iclr.cc/paper_files/paper/2026/hash/4b2a917e30e1bb1aff055b4d8c6c081c-Abstract-Conference.html.
-An \(\varepsilon\)-net selector could improve their data efficiency, but the
+An $\varepsilon$-net selector could improve their data efficiency, but the
 likely contribution would be a formalized dataset curriculum, not a new
 learned object or capability.  This also collides with cycles 1 and 17.
 
@@ -2386,12 +2385,12 @@ learned object or capability.  This also collides with cycles 1 and 17.
 
 Proposal: for a candidate grasp, predict a compact monotone curve
 
-\[
+$$
  C_g(a)=\int_{P_g}(a-h_g(u))_+\,du,
-\]
+$$
 
-where \(h_g\) is the local height profile under a compliant jaw pad and \(a\)
-is indentation.  Derivatives of \(C_g\) encode contact area and pressure-growth
+where $h_g$ is the local height profile under a compliant jaw pad and $a$
+is indentation.  Derivatives of $C_g$ encode contact area and pressure-growth
 surrogates, so a small vector of spline coefficients could replace a scene SDF
 and a binary grasp score.
 
@@ -2404,7 +2403,7 @@ contact surfaces and pressure into friction wrenches
 parallel-jaw closure with much higher fidelity than point-contact metrics
 (https://arxiv.org/abs/2111.01391).  Learned compliance-aware grasping is also
 now explicit: https://arxiv.org/abs/2607.17541.  A vision network predicting
-\(C_g\) would therefore amortize classical contact mechanics.  For an occluded
+$C_g$ would therefore amortize classical contact mechanics.  For an occluded
 opposing patch, the curve is also no more identifiable than the hidden shape.
 The construction is elegant and compact, but it does not clear the novelty bar.
 
@@ -2431,12 +2430,12 @@ returns to amodal completion and cycles 21 and 32.
 ### 41. Proposal-covariant grasp scoring
 
 Proposal: a grasp score should transform predictably when the upstream
-candidate generator changes.  For generators \(\pi_i(g\mid o)\), learn
+candidate generator changes.  For generators $\pi_i(g\mid o)$, learn
 pairwise log-density-ratio cocycles
 
-\[
+$$
  r_{ij}(o,g)+r_{jk}(o,g)=r_{ik}(o,g)
-\]
+$$
 
 and factor physical utility from proposal density, so a discriminator trained
 under one generator remains valid for another.
@@ -2455,7 +2454,7 @@ be a more portable grasp discriminator rather than a new grasping problem.
 
 ### 42. Reflected feasible-grasp flow
 
-Proposal: generate grasps with a flow on \(SE(3)\) whose trajectories are
+Proposal: generate grasps with a flow on $SE(3)$ whose trajectories are
 reflected at learned collision and aperture boundaries, so probability mass
 never leaves the currently feasible action domain.
 
@@ -2473,8 +2472,8 @@ it were physical, so the strongest claimed guarantee would be false.
 
 Proposal: expensive high-fidelity grasp labels need not be sampled throughout
 six-dimensional action space.  If contact mechanics induces smooth success
-regions separated by a codimension-one transition set \(\Sigma\), actively
-query the simulator near \(\Sigma\).  Under reach and margin assumptions, seek
+regions separated by a codimension-one transition set $\Sigma$, actively
+query the simulator near $\Sigma$.  Under reach and margin assumptions, seek
 a label complexity governed by boundary dimension rather than ambient
 dimension.
 
@@ -2498,9 +2497,9 @@ Proposal: positive grasps in large datasets are outputs of heuristic or
 optimization samplers.  Rather than imitate their density, learn the
 Haar-volume measure of the physical success set
 
-\[
+$$
  \nu_o(dg)\propto \mathbf 1\{Q(o,g)\geq\tau\}\,\lambda_{SE(3)}(dg),
-\]
+$$
 
 or a noise-smoothed version, using inverse proposal weights in flow matching.
 The intended broad problem was generative learning of feasible action sets that
@@ -2568,14 +2567,14 @@ whose estimator is not an off-the-shelf general-ML correction.
 
 Proposal: model successful grasps as a stratified measure
 
-\[
+$$
  \mu_o=\sum_k \alpha_k(o)\rho_k(o,\cdot)
        \mathcal H^{d_k}\!\restriction M_k(o)
-\]
+$$
 
 on a union of contact-mode manifolds of different intrinsic dimensions.  A
 dimension-aware diffusion would renormalize the small-noise score separately on
-each stratum instead of treating all labels as an ambient \(SE(3)\) density.
+each stratum instead of treating all labels as an ambient $SE(3)$ density.
 
 Rejection: a 2026 general-ML paper now addresses almost exactly deep generative
 learning on stratified spaces, including varying stratum dimensions, score
@@ -2591,9 +2590,9 @@ method transfer.
 
 ### 48. Topological obstruction to a deterministic equivariant grasp selector
 
-Proposal: for an observation with stabilizer \(H\subset SE(3)\), any
-equivariant deterministic selector \(f\) must satisfy \(h f(o)=f(o)\) for every
-\(h\in H\).  Symmetric objects often have no single grasp fixed by all of \(H\),
+Proposal: for an observation with stabilizer $H\subset SE(3)$, any
+equivariant deterministic selector $f$ must satisfy $h f(o)=f(o)$ for every
+$h\in H$.  Symmetric objects often have no single grasp fixed by all of $H$,
 so a continuous equivariant top-1 selector cannot exist.  Predict instead a
 stabilizer-compatible bundle-valued section or an orbit measure.
 
@@ -2613,12 +2612,12 @@ it does not create a new physical target.
 
 ### 49. Shape-derivative supervision for grasp transfer
 
-Proposal: learn not only grasp utility \(Q(S,g)\), but its directional shape
-derivative with respect to a surface deformation field \(V\),
+Proposal: learn not only grasp utility $Q(S,g)$, but its directional shape
+derivative with respect to a surface deformation field $V$,
 
-\[
+$$
  D_SQ(S,g)[V].
-\]
+$$
 
 Simulator-provided derivatives could give Sobolev supervision, transport grasp
 fields between nearby object shapes, and quantify which local geometry controls
@@ -2722,19 +2721,19 @@ This weaker label-fusion version cannot be Candidate G.
 
 Proposal: use the fact that the target is already at rest on the shelf as a
 weak physical observation of its hidden mass distribution.  If the same rigid
-object is observed in resting orientations \(R_j\) with planar support polygons
-\(S_j\), its object-frame center of mass \(c\) must lie in the convex identified
+object is observed in resting orientations $R_j$ with planar support polygons
+$S_j$, its object-frame center of mass $c$ must lie in the convex identified
 set
 
-\[
+$$
  C_J= B\cap\bigcap_j
  \{c:\Pi_{g^\perp}(R_jc+t_j)\in S_j\},
-\]
+$$
 
-where \(B\) is a coarse object bound.  Multiple nonparallel gravity directions
+where $B$ is a coarse object bound.  Multiple nonparallel gravity directions
 can shrink the intersection of support prisms in all three coordinates.  One
 could collect these inequality labels by repeated passive placements and train
-a compact single-view RGB-D predictor of \(C_J\), without a force/torque sensor,
+a compact single-view RGB-D predictor of $C_J$, without a force/torque sensor,
 then use the current shelf support as one additional test-time constraint.
 
 Rejection after the identifiability audit: a single stable rest supplies only
@@ -2764,17 +2763,17 @@ Sources:
 
 Proposal: treat picking as replacement of the environmental support by the two
 jaws.  The current shelf contact proves that the unknown normalized gravity
-wrench belongs to an environment-compatible load set \(L(o)\); a queried grasp
-produces a bounded wrench-capacity body \(K(o,g)\).  Learn their support
+wrench belongs to an environment-compatible load set $L(o)$; a queried grasp
+produces a bounded wrench-capacity body $K(o,g)$.  Learn their support
 functions in a shared low-dimensional gravity-wrench plane and score the robust
 exchange by
 
-\[
+$$
  m(o,g)=\inf_{u\in\mathbb S^1}
  \big[h_{K(o,g)}(u)-h_{L(o)}(u)\big].
-\]
+$$
 
-Convex containment is equivalent to \(m\ge0\), uniform support-function error
+Convex containment is equivalent to $m\ge0$, uniform support-function error
 directly bounds margin error, and inference over a fixed directional grid is
 cheap.  A more ambitious benchmark would hold out combinations of current
 supports and new jaw contacts to test compositional transfer through the shared
@@ -2783,7 +2782,7 @@ wrench coordinates.
 Rejection: Task Wrench Space containment in Grasp Wrench Space is already the
 classical definition of a task-suitable grasp; the gravity-generated Mass Wrench
 Space and support-function/convex-hull computation are established mechanics,
-not a new formalization.  The only apparently new input is inferring \(L\) from
+not a new formalization.  The only apparently new input is inferring $L$ from
 the observed rest.  But, by cycle 54, rest certifies only that the actual load is
 *one unknown member* of a usually broad support-polygon set.  Treating the whole
 set as the task wrench space is often so conservative that it returns the usual
@@ -2805,7 +2804,7 @@ Sources:
 ### 56. Grasp-aperture viability windows
 
 Proposal: for a fixed contact frame and approach direction, learn the interval
-\([a_{\min},a_{\max}]\) of admissible parallel-jaw openings instead of regressing
+$[a_{\min},a_{\max}]$ of admissible parallel-jaw openings instead of regressing
 one grasp width.  Capturing the target imposes a lower bound on aperture, while
 the shelf or frontal obstacle imposes an upper bound; the interval width is a
 direct clearance/capture margin.  An isotonic decoder over aperture could learn
@@ -2861,7 +2860,7 @@ Sources:
 ### 58. Censored time-to-slip grasp fields
 
 Proposal: replace binary lift success at an arbitrary horizon by a survival
-function \(S(t\mid o,g)\) or hazard of first slip under a standardized small
+function $S(t\mid o,g)$ or hazard of first slip under a standardized small
 lift.  Right-censored trials that remain stable until the experiment ends would
 still contribute information, and different deployment horizons could query the
 same compact monotone curve.
@@ -2872,7 +2871,7 @@ texture, modulus, pressure distribution, and realized contacts; recent tactile
 work explicitly argues that these variables require physical interaction.
 Existing slip prediction and stability work consequently relies on tactile or
 force/pressure time series, including pre-lift tactile snapshots and predictive
-forward models.  From only wrist RGB-D, \(S(t\mid o,g)\) is no more identifiable
+forward models.  From only wrist RGB-D, $S(t\mid o,g)$ is no more identifiable
 than the binary outcome and would learn dataset material priors.  Survival loss
 and censoring are mature statistical tools, so even with tactile hardware the
 new contribution would mainly be a richer stability label.  It also drifts from
@@ -2948,20 +2947,20 @@ field on a shelf is not invariant when only the object is rotated while gravity
 and the shelf remain fixed.  The correct law jointly transforms the point cloud,
 grasp, gravity vector, shelf normal, and possibly approach field,
 
-\[
+$$
  q(RP,Rg;R\gamma,Rn_s)=q(P,g;\gamma,n_s),
-\]
+$$
 
 while a fixed external field leaves only its stabilizer subgroup.  A
-field-conditioned equivariant generator could prevent an \(SE(3)\)-equivariant
+field-conditioned equivariant generator could prevent an $SE(3)$-equivariant
 geometry model from assigning equal physical quality to co-rotated grasps that
 have different gravity rejection.
 
 Rejection as the main idea: the distinction is correct but its implementation
-is standard.  An \(E(3)\)/\(SE(3)\)-equivariant network can accept gravity and
+is standard.  An $E(3)$/$SE(3)$-equivariant network can accept gravity and
 support normals as vector features; conditioning on a preferred approach
 already leads to subgroup-equivariant grasp samplers such as CAPGrasp's
-\(\mathbb R^3\times SO(2)\) formulation.  Gravity-aware grasp generation also
+$\mathbb R^3\times SO(2)$ formulation.  Gravity-aware grasp generation also
 already trains on a gravity-rejection score and reports its largest benefit on
 heavy objects.  Thus the proposed covariance law is an important correctness
 condition and benchmark ablation for any future model, but not a new learning
@@ -3005,22 +3004,22 @@ Sources:
 ### 63. Persistent gripper-state adaptation from past lifts
 
 Proposal: separate episodic scene uncertainty from a low-dimensional latent
-hardware state \(\eta\) shared across many grasps, such as closing-force scale,
+hardware state $\eta$ shared across many grasps, such as closing-force scale,
 pad stiffness, wear, or a friction multiplier.  A hierarchical likelihood
 
-\[
+$$
  y_i\sim\operatorname{Bernoulli}
  \big(q_\theta(o_i,g_i;\eta)\big)
-\]
+$$
 
-would update a posterior over \(\eta\) from historical binary lifts and adapt all
+would update a posterior over $\eta$ from historical binary lifts and adapt all
 future single-view predictions without interacting with the current object or
 using RL.
 
 Rejection: binary success does not isolate a persistent pad factor from
 object-specific material, roughness, mass, contact geometry, execution error,
 and changing candidate selection.  The likelihood can fit these confounders by
-moving \(\eta\), so identifiability requires calibration objects or richer force/
+moving $\eta$, so identifiability requires calibration objects or richer force/
 tactile measurements.  With those measurements the problem is ordinary online
 system identification or Bayesian simulator calibration; recent systems already
 estimate friction online from tactile signals and experimental platforms fit
@@ -3037,16 +3036,16 @@ Sources:
 
 ### 64. Jointly learned pad design and grasp selection
 
-Proposal: augment the grasp action \(g\) with a low-dimensional replaceable-pad
-design \(d\), for example a thickness profile, groove basis, or spatial
+Proposal: augment the grasp action $g$ with a low-dimensional replaceable-pad
+design $d$, for example a thickness profile, groove basis, or spatial
 stiffness field, and optimize
 
-\[
+$$
  (d^\star,\pi^\star)
  \in\arg\max_{d,\pi}\;
  \mathbb E_{(o,P)}
  \left[u\!\left(o,\pi(P;d),d\right)\right].
-\]
+$$
 
 The intended benefit would be mechanical regularization: a pad family could
 increase the capture range of a visual grasp predictor under partial and noisy
@@ -3083,16 +3082,16 @@ Sources:
 Proposal: replace pointwise binary classification with a structured surrogate
 whose population minimizer is calibrated for the actual decision
 
-\[
+$$
  g^\star(P)=\arg\max_{g\in\mathcal G(P)}p(y=1\mid P,g),
 \qquad
  \mathcal R_{\mathrm{top1}}
  =\mathbb E\!\left[
  p(y=1\mid P,g^\star)-p(y=1\mid P,\hat g)
  \right].
-\]
+$$
 
-One could use listwise normalization over sampled \(SE(3)\) candidates,
+One could use listwise normalization over sampled $SE(3)$ candidates,
 hard-negative mining near the current maximum, and quotient-aware distances
 for the parallel-jaw symmetry, then prove a calibration bound from surrogate
 excess risk to top-one physical regret.
@@ -3107,7 +3106,7 @@ theorem.  On the robotics side, GraRe already isolates candidate ordering as a
 task, trains a separate quality re-ranker for frozen detectors, and reports
 large gains; older grasp work also explicitly upweights the highest-quality
 candidates.  Thus a calibrated structured loss could be a useful technical
-component, but the main claim would be general top-\(k\) calibration applied to
+component, but the main claim would be general top-$k$ calibration applied to
 grasping, with no new estimand or evidence that it can beat stronger geometry
 and generator models.
 
@@ -3149,15 +3148,15 @@ Sources:
 ### 67. Learning on the space of oriented jaw slabs
 
 Proposal: represent a parallel-jaw action first by two oriented parallel contact
-planes, equivalently an oriented slab with center \(c\), normal \(b\), and width
-\(w\), and only secondarily attach an approach direction \(a\perp b\).  A
+planes, equivalently an oriented slab with center $c$, normal $b$, and width
+$w$, and only secondarily attach an approach direction $a\perp b$.  A
 network on affine-plane incidence could predict a measure over slabs, making jaw
-exchange a built-in \(\mathbb Z_2\) quotient and antipodal contact a native
-event rather than a property decoded from \(SE(3)\).
+exchange a built-in $\mathbb Z_2$ quotient and antipodal contact a native
+event rather than a property decoded from $SE(3)$.
 
 Rejection: once the approach vector and finger depth are supplied, the variables
-\((c,b,a,w)\) are smoothly equivalent to the standard parallel-jaw pose and
-width, modulo the same jaw symmetry.  If \(a\) is omitted, the representation
+$(c,b,a,w)$ are smoothly equivalent to the standard parallel-jaw pose and
+width, modulo the same jaw symmetry.  If $a$ is omitted, the representation
 cannot distinguish a collision-free approach from one that intersects the
 shelf or frontal obstacle.  The supposed simplification therefore either loses
 an action degree of freedom or merely changes coordinates.  Contact-GraspNet
@@ -3179,11 +3178,11 @@ Proposal: use RGB not merely as another geometric feature but to predict a
 compact distribution over friction/compliance parameters at the two prospective
 jaw patches.  The grasp score would marginalize a finite-contact model,
 
-\[
+$$
  q(P,I,g)
  =\int q_{\mathrm{mech}}(P,g;\mu_1,\mu_2,k_1,k_2)\,
  p_\theta(d\mu_1\,d\mu_2\,dk_1\,dk_2\mid I,P,g),
-\]
+$$
 
 so visually inferred material priors could change pose selection even when two
 candidates have similar depth geometry.
@@ -3214,16 +3213,16 @@ Sources:
 Proposal: learn the subgroup that leaves an individual object's grasp utility
 field invariant,
 
-\[
+$$
  H_Q(z)=\{h:\;Q(z,hg)=Q(z,g)\ \text{for all }g\},
-\]
+$$
 
-rather than impose only a global \(SE(3)\) covariance law or infer geometric
+rather than impose only a global $SE(3)$ covariance law or infer geometric
 symmetry.  Because mechanically irrelevant texture and shape details need not
-break \(H_Q\), discovering this task-induced stabilizer could quotient duplicate
+break $H_Q$, discovering this task-induced stabilizer could quotient duplicate
 grasp modes and share supervision over its orbits.
 
-Rejection: estimating \(H_Q\) requires comparing the same grasp field over many
+Rejection: estimating $H_Q$ requires comparing the same grasp field over many
 transformed actions, so it is not cheaper than learning that field directly.
 For a partial view, an apparent rotational or reflectional symmetry may be
 broken by hidden geometry; gravity, the shelf, and the frontal obstacle further
@@ -3248,10 +3247,10 @@ Sources:
 Proposal: when the same physical object recurs, condition the visual grasp field
 on a small unordered context
 
-\[
+$$
  D_k=\{(g_i,y_i)\}_{i=1}^k,\qquad
  q_\theta(y\mid P,g,D_k),
-\]
+$$
 
 using a conditional neural process or equivariant set encoder.  The latent
 context could absorb object-specific mass distribution, friction, or hidden
@@ -3279,19 +3278,19 @@ Sources:
 
 Proposal: exploit the fact that a parallel-jaw closure selects one left and one
 right supporting component of an object assembled as
-\(K=\bigcup_{i=1}^m K_i\).  For a fixed grasp, per-component first-contact
+$K=\bigcup_{i=1}^m K_i$.  For a fixed grasp, per-component first-contact
 times compose by a min-plus reduction, collision evidence by a max veto, global
 mass moments add, and the terminal contact mode appears to require only a
 pairwise interaction between the two selected components.  This suggests a
 bounded many-body expansion
 
-\[
+$$
  Q(K,g)\approx
  \rho_g\!\left(
  \bigoplus_i u_g(K_i),\;
  \bigoplus_{i,j}v_g(K_i,K_j)
  \right)
-\]
+$$
 
 whose interaction order is tied to the number of jaws rather than the number
 of object parts.  A soft part encoder and a max/min-plus pairwise network could
@@ -3322,14 +3321,14 @@ Sources:
 ## Decision-theoretic checkpoint after cycle 71
 
 The current constraint box has a simple but important consequence.  Let
-\(O\) be the one-shot RGB-D observation, \(G\) a grasp, and \(Y\in\{0,1\}\)
+$O$ be the one-shot RGB-D observation, $G$ a grasp, and $Y\in\{0,1\}$
 the standardized small-lift outcome.  For the stated utility, every
 Bayes-optimal selector is determined by
 
-\[
+$$
  \eta(o,g)=\Pr(Y=1\mid O=o,G=g),\qquad
  \pi^\star(o)\in\arg\max_g\eta(o,g).
-\]
+$$
 
 Predicting a contact certificate, a physical parameter, a valid set, an
 uncertainty object, or a geometric latent can improve statistical or
@@ -3337,7 +3336,7 @@ computational efficiency only if it is a more learnable sufficient statistic
 for this same conditional law.  Renaming such a latent is not a new task.  A
 genuinely different paper must therefore change at least one of the following
 or establish a previously unknown and empirically material structure of
-\(\eta\):
+$\eta$:
 
 1. the information available at decision time;
 2. the action or execution contract;
@@ -3368,7 +3367,7 @@ numbered cycle:
 - state the new estimand in one line without “better representation of grasp
   success”;
 - name the new information, action, utility, supervision, or access assumption
-  that makes it non-equivalent to \(\eta\);
+  that makes it non-equivalent to $\eta$;
 - show that this assumption is present in the laboratory rather than added for
   novelty;
 - identify a measurable failure curve of current SOTA that the new estimand
@@ -3383,17 +3382,17 @@ Sources:
 ### 72. Anytime prefix-optimal grasp portfolios
 
 Proposal: replace a conditional grasp distribution by an ordered sequence
-\((g_1,\ldots,g_K)\) whose every prefix is optimized for the available
-candidate budget.  For oracle utility \(Q\), a prefix-regret objective could be
+$(g_1,\ldots,g_K)$ whose every prefix is optimized for the available
+candidate budget.  For oracle utility $Q$, a prefix-regret objective could be
 
-\[
+$$
  \mathcal L_{\mathrm{prefix}}
  =\sum_{k\in\{1,2,4,\ldots,K\}}w_k
  \left[
  \max_{g\in\mathcal G}Q(o,g)
  -\max_{i\le k}Q(o,g_i)
  \right].
-\]
+$$
 
 An extensible low-discrepancy latent sequence transported to the parallel-jaw
 quotient, or a jointly decoded ordered set with conditional repulsion, could
@@ -3401,7 +3400,7 @@ avoid redundant diffusion samples and expose a grasp-quality-versus-latency
 curve rather than one result at an arbitrary sample count.
 
 Rejection: under the stated one-shot utility, only the first executed action
-has value.  If the model can estimate \(Q(o,g)\), the Bayes solution is one
+has value.  If the model can estimate $Q(o,g)$, the Bayes solution is one
 argmax; a portfolio becomes necessary only because search is approximate or
 because a downstream IK/collision/planning oracle may reject candidates.  The
 first case is an amortized-optimization implementation detail and returns to
@@ -3424,14 +3423,14 @@ Sources:
 
 ### 73. Grasp-conditioned partial-information decomposition of RGB-D
 
-Proposal: for each grasp query \(g\), decompose the information that RGB \(R\)
-and depth \(D\) carry about lift outcome \(Y\) into unique, redundant, and
+Proposal: for each grasp query $g$, decompose the information that RGB $R$
+and depth $D$ carry about lift outcome $Y$ into unique, redundant, and
 synergistic terms,
 
-\[
+$$
  I((R,D);Y\mid g)
  =U_R(g)+U_D(g)+R_{RD}(g)+S_{RD}(g).
-\]
+$$
 
 A query-local mixture of experts could route contact geometry to the
 depth-unique branch, appearance or boundary evidence to the RGB-unique branch,
@@ -3444,7 +3443,7 @@ Rejection: partial-information decomposition has no generally agreed unique
 redundancy functional, and estimating its conditional atoms for
 high-dimensional continuous RGB-D observations is harder than estimating the
 grasp outcome itself.  Whatever decomposition is chosen, the Bayes decision
-still depends only on \(\eta(R,D,g)\); the atoms are explanatory auxiliaries,
+still depends only on $\eta(R,D,g)$; the atoms are explanatory auxiliaries,
 not a new decision target.  The robotics mechanism is also occupied:
 depth-guided cross-modal attention explicitly handles unequal RGB/depth
 quality, bilateral fusion networks learn adaptive modality weights, and newer
@@ -3478,9 +3477,9 @@ intersection of the following requirements:
 
 Under these conditions, the decision-theoretic checkpoint shows that a new
 auxiliary output is only a different parameterization of
-\(\eta(o,g)=\Pr(Y=1\mid o,g)\) unless it exploits new information, a new action,
+$\eta(o,g)=\Pr(Y=1\mid o,g)$ unless it exploits new information, a new action,
 a new utility, a new supervision/access regime, or a demonstrably new structure
-of \(\eta\).  Cycles 1--73 have now tested those structures across geometry,
+of $\eta$.  Cycles 1--73 have now tested those structures across geometry,
 mechanics, uncertainty, topology, symmetry, multimodality, data, simulation,
 optimization, and finite candidate access.  Continuing to rename the same
 conditional law would directly contradict the requested novelty standard.
@@ -3555,29 +3554,29 @@ is removed from the input, the proposal collapses to persistent latent
 calibration from outcomes, already rejected in cycle 33.  If it remains, the
 new information is a calibration object, so this path also cannot claim to
 solve the unchanged RGB-D grasp problem by a new structure of
-\(\eta(o,g)\).
+$\eta(o,g)$.
 
 ### 75. Endogenous acquisition--candidate coupling
 
 Proposal: model the fact that deployment candidates are random functions of the
 same noisy observation that the evaluator receives.  If
-\(O_\varepsilon\) is a noisy acquisition and
-\(g_\varepsilon=\Gamma(O_\varepsilon)\), then the deployed evaluator is queried
+$O_\varepsilon$ is a noisy acquisition and
+$g_\varepsilon=\Gamma(O_\varepsilon)$, then the deployed evaluator is queried
 on the graph
 
-\[
+$$
   \{(O_\varepsilon,\Gamma(O_\varepsilon))\},
-\]
+$$
 
 not on independently perturbed point clouds and fixed ground-truth grasps.  A
 candidate idea was to learn a graph-tangent correction involving
-\((I,D\Gamma)\) and matched sensor perturbations, so that common-mode changes in
+$(I,D\Gamma)$ and matched sensor perturbations, so that common-mode changes in
 the crop, anchor, and grasp pose are not mistaken for independent execution
 noise.
 
-Rejection: once \(O\) and the actually queried \(g\) are both inputs, a proper
+Rejection: once $O$ and the actually queried $g$ are both inputs, a proper
 supervised loss on their deployment joint distribution still estimates the
-ordinary conditional law \(\eta(O,g)\).  Generating candidates after every
+ordinary conditional law $\eta(O,g)$.  Generating candidates after every
 training augmentation, or simply training on-generator, reproduces the
 endogenous joint distribution without a new target or theorem.  GraspGen
 already identifies discriminator distribution shift and obtains its strongest
@@ -3608,47 +3607,47 @@ only to check whether the regime is operationally material.
 
 ### 76. Large-deviation grasp reliability
 
-Proposal: let \(\xi\in\mathbb R^d\) collect only declared execution
-perturbations, with \(\xi\sim\mathcal N(0,\sigma^2\Sigma)\), and let
-\(F_{z,g}=\{\xi:Y(z,g,\xi)=0\}\) be the failure set of the standardized terminal
+Proposal: let $\xi\in\mathbb R^d$ collect only declared execution
+perturbations, with $\xi\sim\mathcal N(0,\sigma^2\Sigma)$, and let
+$F_{z,g}=\{\xi:Y(z,g,\xi)=0\}$ be the failure set of the standardized terminal
 close-and-small-lift protocol.  Instead of learning a binary score from crude
 Monte Carlo labels, learn the reliability exponent
 
-\[
+$$
  I(z,g)=\inf_{\xi\in F_{z,g}}
  \tfrac12\xi^T\Sigma^{-1}\xi .
-\]
+$$
 
 Under regularity assumptions, the Laplace principle suggests
 
-\[
+$$
  -\sigma^2\log P_\sigma(F_{z,g})\longrightarrow I(z,g)
  \qquad(\sigma\downarrow0).
-\]
+$$
 
 An initially attractive training scheme was an observation- and
-grasp-conditioned proposal \(r_\phi(\xi\mid o,g)\), represented by a small
+grasp-conditioned proposal $r_\phi(\xi\mid o,g)$, represented by a small
 normalizing flow.  It would be trained across many scene--grasp contexts to
 oversample dominating failure perturbations while retaining an unbiased
 importance-weighted estimate
 
-\[
+$$
  \widehat p_f(o,g)=\frac1N\sum_{i=1}^N
  \mathbf1\{Y_i=0\}
  \frac{p_\sigma(\xi_i)}{r_\phi(\xi_i\mid o,g)},
  \qquad \xi_i\sim r_\phi(\cdot\mid o,g).
-\]
+$$
 
-The visual deployment model would predict either \(p_f\), \(I\), or a compact
+The visual deployment model would predict either $p_f$, $I$, or a compact
 mixture of dominating points, and rank grasps by estimated reliability.  This
 would be inference-efficient; the expensive sampling is entirely offline.
 
 Rejection after the mathematical and empirical audits:
 
-1. The exponent \(I\) is the squared Mahalanobis distance from the nominal
+1. The exponent $I$ is the squared Mahalanobis distance from the nominal
    execution to the failure set.  For a locally smooth failure boundary it is
    exactly an anisotropic perturbation tolerance, already rejected in cycle 3;
-   smoothing its indicator over \(\xi\) is cycle 7.  Multiple dominating points
+   smoothing its indicator over $\xi$ is cycle 7.  Multiple dominating points
    enrich the description of that same tolerance boundary but do not define a
    different grasping estimand.
 2. The sampling method is an application of a mature general construction.
@@ -3664,9 +3663,9 @@ Rejection after the mathematical and empirical audits:
    rare-event principle.
 3. The laboratory's useful error regime is not established as rare.  Current
    real grasp systems and the intended occluded/noisy setting commonly have
-   failure rates of order \(10^{-1}\), where hundreds rather than millions of
+   failure rates of order $10^{-1}$, where hundreds rather than millions of
    matched simulations estimate a Bernoulli probability adequately.  Rare-event
-   machinery becomes decisive near \(10^{-4}\) or below, but a contact
+   machinery becomes decisive near $10^{-4}$ or below, but a contact
    simulator is not physically calibrated to four decimal places.  It would
    produce a precise probability for the wrong physical law.
 4. Robotics already validates robustness by repeated dynamics and pose
@@ -3683,7 +3682,7 @@ Rejection after the mathematical and empirical audits:
    per grasp.  If failures are frequent, standard stratified Monte Carlo wins;
    if no failures appear, a small real trial set cannot validate the claimed
    tail ordering.  There is no credible middle regime in which a learned
-   \(10^{-4}\) simulator tail can be shown to improve one-shot real grasping.
+   $10^{-4}$ simulator tail can be shown to improve one-shot real grasping.
 
 Consequently, rare-event simulation could reduce the offline cost of an
 industrial reliability study, but the paper would be summarized as established
@@ -3727,30 +3726,30 @@ themselves establish a new problem.
 ### 77. Search-budget-stable grasp evaluation
 
 Proposal: a learned evaluator is not merely queried at a typical grasp.  Given
-independent candidates \(G_1,\ldots,G_N\sim\pi(\cdot\mid o)\), deployment selects
+independent candidates $G_1,\ldots,G_N\sim\pi(\cdot\mid o)$, deployment selects
 
-\[
+$$
  \widehat G_N\in\arg\max_i s_\theta(o,G_i).
-\]
+$$
 
-If the conditional score CDF under the proposal is \(F_{\theta,o}\), the
+If the conditional score CDF under the proposal is $F_{\theta,o}$, the
 selected-action law is, ignoring ties,
 
-\[
+$$
  P_{\theta,N}(dg\mid o)
  =N\,\pi(dg\mid o)
    F_{\theta,o}(s_\theta(o,g))^{N-1}.
-\]
+$$
 
-Thus increasing \(N\) concentrates evaluation on an extreme tail where small
+Thus increasing $N$ concentrates evaluation on an extreme tail where small
 systematic score errors can dominate.  A candidate formulation was to learn a
 score whose *physical* selected-grasp utility is nondecreasing over a declared
 budget range, using selection-law-weighted proper losses and a budget-uniform
 pessimistic correction.  The benchmark would report true success versus
-candidate budget rather than AP at one arbitrary \(N\).
+candidate budget rather than AP at one arbitrary $N$.
 
-Rejection: the phenomenon is the general Best-of-\(N\) reward-overoptimization
-problem.  ICLR 2026 work already analyzes smoothing and regret for Best-of-\(N\),
+Rejection: the phenomenon is the general Best-of-$N$ reward-overoptimization
+problem.  ICLR 2026 work already analyzes smoothing and regret for Best-of-$N$,
 and separate accepted work applies uncertainty-pessimistic reward estimates to
 prevent reward hacking under larger search:
 https://openreview.net/forum?id=tCv1D3M7Lb and
@@ -3759,12 +3758,12 @@ already attacks the proposal/evaluator shift, while post-selection calibration,
 proposal-density correction, and top-one losses were separately excluded in
 earlier cycles.  More fundamentally, with the true
 
-\[
+$$
  \eta(o,g)=P(Y=1\mid o,g),
-\]
+$$
 
-best-of-\(N\) cannot hurt in expectation: the problem is estimation error in
-\(\eta\), not a new physical estimand.  A selection-weighted loss or lower
+best-of-$N$ cannot hurt in expectation: the problem is estimation error in
+$\eta$, not a new physical estimand.  A selection-weighted loss or lower
 confidence correction may be useful, and the budget curve is a worthwhile
 diagnostic, but the paper would be a grasping instance of reward-model
 overoptimization rather than a new grasp-learning object.
@@ -3773,14 +3772,14 @@ overoptimization rather than a new grasp-learning object.
 
 Proposal: analytic metrics, different simulators, and robot platforms need not
 share a meaningful absolute quality scale, even if each approximately preserves
-which grasp is better within one scene.  Suppose oracle \(a\) exposes
+which grasp is better within one scene.  Suppose oracle $a$ exposes
 
-\[
+$$
  M_{a,o}(g)=h_{a,o}(r(o,g))+\epsilon,
-\]
+$$
 
-where \(h_{a,o}\) is an unknown strictly increasing link.  The physically
-relevant latent \(r(o,g)\) would be identifiable only up to a scene-wise
+where $h_{a,o}$ is an unknown strictly increasing link.  The physically
+relevant latent $r(o,g)$ would be identifiable only up to a scene-wise
 monotone gauge, but its argmax would remain invariant.  A gauge-invariant model
 could train solely from within-scene order constraints, pool heterogeneous
 oracles without pretending their numbers are calibrated, and learn one
@@ -3802,18 +3801,18 @@ neither a new estimator nor credible fusion of inconsistent physical oracles.
 
 Proposal: simulator labels for two grasps are normally estimated with
 independent execution perturbations.  Instead, apply the same pose, control,
-and load perturbation seed \(\xi\) to every candidate in a scene and supervise
+and load perturbation seed $\xi$ to every candidate in a scene and supervise
 pairwise differences
 
-\[
+$$
  \Delta_{g,h}(o)
  =E_\xi[Y(o,g,\xi)-Y(o,h,\xi)].
-\]
+$$
 
 When outcomes for nearby candidates are positively correlated under the same
-\(\xi\), common random numbers can dramatically reduce the variance of the difference
+$\xi$, common random numbers can dramatically reduce the variance of the difference
 relative to two independent Monte Carlo estimates.  A skew-symmetric comparator
-\(d_\theta(o,g,h)=-d_\theta(o,h,g)\) with cycle-consistency could then train a
+$d_\theta(o,g,h)=-d_\theta(o,h,g)$ with cycle-consistency could then train a
 tournament or recover a scalar potential, concentrating simulation on close
 ranking decisions rather than estimating every marginal to the same accuracy.
 
@@ -3824,9 +3823,9 @@ https://arxiv.org/abs/1410.6782 and
 https://doi.org/10.1007/s10479-015-2019-x.  The matched design can reduce offline
 label cost, but it does not change the population identity
 
-\[
+$$
  \Delta_{g,h}=\eta(o,g)-\eta(o,h).
-\]
+$$
 
 Recovering a potential returns to an ordinary scalar grasp field; allowing
 intransitive pairwise outputs contradicts that identity.  Exact common
@@ -3836,16 +3835,16 @@ an independent ICLR thesis.
 
 ### 80. Morse field of bilateral normal chords
 
-Proposal: for a smooth visible or completed surface \(S\), ideal parallel-jaw
+Proposal: for a smooth visible or completed surface $S$, ideal parallel-jaw
 antipodal contacts are stationary points of the squared pair distance on
-\(S\times S\).  For \(x,y\in S\), define
+$S\times S$.  For $x,y\in S$, define
 
-\[
+$$
  F_S(x,y)=
  \left(P_{T_xS}(y-x),\;P_{T_yS}(x-y)\right).
-\]
+$$
 
-\(F_S(x,y)=0\) means the connecting chord is normal to both tangent planes.
+$F_S(x,y)=0$ means the connecting chord is normal to both tangent planes.
 The Hessian of the pair-distance function classifies whether the chord is a
 stable local width minimum, a saddle, or a maximum.  An initially attractive
 model would predict this integrable vector field and its Morse index from a
@@ -3859,7 +3858,7 @@ Parallel-jaw antipodal planning already seeks opposing surface points whose
 connecting line agrees with both normals, and planners already prefer local
 width minima because perturbations increase squeeze rather than release it:
 https://motion.cs.illinois.edu/RoboticSystems/AdvancedTopicsInPlanning.html.
-Learning the zero set of \(F_S\) is therefore another estimator of classical
+Learning the zero set of $F_S$ is therefore another estimator of classical
 antipodal pairs.  Under single-view occlusion, the opposing tangent plane is
 often missing; predicting it returns to hidden contact completion.  On noisy
 point clouds, estimating a Hessian of pair distance is less stable than the
@@ -3871,22 +3870,22 @@ approach/collision scoring would restore the ordinary pipeline.
 
 Proposal: two commanded poses can be geometrically different yet become
 indistinguishable under a compliant position/force controller.  Let
-\(K(\cdot\mid o,g)\) be the distribution of terminal contact state and binary
+$K(\cdot\mid o,g)$ be the distribution of terminal contact state and binary
 small-lift outcome produced by the fixed closure controller.  Define
 
-\[
+$$
  g\sim_o h
  \quad\Longleftrightarrow\quad
  K(\cdot\mid o,g)=K(\cdot\mid o,h).
-\]
+$$
 
-Learning the quotient \(\mathcal G/{\sim_o}\) could remove redundant commands,
+Learning the quotient $\mathcal G/{\sim_o}$ could remove redundant commands,
 place one representative in every mechanically distinct class, and make grasp
 search depend on controller behavior rather than an arbitrary Euclidean metric
-on \(SE(3)\).
+on $SE(3)$.
 
 Rejection: if the kernel contains only the terminal success bit, equivalence is
-just equality of \(\eta\) values and collapses physically unrelated grasps.  If it
+just equality of $\eta$ values and collapses physically unrelated grasps.  If it
 contains the full terminal contact state, estimating it requires the closure
 rollout and hidden mechanics excluded from the compact one-view contract.
 Conceptually, the quotient is a behavioral-equivalence restatement of capture
@@ -3902,14 +3901,14 @@ Proposal: a standard electric parallel gripper usually exposes terminal width,
 joint state, or motor current during closure.  One could select not only a grasp
 likely to succeed, but one whose cheap post-closure telemetry makes secure
 bilateral capture distinguishable from a miss before the millimetric lift.  If
-\(S\) is the trace and \(Y\) physical retention, the action-dependent experiment
-is \(p(S,Y\mid o,g)\).  A compact selector could trade expected success against
-the Bayes error or conditional entropy of verifying \(Y\) from \(S\), followed
+$S$ is the trace and $Y$ physical retention, the action-dependent experiment
+is $p(S,Y\mid o,g)$.  A compact selector could trade expected success against
+the Bayes error or conditional entropy of verifying $Y$ from $S$, followed
 by an abstain/release rule.
 
 Status: not admitted under the current scope, and not promoted.  This proposal
 genuinely changes decision-time information, which is why it escapes the scalar
-\(\eta\) checkpoint, but the current contract declares one-shot RGB-D as the evidence
+$\eta$ checkpoint, but the current contract declares one-shot RGB-D as the evidence
 for grasp choice and does not authorize an extra verification objective.
 Moreover, proprioception-based grasping with joint position/torque sensing is
 established (https://arxiv.org/abs/1803.09674), informative sensor-based grasp
@@ -3926,7 +3925,7 @@ objectively novel.
 No direction in cycles 77--82 passes the post-cycle-73 entrance test.
 
 - Search exposure, ordinal gauges, and matched comparisons alter estimation or
-  data efficiency but retain the same Bayes target \(\eta\).
+  data efficiency but retain the same Bayes target $\eta$.
 - The normal-chord and behavioral-quotient constructions are mathematically
   structured restatements of antipodal pairs and capture basins.
 - Post-closure verifiability introduces genuinely new information, but that is
@@ -3964,33 +3963,33 @@ under the actual laboratory contract and novelty threshold.
 ### 83. Controller-indexed grasp semantics
 
 Proposal: a pose and width do not uniquely define physical execution.  Let
-\(c\in\mathcal C\) denote a compact closure-controller description: commanded
+$c\in\mathcal C$ denote a compact closure-controller description: commanded
 force or stiffness, closing velocity, position/force mode, and a small number
 of saturation parameters.  Define
 
-\[
+$$
  Q(o,g;c)=P(Y=1\mid O=o,G=g,C=c).
-\]
+$$
 
 Instead of fitting a separate scorer for each controller, learn the conditional
 operator
 
-\[
+$$
  \mathfrak Q_o:\mathcal C\longrightarrow C(\mathcal G),\qquad
  c\longmapsto Q(o,\cdot;c).
-\]
+$$
 
 An attractive compact model would encode the RGB-D observation once, represent
-\(c\) by dimensionless controller groups, and use a low-rank separable decoder
+$c$ by dimensionless controller groups, and use a low-rank separable decoder
 
-\[
+$$
  Q_\theta(o,g;c)
  =\sigma\!\left(
  b_\theta(o,g)+
  \sum_{j=1}^{r}
  u_{\theta,j}(o,g)v_{\theta,j}(c)
  \right).
-\]
+$$
 
 The empirical claim would be that controller variation changes the grasp field
 through a low-dimensional response subspace.  If true, a small factorial
@@ -3999,10 +3998,10 @@ retraining its geometric encoder.  This is an operator over action semantics,
 not a prediction of the full closure trajectory.
 
 Rejection: the current setup has one fixed gripper and controller.  Adding
-\(c\) creates variation solely to justify the new model; it is not an
+$c$ creates variation solely to justify the new model; it is not an
 unrepresented laboratory nuisance known to vary at deployment.  With a fixed
-\(c_0\), the operator collapses exactly to the ordinary scalar field
-\(Q(o,g;c_0)=\eta(o,g)\).  If force or compliance is made a controllable action,
+$c_0$, the operator collapses exactly to the ordinary scalar field
+$Q(o,g;c_0)=\eta(o,g)$.  If force or compliance is made a controllable action,
 the required outcome depends on material, mass, friction, and deformation that
 single-view RGB-D does not identify reliably.  Force-regulated grasping
 accordingly uses tactile feedback, and a recent force-controlled parallel-jaw
@@ -4022,38 +4021,38 @@ brief or extra tactile/force information.  It is not promoted.
 
 Proposal: replace informal claims such as “the model needs only a local crop”
 with an information-theoretic object.  Let an encoder produce a stochastic
-finite representation \(Z\sim p_\phi(z\mid O)\), and let
-\(\pi:\mathcal Z\to\mathcal G\) select one grasp.  Define decision distortion
+finite representation $Z\sim p_\phi(z\mid O)$, and let
+$\pi:\mathcal Z\to\mathcal G$ select one grasp.  Define decision distortion
 
-\[
+$$
  d(o,z)
  =
  \max_{g\in\mathcal G}\eta(o,g)
  -
  \eta(o,\pi(z)).
-\]
+$$
 
 The **grasp rate--regret function** would be
 
-\[
+$$
  R_{\mathrm{grasp}}(D)
  =
  \inf_{\substack{p(z\mid o),\,\pi\\
                   E[d(O,Z)]\le D}}
  I(O;Z).
-\]
+$$
 
 It asks how many bits of a noisy RGB-D observation are necessary to choose a
-grasp within expected physical regret \(D\), without reconstructing shape.  A
+grasp within expected physical regret $D$, without reconstructing shape.  A
 practical estimator could use a vector-quantized ray tokenizer, an entropy
 model, and a Lagrangian
 
-\[
+$$
  \mathcal L_{\beta}
  =
  E[-Y\log q_\theta(Z,G)-(1-Y)\log(1-q_\theta(Z,G))]
  +\beta\,E[-\log p_\psi(Z)],
-\]
+$$
 
 augmented by a differentiable top-one regret surrogate on shared candidate
 sets.  Reporting the entire bits--regret frontier would be more honest than
@@ -4097,22 +4096,22 @@ and not a claim that robotic grasping has no open problems.
 | Parallel-jaw, noisy wrist RGB-D, shelf/one frontal occluder | Fixed throughout the ledger and checked against TARGO/CAPGrasp-style boundaries | satisfied as search scope |
 | No RL, VLA, whole-cycle feasibility, causal failure taxonomy, or whole-scene SDF input | Enforced in every promoted/rejected formulation | satisfied as search scope |
 | A scientific object not already present in this document | Cycles 1--84 cover every subsequently proposed object; the user explicitly excludes reusing them | **missing** |
-| Necessity under the fixed one-shot contract | The Bayes checkpoint shows that auxiliary outputs reduce to estimating \(\eta(o,g)\) unless information, action, utility, supervision, or access changes | **missing for every post-checkpoint proposal** |
+| Necessity under the fixed one-shot contract | The Bayes checkpoint shows that auxiliary outputs reduce to estimating $\eta(o,g)$ unless information, action, utility, supervision, or access changes | **missing for every post-checkpoint proposal** |
 | Efficiently learnable compact model | Several compact models were derived, but all belong to rejected or explicitly excluded ideas | not admissible |
 | Objectively strong novelty after primary-source audit | No post-cycle-73 direction survives its closest general-ML/mathematics and robotics occupancy checks | **missing** |
 | Credible mechanism for physical SOTA | Recent papers show empirical headroom under occlusion and ranking, but no unoccupied proposed mechanism explains how to capture it | **missing** |
 | ICLR-level support | The official criteria require significant new knowledge/value and rigorous support; leaderboard improvement alone is insufficient | **missing without a surviving question** |
 
 The blocker is therefore exact.  Under the current contract the only deployment
-random variables are \(O\), \(G\), and \(Y\), and the decision is
+random variables are $O$, $G$, and $Y$, and the decision is
 
-\[
+$$
  \pi^\star(o)\in\arg\max_g P(Y=1\mid O=o,G=g).
-\]
+$$
 
 After excluding all previously recorded structures of this conditional law, no
 independent estimand remains.  Inventing another representation of
-\(P(Y=1\mid O,G)\) would violate the requested novelty standard; introducing a
+$P(Y=1\mid O,G)$ would violate the requested novelty standard; introducing a
 controller, telemetry, a passive view sequence, previous outcomes, a new grasp
 variable, or a different utility without confirmation would violate the
 laboratory contract.
@@ -4144,16 +4143,16 @@ state its hardware assumption as a falsifiable entrance condition.
 
 The first reopened contract considered below is deliberately small:
 
-\[
+$$
  O_0=R_x(Z),\qquad
  A_{\rm probe}=(v,\epsilon),\qquad
  O_1=R_{x+\epsilon v}(Z),\qquad
  G=g,\qquad Y\in\{0,1\}.
-\]
+$$
 
-Here \(x\) is the calibrated wrist-camera pose, \(v\) is one safe camera-twist
-direction, and \(\epsilon\) is a centimetre-scale or smaller probe amplitude.
-The object and occluder remain stationary between \(O_0\) and \(O_1\).  The
+Here $x$ is the calibrated wrist-camera pose, $v$ is one safe camera-twist
+direction, and $\epsilon$ is a centimetre-scale or smaller probe amplitude.
+The object and occluder remain stationary between $O_0$ and $O_1$.  The
 terminal action is still one parallel-jaw close and millimetre-scale lift.
 There is no RL, VLA, full approach-to-lift feasibility predictor, scene SDF, or
 causal failure taxonomy.
@@ -4191,9 +4190,9 @@ object*, not a new score for the familiar next-view pipeline.
 
 ### Cycle 86: a learned critical-force interval
 
-Proposal: make commanded closing force \(f\) part of the action and learn a
-random lower holding threshold \(F_{\min}(o,g)\), or a safe interval
-\([F_{\min},F_{\max}]\) when damage is penalized.  Interval-censored attempts
+Proposal: make commanded closing force $f$ part of the action and learn a
+random lower holding threshold $F_{\min}(o,g)$, or a safe interval
+$[F_{\min},F_{\max}]$ when damage is penalized.  Interval-censored attempts
 would support survival-style learning and selection of a pose with a wide
 force margin.
 
@@ -4244,11 +4243,11 @@ and is unlikely to beat temporal denoising.  If camera motion is introduced,
 the scientific object is no longer replicated noise but changing visibility,
 which motivates cycle 90.
 
-### Cycle 89: reopening Candidate E through \(\Gamma\)-convergence
+### Cycle 89: reopening Candidate E through $\Gamma$-convergence
 
 Proposal: treat refining contact simulators as discrete variational
-functionals \(E_h\) and learn a decision map that is stable under
-\(\Gamma\)-convergence of \(E_h\) to \(E\).
+functionals $E_h$ and learn a decision map that is stable under
+$\Gamma$-convergence of $E_h$ to $E$.
 
 Rejection: this supplies stronger mathematical language but does not repair
 Candidate E's ground-truth problem.  Different contact engines may encode
@@ -4257,7 +4256,7 @@ functional, and convergence of minimizers does not imply a material,
 physically predictive binary-grasp ambiguity band.  Multi-fidelity
 classification already targets expensive failure boundaries:
 https://arxiv.org/abs/1905.03406.  Without a positive matched-refinement pilot,
-the proposal remains LimitGrasp with \(\Gamma\)-convergence decoration.
+the proposal remains LimitGrasp with $\Gamma$-convergence decoration.
 
 ### Cycle 90: weak visibility response under controlled micro-motion
 
@@ -4307,61 +4306,61 @@ claimed without implementation.
 
 ### 2. The correct mathematical state space
 
-Let \(Z\) be a static labeled scene, \(x\in SE(3)\) the wrist-camera pose, and
+Let $Z$ be a static labeled scene, $x\in SE(3)$ the wrist-camera pose, and
 
-\[
+$$
  R_x(Z):\Omega\rightarrow\mathbb R^C
-\]
+$$
 
 the registered RGB, depth, confidence, and target/occluder-mark field on image
-domain \(\Omega\).  For a piecewise smooth scene, \(R_x(Z)\) is naturally an
-\(SBV\) rather than a globally smooth field.  Its jump set
-\(\Gamma_x\subset\Omega\) contains depth and semantic occlusion boundaries.
+domain $\Omega$.  For a piecewise smooth scene, $R_x(Z)$ is naturally an
+$SBV$ rather than a globally smooth field.  Its jump set
+$\Gamma_x\subset\Omega$ contains depth and semantic occlusion boundaries.
 
-For camera twist \(v\) and small amplitude \(\epsilon\), first warp persistent
-visible surfaces from pose \(x\) to \(x+\epsilon v\) using calibrated
+For camera twist $v$ and small amplitude $\epsilon$, first warp persistent
+visible surfaces from pose $x$ to $x+\epsilon v$ using calibrated
 kinematics and measured depth.  The residual finite response is
 
-\[
+$$
  \mu_{\epsilon,v}
  =
  \frac{R_{x+\epsilon v}(Z)
        -W_{\epsilon v}R_x(Z)}{\epsilon}\,\mathcal L^2.
-\]
+$$
 
 In the weak-* topology of finite Radon measures, the target limit has the
 decomposition
 
-\[
+$$
  \mu_v
  =
  a_v(u)\,\mathcal L^2
  +
  [R_x](u)\,V_n(u;v)\,
  \mathcal H^1\!\lfloor_{\Gamma_x}.
-\]
+$$
 
-The absolutely continuous part \(a_v\) contains residual photometric, depth,
+The absolutely continuous part $a_v$ contains residual photometric, depth,
 and registration change on persistent surfaces.  The singular part contains
-the one-sided appearance/depth jump \([R_x]\) multiplied by the normal
-velocity \(V_n\) of the visibility boundary.  For this project the primary
+the one-sided appearance/depth jump $[R_x]$ multiplied by the normal
+velocity $V_n$ of the visibility boundary.  For this project the primary
 object is the **target-birth component**: target surface that is visible at
-\(x+\epsilon v\) but was covered by the marked frontal obstacle at \(x\).
+$x+\epsilon v$ but was covered by the marked frontal obstacle at $x$.
 
 With RGB-D, it is convenient to lift this component into 3-D as a positive
 point measure
 
-\[
+$$
  \nu_{\epsilon,v}
  =
  \frac{1}{\epsilon}
  \sum_{i\in\mathcal B_{\epsilon,v}}
  A_i\,c_i\,\delta_{X_i},
-\]
+$$
 
-where \(\mathcal B_{\epsilon,v}\) is the registered target-disocclusion set,
-\(X_i\) is its 3-D point, \(A_i\) is pixel footprint, and \(c_i\) is depth
-confidence.  The limit \(\nu_v\) is a visibility-flux measure supported on the
+where $\mathcal B_{\epsilon,v}$ is the registered target-disocclusion set,
+$X_i$ is its 3-D point, $A_i$ is pixel footprint, and $c_i$ is depth
+confidence.  The limit $\nu_v$ is a visibility-flux measure supported on the
 one-sided target trace behind the occluder contour.  It is neither a completed
 point cloud nor a posterior over hidden shape.
 
@@ -4369,28 +4368,28 @@ point cloud nor a posterior over hidden shape.
 
 The one-dimensional translation
 
-\[
+$$
  f_t(s)=\mathbf 1\{s\ge t\}
-\]
+$$
 
 already shows the issue:
 
-\[
+$$
  \frac{f_\epsilon-f_0}{\epsilon}
  =
  -\frac1\epsilon\mathbf 1_{[0,\epsilon)}.
-\]
+$$
 
-Its \(L^2\) norm diverges as \(\epsilon^{-1/2}\), but as a signed measure it
-converges weakly to \(-\delta_0\) with finite total variation.  For every
-Lipschitz test function \(\phi\),
+Its $L^2$ norm diverges as $\epsilon^{-1/2}$, but as a signed measure it
+converges weakly to $-\delta_0$ with finite total variation.  For every
+Lipschitz test function $\phi$,
 
-\[
+$$
  \left|
  \int \phi(s)\frac{f_\epsilon-f_0}{\epsilon}\,ds+\phi(0)
  \right|
  \le \frac12\operatorname{Lip}(\phi)\epsilon.
-\]
+$$
 
 Thus concatenating or subtracting rasterized frames forces a model to resolve
 an increasingly narrow and high-amplitude band, whereas querying the weak
@@ -4411,36 +4410,36 @@ grasp-query estimator, and the associated scale/decision theory.
 
 ### 4. Compact action-query model
 
-Let \(g\in SE(3)/H\) be a parallel-jaw pose modulo the gripper symmetry.
-Choose \(K\) smooth, local kernels in the gripper frame.  They cover the two
+Let $g\in SE(3)/H$ be a parallel-jaw pose modulo the gripper symmetry.
+Choose $K$ smooth, local kernels in the gripper frame.  They cover the two
 pad neighborhoods, finger-sweep boundaries, interior jaw volume, and a small
 target/obstacle clearance band.  Query the visibility flux by
 
-\[
+$$
  z_k(g;v)
  =
  \int \kappa_k(g^{-1}X)\,d\nu_v(X),
  \qquad k=1,\ldots,K.
-\]
+$$
 
 The deployment estimator is a weighted segmented reduction,
 
-\[
+$$
  \widehat z_k(g;v,\epsilon)
  =
  \frac1\epsilon
  \sum_{i\in\mathcal B_{\epsilon,v}}
  A_i c_i\,\kappa_k(g^{-1}X_i).
-\]
+$$
 
 A lightweight base encoder supplies features
-\(b_\theta(O_{\cap},g)\) only from points local to the open gripper, where
-\(O_{\cap}\) contains persistent visible surface registered across the two
+$b_\theta(O_{\cap},g)$ only from points local to the open gripper, where
+$O_{\cap}$ contains persistent visible surface registered across the two
 frames.  The same local registration/averaging is supplied to every
 two-frame baseline, so ordinary denoising or extra sampling cannot be
 misattributed to visibility flux.  A small query head predicts
 
-\[
+$$
  q_\theta(O_{\cap},\nu_{\epsilon,v},g)
  =
  \sigma\!\left(
@@ -4449,9 +4448,9 @@ misattributed to visibility flux.  A small query head predicts
  \widehat z(g;v,\epsilon),
  v,\epsilon,\widehat\sigma_D]
  \right).
-\]
+$$
 
-The probe representation contains \(K\) numbers per candidate plus a small
+The probe representation contains $K$ numbers per candidate plus a small
 set of boundary tokens; it does not retain a mesh, voxel grid, whole-scene
 SDF, or sampled shape completion.  Candidate generation must be held fixed
 in the representation ablation.  A secondary end-to-end result may regenerate
@@ -4459,18 +4458,18 @@ candidates after the probe, but it cannot substitute for that controlled
 comparison.
 
 The initial view can choose among a small safe set of probe twists without RL.
-Let \(\rho_\theta(u)\) be a learned density of how much revealing target
-surface behind boundary point \(u\) could change the current grasp ranking.
+Let $\rho_\theta(u)$ be a learned density of how much revealing target
+surface behind boundary point $u$ could change the current grasp ranking.
 Use the analytically computable boundary speed to enumerate
 
-\[
+$$
  v^*(O_0)
  =
  \arg\max_{v\in\mathcal V_{\rm safe}}
  \int_{\Gamma_{\rm target/occ}}
  \rho_\theta(u)[V_n(u;v)]_+\,d\mathcal H^1(u)
  -\lambda_{\rm move}c(v).
-\]
+$$
 
 This selector is not claimed as a new form of optimal experimental design.
 Its role is only to make the new response measurable at low motion cost.
@@ -4495,11 +4494,11 @@ occluder marks may come from the laboratory perception stack, but results
 must include predicted rather than oracle masks.
 
 The primary loss is ordinary supervised grasp likelihood.  Synthetic meshes
-also provide the limiting boundary integral \(z_v^{\rm oracle}\), so an
+also provide the limiting boundary integral $z_v^{\rm oracle}$, so an
 auxiliary response loss can train target-birth detection and the weak query
 directly:
 
-\[
+$$
  \mathcal L
  =
  \mathcal L_{\rm BCE}(Y,q_\theta)
@@ -4511,10 +4510,10 @@ directly:
  -
  z_v^{\rm oracle}
  \|_1.
-\]
+$$
 
 Only amplitudes inside an empirically verified asymptotic regime belong to
-\(\mathcal E_{\rm micro}\).  Wider probes reveal genuinely different surface,
+$\mathcal E_{\rm micro}$.  Wider probes reveal genuinely different surface,
 so forcing their responses to agree would be mathematically wrong.  Real data
 without a latent mesh uses the outcome and birth-mask terms, not a fabricated
 cross-scale target.  The auxiliary loss is not a contribution by itself.
@@ -4524,26 +4523,26 @@ boundary-token baselines.
 
 ### 6. Theory targets
 
-1. **Weak visibility derivative.**  Under piecewise \(C^2\) surfaces,
+1. **Weak visibility derivative.**  Under piecewise $C^2$ surfaces,
    transverse visibility events, and calibrated camera motion, prove the
-   \(SBV\)/Radon decomposition above and convergence of the lifted
+   $SBV$/Radon decomposition above and convergence of the lifted
    target-birth measure for smooth compactly supported 3-D queries.
 2. **Raster-difference obstruction.**  Generalize the translated-step example
-   to a moving image boundary and show why an \(L^2\) finite-difference target
+   to a moving image boundary and show why an $L^2$ finite-difference target
    has diverging norm while its total-variation measure remains bounded.  A
    meaningful approximation lower bound must specify the encoder class; a
    qualitative appeal to Dirac deltas is insufficient.
 3. **Probe-scale bias--variance law.**  If the disoccluded strip has area
-   \(C\epsilon+O(\epsilon^2)\), pixel density is \(n\), and retained marks have
-   variance at most \(\sigma^2\), a normalized smooth query should have
-   squared bias \(O(\epsilon^2)\) and variance
-   \(O(\sigma^2/(n\epsilon))\).  The resulting optimal physical scale
+   $C\epsilon+O(\epsilon^2)$, pixel density is $n$, and retained marks have
+   variance at most $\sigma^2$, a normalized smooth query should have
+   squared bias $O(\epsilon^2)$ and variance
+   $O(\sigma^2/(n\epsilon))$.  The resulting optimal physical scale
 
-   \[
+   $$
    \epsilon^*
    \asymp
    \left(\frac{\sigma^2}{n}\right)^{1/3}
-   \]
+   $$
 
    explains why the method uses a finite micro-motion rather than claiming
    that smaller is always better.  Correlated RealSense-style noise and
@@ -4551,19 +4550,19 @@ boundary-token baselines.
 4. **Uniform grasp-query consistency.**  For a compact candidate set and a
    uniformly bounded Lipschitz kernel family, bound
 
-   \[
+   $$
    \sup_g
    |\widehat z_k(g;v,\epsilon)-z_k(g;v)|
-   \]
+   $$
 
    by probe bias, effective pixel count, depth noise, mask error, and camera
    calibration error.
-5. **Decision transfer.**  If the grasp head is \(L\)-Lipschitz in the flux
-   sketch, uniform sketch error \(\delta\) yields at most \(2L\delta\)
+5. **Decision transfer.**  If the grasp head is $L$-Lipschitz in the flux
+   sketch, uniform sketch error $\delta$ yields at most $2L\delta$
    additional top-one regret on a shared candidate set.  A margin larger than
-   \(2L\delta\) preserves the selected grasp.
+   $2L\delta$ preserves the selected grasp.
 6. **Response non-identifiability.**  If two latent scenes induce the same
-   \((O_0,\nu_v)\) law for every allowed probe but have different optimal
+   $(O_0,\nu_v)$ law for every allowed probe but have different optimal
    grasps, no policy under this contract can distinguish them.  This theorem
    states exactly which hidden geometry micro-motion cannot recover and
    prevents a false “solves occlusion” claim.
@@ -4586,14 +4585,14 @@ The first pilot needs no new backbone.
    depth noise and pose errors.
 3. Measure the **oracle response value**: improvement of a classifier given
    the exact newly revealed target strip over the same classifier given
-   \(O_0\).  If the top-one success/regret improvement is below five
+   $O_0$.  If the top-one success/regret improvement is below five
    percentage points in the heavily occluded stratum, stop; there is
    insufficient signal for any representation.
 4. Measure how often newly revealed points intersect the local kernels of a
-   grasp whose label/ranking was ambiguous from \(O_0\).  If disocclusion is
+   grasp whose label/ranking was ambiguous from $O_0$.  If disocclusion is
    mostly far from candidate contacts and finger sweeps, the proposed
    task-local mechanism is false.
-5. Compare five frozen-capacity inputs: \(O_0\); raw concatenated frames;
+5. Compare five frozen-capacity inputs: $O_0$; raw concatenated frames;
    registered fused PCD; optical-flow/scene-flow plus frames; and the exact
    EdgeFlux kernel sketches.  EdgeFlux must improve unseen-amplitude and
    unseen-resolution regret by at least three points over the best two-view
@@ -4666,7 +4665,7 @@ combination as this learning object.
    supply the difference.
 3. **Signal risk.**  Millimetre-scale motion may reveal too little target
    surface, especially when target and obstacle depths are close.
-4. **Noise risk.**  Division by \(\epsilon\) amplifies depth, segmentation,
+4. **Noise risk.**  Division by $\epsilon$ amplifies depth, segmentation,
    and calibration errors; the asymptotic scale may be larger than a cheap
    ordinary next view.
 5. **Task-alignment risk.**  The revealed strip may establish depth ordering
@@ -4727,45 +4726,45 @@ The last sentence is a target claim, not a conclusion.
 
 Let the full calibrated two-view input be
 
-\[
+$$
  X=(O_0,O_1,x,v,\epsilon)
-\]
+$$
 
-and let \(T(X)=(O_{\cap},\nu_{\epsilon,v})\) be the deterministic EdgeFlux
-representation.  For a fixed candidate \(g\), \(T(X)\) cannot contain more
-information about \(Y\) than \(X\):
+and let $T(X)=(O_{\cap},\nu_{\epsilon,v})$ be the deterministic EdgeFlux
+representation.  For a fixed candidate $g$, $T(X)$ cannot contain more
+information about $Y$ than $X$:
 
-\[
+$$
  I(Y;T(X)\mid g)\le I(Y;X\mid g).
-\]
+$$
 
 More generally, for any decision loss and unrestricted measurable predictors,
 the Bayes risk satisfies
 
-\[
+$$
  \mathcal R^*(X)\le \mathcal R^*(T(X)).
-\]
+$$
 
 This is not a minor caveat.  Candidate G may not claim that converting two
 frames into a visibility measure creates information or asymptotically
 dominates an unrestricted two-frame learner.  A sufficiently expressive raw
-model can implement \(T\) internally and retain any information that \(T\)
+model can implement $T$ internally and retain any information that $T$
 discards.
 
 The defensible learnability claim is finite-resource and must name the resource
-class.  For compute/parameter budget \(B\), compare
+class.  For compute/parameter budget $B$, compare
 
-\[
+$$
  \inf_{h\in\mathcal H^{\rm flux}_B}\mathcal R(h)-\mathcal R^*
  \quad\text{against}\quad
  \inf_{h\in\mathcal H^{\rm raw}_B}\mathcal R(h)-\mathcal R^*.
-\]
+$$
 
 The translated-step example can support a separation for declared linear,
 band-limited, or fixed-resolution raw encoders, not for all neural networks.
 The strongest theory route is therefore:
 
-1. show that a \(K\)-query weak-measure estimator attains the minimax rate for
+1. show that a $K$-query weak-measure estimator attains the minimax rate for
    a class of transverse moving-boundary functionals;
 2. show a slower approximation rate for a clearly specified raw encoder class
    that does not align the discontinuity;
@@ -4781,28 +4780,28 @@ more informative sensor.
 ### Cycle 92: the parallax-resolution gate
 
 The micro-motion premise can be tested analytically before rendering.  Consider
-a pinhole cross-section with focal length \(f_{\rm px}\), a foreground
-occluder edge at depth \(z_f\), target surface immediately behind it at depth
-\(z_b>z_f\), and lateral camera translation
-\(\epsilon_\perp\) normal to the projected edge.  A background point aligned
+a pinhole cross-section with focal length $f_{\rm px}$, a foreground
+occluder edge at depth $z_f$, target surface immediately behind it at depth
+$z_b>z_f$, and lateral camera translation
+$\epsilon_\perp$ normal to the projected edge.  A background point aligned
 with the foreground edge before motion separates from it after motion by
 
-\[
+$$
  \chi
  =
  f_{\rm px}|\epsilon_\perp|
  \left|\frac1{z_f}-\frac1{z_b}\right|
  \quad\text{pixels}.
-\]
+$$
 
-\(\chi\) is the first-order width of the disoccluded target strip.  It is a
+$\chi$ is the first-order width of the disoccluded target strip.  It is a
 more meaningful experimental coordinate than millimetres of wrist motion:
 the same baseline can be informative or invisible depending on focal length
 and target--occluder depth separation.
 
-For illustration only, with \(f_{\rm px}=600\):
+For illustration only, with $f_{\rm px}=600$:
 
-| \(z_f\) | \(z_b\) | \(\chi\) at 5 mm | at 10 mm | at 20 mm | baseline for \(\chi=3\) |
+| $z_f$ | $z_b$ | $\chi$ at 5 mm | at 10 mm | at 20 mm | baseline for $\chi=3$ |
 |---:|---:|---:|---:|---:|---:|
 | 0.50 m | 0.55 m | 0.55 px | 1.09 px | 2.18 px | 27.5 mm |
 | 0.50 m | 0.60 m | 1.00 px | 2.00 px | 4.00 px | 15.0 mm |
@@ -4813,29 +4812,29 @@ the obstacle is close to the target, even 20 mm may not produce three pixels
 of new surface.  Conversely, a larger depth gap can make a 5--10 mm probe
 useful.
 
-If the target/occluder boundary has effective length \(L_\Gamma\) pixels, the
+If the target/occluder boundary has effective length $L_\Gamma$ pixels, the
 number of switched target samples is approximately
 
-\[
+$$
  N_{\rm birth}\asymp L_\Gamma\chi
-\]
+$$
 
 before mask and depth-confidence losses.  A necessary observability window is
 
-\[
+$$
  \chi_{\min}\lesssim\chi
  \ll \ell_{\kappa,\rm px},
-\]
+$$
 
-where \(\chi_{\min}\) is at least a few pixels under the actual segmentation
-and registration noise, and \(\ell_{\kappa,\rm px}\) is the projected scale
+where $\chi_{\min}$ is at least a few pixels under the actual segmentation
+and registration noise, and $\ell_{\kappa,\rm px}$ is the projected scale
 over which the grasp query is approximately smooth.  Below the window the
 switch is unresolved; far above it the measurement is a useful additional
 view but no longer a differential response.
 
-The pilot must therefore stratify every result by \(\chi\), not merely by
+The pilot must therefore stratify every result by $\chi$, not merely by
 occlusion ratio or baseline.  A positive average produced only by large
-\(\chi\) values would support ordinary multi-view grasping, not EdgeFlux's
+$\chi$ values would support ordinary multi-view grasping, not EdgeFlux's
 small-response thesis.
 
 ### Cycle 93: exact consequence of GCNGrasp-VP
@@ -4846,8 +4845,8 @@ https://arxiv.org/html/2606.19091v1 already:
 - predicts a per-point affordance field from a partial point cloud;
 - selects one task-relevant camera adjustment without global reconstruction;
 - reports 0.04 s view planning excluding 0.85 s preprocessing;
-- improves real success after one view, for example from \(4/28\) to
-  \(20/28\) on its brush task;
+- improves real success after one view, for example from $4/28$ to
+  $20/28$ on its brush task;
 - identifies severe-occlusion affordance error as a remaining limitation.
 
 Its task is semantic task-oriented grasping over four object--task pairs,
@@ -4889,7 +4888,7 @@ Three results are mandatory before calling it the final idea:
 2. a representation result against strong two-view fusion at matched view,
    candidates, data, parameters, and compute;
 3. a hardware check showing a nonempty safe motion interval whose parallax
-   \(\chi\) is resolvable but still local.
+   $\chi$ is resolvable but still local.
 
 Without all three, the measure formulation is mathematically coherent but not
 an objectively strong ICLR/SOTA proposal.
@@ -4906,11 +4905,11 @@ It uses exactly the hardware opportunity available here: a calibrated auxiliary
 observation from a wrist RGB-D camera, with the relative transform supplied by
 forward kinematics.  It avoids full-scene reconstruction, groups both views in a
 candidate-centred grasp cylinder, and performs cross-view attention only on that
-local context.  Its ablation reports only \(+0.32\) AP from direct point-cloud
-pre-fusion but \(+6.41\) AP from the complete post-fusion model; in selected
-corner views it reports an average \(+28.11\) AP.  Its real clutter-removal
-success is \(96\%\), versus \(82\%\) for GSNet, with a total pipeline time of
-\(4.6\) s rather than \(3.2\) s for the single-view baseline.  The paper samples
+local context.  Its ablation reports only $+0.32$ AP from direct point-cloud
+pre-fusion but $+6.41$ AP from the complete post-fusion model; in selected
+corner views it reports an average $+28.11$ AP.  Its real clutter-removal
+success is $96\%$, versus $82\%$ for GSNet, with a total pipeline time of
+$4.6$ s rather than $3.2$ s for the single-view baseline.  The paper samples
 an auxiliary view rather than learning a next view, and the physical auxiliary
 position is much farther away than the proposed micro-motion.  Those
 differences leave an experimental niche, but not the broad methodological
@@ -4938,54 +4937,54 @@ The useful part of a differential view is not merely sparse; its mass vanishes
 with probe amplitude.  After registration, write a candidate-local auxiliary
 point distribution as
 
-\[
+$$
  P_{h,\epsilon}
  = (1-\alpha_\epsilon)Q+\alpha_\epsilon P_h,
  \qquad
  \alpha_\epsilon=c\epsilon+o(\epsilon).
-\]
+$$
 
-\(Q\) contains persistent geometry shared by two latent alternatives
-\(h\in\{0,1\}\).  Only the distribution \(P_h\) of newly exposed target points
+$Q$ contains persistent geometry shared by two latent alternatives
+$h\in\{0,1\}$.  Only the distribution $P_h$ of newly exposed target points
 distinguishes the alternatives.  This produces a precise **rare-stratum
 dilution** result for compute-limited fusion.
 
-Suppose a local query network may read \(K\) auxiliary tokens sampled without
+Suppose a local query network may read $K$ auxiliary tokens sampled without
 the birth label.  By coupling and tensorization,
 
-\[
+$$
  \operatorname{TV}
  \left(P_{0,\epsilon}^{\otimes K},
        P_{1,\epsilon}^{\otimes K}\right)
  \le
  K\alpha_\epsilon
  \operatorname{TV}(P_0,P_1).
-\]
+$$
 
 Le Cam's testing bound then gives
 
-\[
+$$
  \inf_{\widehat h}
  \Pr(\widehat h\ne h)
  \ge
  \frac12
  \left[1-K\alpha_\epsilon
  \operatorname{TV}(P_0,P_1)\right].
-\]
+$$
 
-For fixed \(K\), the raw local-token experiment becomes uninformative as
-\(\epsilon\to0\), even when the conditional birth distributions remain well
+For fixed $K$, the raw local-token experiment becomes uninformative as
+$\epsilon\to0$, even when the conditional birth distributions remain well
 separated.  A birth-conditioned query instead reads from
-\(P_h^{\otimes K}\); its testing error is independent of \(\epsilon\).  This is
+$P_h^{\otimes K}$; its testing error is independent of $\epsilon$.  This is
 an **equal learned-token-budget separation**, not an information-superiority
 claim.  A full model allowed to process every raw pixel can recover the same
 information, and an unrestricted model that analytically discovers the birth
 stratum has effectively rediscovered the proposed representation.
 
-At raster density \(n\), a practical feature must retain both birth intensity
+At raster density $n$, a practical feature must retain both birth intensity
 and conditional birth marks:
 
-\[
+$$
  \widehat z_k(g;v)
  =
  \frac{1}{n\epsilon}
@@ -4994,14 +4993,14 @@ and conditional birth marks:
  \qquad
  \operatorname{Var}(\widehat z_k)
  =O((n\epsilon)^{-1}).
-\]
+$$
 
-Here \(B_i\) is the registered target-birth indicator.  Merely averaging the
-birth points would discard the exposed-area rate \(N_B/(n\epsilon)\); merely
+Here $B_i$ is the registered target-birth indicator.  Merely averaging the
+birth points would discard the exposed-area rate $N_B/(n\epsilon)$; merely
 pooling all auxiliary points would shrink their contribution by
-\(O(\epsilon)\).  The renormalized statistic preserves an \(O(1)\) grasp-query
+$O(\epsilon)$.  The renormalized statistic preserves an $O(1)$ grasp-query
 signal while requiring only a small number of learned birth tokens after an
-\(O(n)\) geometric warp and visibility comparison.
+$O(n)$ geometric warp and visibility comparison.
 
 This changes the broad ML statement of Candidate G:
 
@@ -5021,18 +5020,18 @@ matched end-to-end cost.
 
 ### Cycle 96: normalization creates a new hard hardware gate
 
-The \(1/\epsilon\) normalization amplifies systematic errors as well as useful
+The $1/\epsilon$ normalization amplifies systematic errors as well as useful
 birth mass.  If a registration, segmentation, or depth-noise process produces
-a false-birth fraction \(\beta_\epsilon\), its normalized contamination is
+a false-birth fraction $\beta_\epsilon$, its normalized contamination is
 
-\[
+$$
  \frac{\beta_\epsilon}{\epsilon}.
-\]
+$$
 
-Consistency requires \(\beta_\epsilon=o(\epsilon)\); bounded contamination at
-least requires \(\beta_\epsilon=O(\epsilon)\).  This is substantially stronger
+Consistency requires $\beta_\epsilon=o(\epsilon)$; bounded contamination at
+least requires $\beta_\epsilon=O(\epsilon)$.  This is substantially stronger
 than ordinary two-view fusion and is especially relevant because the laboratory
-PCD is noisy.  No neural head can repair a systematic \(1/\epsilon\) blow-up
+PCD is noisy.  No neural head can repair a systematic $1/\epsilon$ blow-up
 without abandoning the derivative interpretation.
 
 The cheap pilot must therefore estimate, on a static calibration object:
@@ -5041,16 +5040,16 @@ The cheap pilot must therefore estimate, on a static calibration object:
 2. true target-birth mass behind the actual shelf obstacle;
 3. their ratio across baseline, depth gap, edge orientation, and repeated
    frames;
-4. the interval in which \(n\epsilon\) is large enough for low variance while
-   \(\beta_\epsilon/\epsilon\) remains controlled.
+4. the interval in which $n\epsilon$ is large enough for low variance while
+   $\beta_\epsilon/\epsilon$ remains controlled.
 
 The required end-to-end baselines are now exact:
 
 1. the CVPR 2026 cross-view model or a faithful local-cylinder adaptation;
 2. full raw two-view encoding;
-3. equal-\(K\) uniform auxiliary tokens;
-4. equal-\(K\) learned-saliency auxiliary tokens;
-5. oracle birth tokens without \(1/\epsilon\) normalization;
+3. equal-$K$ uniform auxiliary tokens;
+4. equal-$K$ learned-saliency auxiliary tokens;
+5. oracle birth tokens without $1/\epsilon$ normalization;
 6. the proposed intensity-preserving normalized birth measure;
 7. the same initial view, candidate generator, and fixed micro-motion for all
    representation comparisons.
@@ -5094,7 +5093,7 @@ The minimum real-data collection is small:
    shelf;
 2. target--obstacle depth gaps covering at least a near, middle, and far case;
 3. lateral wrist translations normal to the main projected obstacle edge, for
-   example \(0,5,10,20,30,40\) mm when kinematically safe;
+   example $0,5,10,20,30,40$ mm when kinematically safe;
 4. at least ten synchronized RGB-D frames per pose, plus ten repeated captures
    with no commanded motion;
 5. camera intrinsics, depth scale/confidence if exposed by the sensor,
@@ -5104,14 +5103,14 @@ The minimum real-data collection is small:
 Two controls are mandatory: obstacle plus shelf with the target removed, which
 measures false births, and the complete target without the obstacle, which
 checks registration error on an ordinary visible surface.  For each edge
-segment and baseline, report predicted and measured \(\chi\), true and false
-birth counts, \(N_{\rm true}/(N_{\rm false}+1)\), and the fitted log--log slopes
-of birth mass versus \(\epsilon\).  The candidate survives only if at least one
+segment and baseline, report predicted and measured $\chi$, true and false
+birth counts, $N_{\rm true}/(N_{\rm false}+1)$, and the fitted log--log slopes
+of birth mass versus $\epsilon$.  The candidate survives only if at least one
 safe interval has:
 
-- measured \(\chi\) above the sensor-specific resolution threshold;
+- measured $\chi$ above the sensor-specific resolution threshold;
 - enough target births for stable grasp-kernel estimates;
-- false-birth contamination that does not grow after \(1/\epsilon\)
+- false-birth contamination that does not grow after $1/\epsilon$
   normalization;
 - repeatability across captures and at least two target--obstacle depth gaps.
 
@@ -5128,16 +5127,16 @@ mathematical proposal was formed.
 ### Cycle 98: first-contact saltation as a pre-grasp correction signal
 
 **Proposal.**  A rigid contact is a hybrid event rather than a smooth tactile
-sample.  If a guard \(h(x)=0\) is crossed at first contact and the state resets
-through \(R\), the local event response is described by the saltation matrix
+sample.  If a guard $h(x)=0$ is crossed at first contact and the state resets
+through $R$, the local event response is described by the saltation matrix
 
-\[
+$$
  S
  =
  D R+
  \frac{(f^+-D R f^-)\nabla h^\top}
       {\nabla h^\top f^-}.
-\]
+$$
 
 The first-contact time, wrist impulse, and jaw encoder discontinuity could be
 treated as a compact singular observation.  A supervised model could infer a
@@ -5167,11 +5166,11 @@ reconstruction:
 **Proposal.**  Apply a low-force closure dither and learn a quotient of the
 force--displacement curve
 
-\[
+$$
  F_g(\delta)
  =
  k_{\rm drive}i(\delta)-F_{\rm friction}(\dot\delta)
-\]
+$$
 
 that is invariant to closing speed and actuator gain.  Its first-contact
 location, local slope, and hysteresis area could parameterize a small
@@ -5179,7 +5178,7 @@ grasp-specific mechanical response instead of a long causal failure vector.
 
 **Rejection.**  A 2026 RA-L gripper already explicitly reconfigures between
 sensing and grasping modes, estimates fingertip force from motor current, and
-reports about \(90\%\) accuracy for size/stiffness-based fruit-ripeness
+reports about $90\%$ accuracy for size/stiffness-based fruit-ripeness
 classification:
 
 https://doi.org/10.1109/LRA.2026.3662656
@@ -5197,9 +5196,9 @@ replacement for grasp selection.
 **Proposal.**  Keep the camera fixed and vary a small set of known illumination
 directions.  A photometric response
 
-\[
+$$
  I_j(u)\simeq \rho(u)\,[\ell_j^\top n(u)]_+
-\]
+$$
 
 can estimate a visible surface normal and curvature jet even where RGB-D depth
 is noisy.  Query only the two candidate jaw neighborhoods and fuse their
@@ -5220,16 +5219,16 @@ scientific core would remain photometric stereo followed by grasp detection.
 
 ### Cycle 101: rolling-shutter or coded-exposure micro-baselines
 
-**Proposal.**  Intentionally move the wrist during one exposure.  If row \(r\)
-is captured at pose \(x(t_0+\tau r)\), a single rolling-shutter image contains a
+**Proposal.**  Intentionally move the wrist during one exposure.  If row $r$
+is captured at pose $x(t_0+\tau r)$, a single rolling-shutter image contains a
 small family of calibrated viewpoints.  A row-aware decoder might recover
 disocclusion evidence with no second-frame latency.
 
 **Rejection.**  The physical scale fails before the learning problem becomes
-interesting.  A \(10\) ms readout and a gentle \(0.05\) m/s wrist motion produce
-only \(0.5\) mm of synthetic baseline; the parallax audit in cycle 92 often
-requires \(10\)--\(30\) mm.  Producing \(20\) mm during the same readout requires
-\(2\) m/s motion near the shelf.  RGB and depth channels may also use different
+interesting.  A $10$ ms readout and a gentle $0.05$ m/s wrist motion produce
+only $0.5$ mm of synthetic baseline; the parallax audit in cycle 92 often
+requires $10$--$30$ mm.  Producing $20$ mm during the same readout requires
+$2$ m/s motion near the shelf.  RGB and depth channels may also use different
 shutter mechanisms and synchronization, so the supposed RGB-D experiment is
 camera-specific.  Rolling-shutter geometry, coded exposure, motion deblurring,
 and occlusion-aware rectification are already established computational
@@ -5244,24 +5243,24 @@ it is not a credible laboratory or broad-ML candidate.
 ### Cycle 102: reopening Candidate D through Blackwell sensor order
 
 **Proposal.**  Replace Candidate D's rejected robust utility ellipsoid by an
-order over sensing experiments.  A sensing action \(a\) induces a channel
-\(E_a:Z\mapsto O_a\).  If
+order over sensing experiments.  A sensing action $a$ induces a channel
+$E_a:Z\mapsto O_a$.  If
 
-\[
+$$
  E_b=K\circ E_a
-\]
+$$
 
-for a stochastic garbling kernel \(K\), then \(a\) Blackwell-dominates \(b\)
+for a stochastic garbling kernel $K$, then $a$ Blackwell-dominates $b$
 for *every* downstream utility, including every parallel-jaw grasp utility.
 Approximate Le Cam deficiency,
 
-\[
+$$
  \delta(E_b,E_a)
  =
  \inf_K\sup_z
  \operatorname{TV}\!\left(E_b(\cdot\mid z),
  K E_a(\cdot\mid z)\right),
-\]
+$$
 
 could yield a task-family-universal view selector learned from paired simulated
 scenes.
@@ -5285,12 +5284,12 @@ General boundary:
 
 **Proposal.**  Treat the shelf or front obstacle as a useful passive contact
 rather than only a collision.  Under a slowly moving gripper constraint
-\(C_g(t)\), quasistatic object motion can be represented by a Moreau-type
+$C_g(t)$, quasistatic object motion can be represented by a Moreau-type
 sweeping inclusion
 
-\[
+$$
  -\dot x(t)\in N_{C_g(t)}(x(t)).
-\]
+$$
 
 A model could learn the terminal capture basin or a low-dimensional correction
 to this analytic sweeping process, enabling the parallel jaws to funnel an
@@ -5300,7 +5299,7 @@ otherwise occluded target before the small lift.
 occluded grasping.  It changes the task from grasp prediction to a contact-rich
 push/rotate/grasp sequence and therefore violates the requested exclusion of
 whole-cycle feasibility and capture-basin formulations.  The robotics territory
-is also directly occupied, including a CoRL system with \(78\%\) real success
+is also directly occupied, including a CoRL system with $78\%$ real success
 and a 2025 method specifically for grasp-constraining walls:
 
 - https://proceedings.mlr.press/v205/zhou23a.html
@@ -5313,7 +5312,7 @@ not create a new scientific task.
 
 **Proposal.**  Use RGB-D frames already produced while the humanoid approaches
 the shelf.  After registration, regard the observation as a measure-valued path
-\(M_{0:T}\) and encode a truncated rough-path signature.  Signatures are
+$M_{0:T}$ and encode a truncated rough-path signature.  Signatures are
 invariant to monotone time reparameterization, so the same model could consume
 different approach speeds and frame rates without a recurrent policy.
 
@@ -5352,30 +5351,30 @@ of that action itself.
 
 Cycle 95 stated a binary testing separation.  It becomes decision-relevant
 without an informal appeal to classification.  Let two equally likely latent
-worlds \(H\in\{0,1\}\) share all persistent local geometry but have different
-birth distributions \(P_0,P_1\).  Restrict the action reduction to two grasps
-\(\{g_0,g_1\}\), where \(g_h\) is optimal in world \(h\), and assume the
+worlds $H\in\{0,1\}$ share all persistent local geometry but have different
+birth distributions $P_0,P_1$.  Restrict the action reduction to two grasps
+$\{g_0,g_1\}$, where $g_h$ is optimal in world $h$, and assume the
 wrong-grasp gap
 
-\[
+$$
  Q_h(g_h)-Q_h(g_{1-h})\ge \Delta>0.
-\]
+$$
 
-An unstratified \(K\)-token auxiliary observation has law
+An unstratified $K$-token auxiliary observation has law
 
-\[
+$$
  \mathbb P_{h,\epsilon}^{K}
  =
  \left[(1-\alpha_\epsilon)Q+
        \alpha_\epsilon P_h\right]^{\otimes K},
  \qquad
  \alpha_\epsilon=c\epsilon+o(\epsilon).
-\]
+$$
 
-Any selector \(\widehat g\) from these tokens induces a test of \(H\).
+Any selector $\widehat g$ from these tokens induces a test of $H$.
 Therefore
 
-\[
+$$
 \begin{aligned}
  \inf_{\widehat g}
  \mathbb E\,\operatorname{Reg}(\widehat g)
@@ -5393,33 +5392,33 @@ Therefore
   \operatorname{TV}(P_0,P_1)
  \right].
 \end{aligned}
-\]
+$$
 
-If \(\operatorname{TV}(P_0,P_1)=\rho>0\), making this lower bound smaller than
-\(\Delta/4\) requires
+If $\operatorname{TV}(P_0,P_1)=\rho>0$, making this lower bound smaller than
+$\Delta/4$ requires
 
-\[
+$$
  K=\Omega((\rho\epsilon)^{-1}).
-\]
+$$
 
 By contrast, after an oracle or sufficiently accurate action-registered birth
-stratification, \(K\) learned tokens have law \(P_h^{\otimes K}\), whose
-testing difficulty does not deteriorate with \(\epsilon\).  This is the direct
+stratification, $K$ learned tokens have law $P_h^{\otimes K}$, whose
+testing difficulty does not deteriorate with $\epsilon$.  This is the direct
 efficient-grasp statement: a generic local sampler needs a token budget that
 grows as the informative support shrinks, while a known-stratum query does not.
 
 Three qualifications prevent misuse of the theorem:
 
 1. The sensor must still acquire enough pixels/points to contain those births:
-   \(n\alpha_\epsilon\gtrsim K\).  EdgeFlux reduces *learned representation*
+   $n\alpha_\epsilon\gtrsim K$.  EdgeFlux reduces *learned representation*
    cost, not the optical resolution required by physics.
 2. The bound does not apply to an unrestricted full-view network or to a
    saliency front-end allowed to inspect all pixels at uncharged cost.  Such a
    model can discover the birth stratum itself.  End-to-end FLOPs, memory, and
    latency must therefore be measured, not inferred from the theorem.
-3. A noisy birth label replaces \(P_h\) by a contaminated conditional law.
-   Cycle 96's \(\beta_\epsilon/\epsilon\) gate is necessary for the apparent
-   constant-\(K\) advantage to survive.
+3. A noisy birth label replaces $P_h$ by a contaminated conditional law.
+   Cycle 96's $\beta_\epsilon/\epsilon$ gate is necessary for the apparent
+   constant-$K$ advantage to survive.
 
 These limitations are strengths of the formulation: they isolate the exact
 resource being improved and avoid an impossible claim of gaining information
@@ -5447,12 +5446,12 @@ make no broad empirical claim beyond the evaluated grasp setting.
 
 1. The scene is static and contains one target, shelf geometry, and at most one
    frontal obstacle; dense clutter is excluded.
-2. Initial input \(O_0\) is wrist RGB-D, optionally with a target mask supplied
+2. Initial input $O_0$ is wrist RGB-D, optionally with a target mask supplied
    identically to every method.
 3. Before final grasp selection, the wrist executes one collision-checked,
-   pre-approved lateral translation \(a=(v,\epsilon)\) and records \(O_1\).
+   pre-approved lateral translation $a=(v,\epsilon)$ and records $O_1$.
    This is a sensing action, not RL and not a learned manipulation policy.
-4. The output is one parallel-jaw pose \(g\).  The label is closure plus a
+4. The output is one parallel-jaw pose $g$.  The label is closure plus a
    standardized tiny lift, not feasibility of the full approach-to-carry cycle.
 5. No scene SDF, full mesh, NeRF, or long vector of causal failure variables is
    predicted.
@@ -5463,40 +5462,40 @@ decision-focused active grasp viewing is occupied.
 
 ### Mathematical observation object
 
-Let \(\mathsf M_x\) be the registered visible target surface measure at camera
-pose \(x\).  Let \(\mathcal B_{\epsilon,v}\) be points visible at
-\(x+\epsilon v\) that have no visibility-preserving antecedent at \(x\).
+Let $\mathsf M_x$ be the registered visible target surface measure at camera
+pose $x$.  Let $\mathcal B_{\epsilon,v}$ be points visible at
+$x+\epsilon v$ that have no visibility-preserving antecedent at $x$.
 Their positive birth measure is
 
-\[
+$$
  \nu_{\epsilon,v}^{+}
  =
  \frac{1}{\epsilon}
  \mathsf M_{x+\epsilon v}
  \lfloor_{\mathcal B_{\epsilon,v}}.
-\]
+$$
 
 For piecewise-smooth scenes away from visibility topology changes,
 
-\[
+$$
  \nu_{\epsilon,v}^{+}
  \overset{*}{\rightharpoonup}
  \nu_v^{+},
-\]
+$$
 
-where \(\nu_v^{+}\) is supported on the target-side visibility fold.  An
-ordinary \(L^2\) image derivative is the wrong state space because the strip
+where $\nu_v^{+}$ is supported on the target-side visibility fold.  An
+ordinary $L^2$ image derivative is the wrong state space because the strip
 narrows while its amplitude grows; weak convergence against continuous test
 functions remains finite.
 
-For compact candidate-local kernels \(\kappa_k\), define
+For compact candidate-local kernels $\kappa_k$, define
 
-\[
+$$
  z_k(g;v)
  =
  \int
  \kappa_k(g^{-1}X)\,d\nu_v^{+}(X).
-\]
+$$
 
 These are not full-scene variables.  They ask how fast newly visible target
 surface enters a small collection of jaw, pad, and approach neighborhoods of a
@@ -5506,19 +5505,19 @@ queried grasp.
 
 The finite estimator is
 
-\[
+$$
  \widehat z_k(g;v)
  =
  \frac{1}{n\epsilon}
  \sum_{i=1}^{n}
  w_i B_i\,
  \kappa_k(g^{-1}X_i),
-\]
+$$
 
-where \(B_i\) is the registered birth indicator and \(w_i\) is a sensor
+where $B_i$ is the registered birth indicator and $w_i$ is a sensor
 confidence/area weight.  The query model is
 
-\[
+$$
  \widehat q_\theta(g)
  =
  h_\theta\!\left(
@@ -5527,17 +5526,17 @@ confidence/area weight.  The query model is
    \widehat z_1,\ldots,\widehat z_m,\;
    \epsilon,\widehat\Sigma_{\rm reg}
  \right).
-\]
+$$
 
-\(e_\theta\) is any strong single-view grasp-local encoder.
-\(r_\theta\) receives a matched small budget of raw registered local tokens so
+$e_\theta$ is any strong single-view grasp-local encoder.
+$r_\theta$ receives a matched small budget of raw registered local tokens so
 that EdgeFlux augments rather than artificially replaces useful evidence.
-\(\widehat\Sigma_{\rm reg}\) exposes calibration uncertainty to the gate.  The
-new layer has \(O(n)\) deterministic registration/visibility work and
-\(O(mK)\) candidate-query work; it does not run a second dense learned
+$\widehat\Sigma_{\rm reg}$ exposes calibration uncertainty to the gate.  The
+new layer has $O(n)$ deterministic registration/visibility work and
+$O(mK)$ candidate-query work; it does not run a second dense learned
 backbone unless an ablation shows that one is necessary.
 
-Candidate generation must depend only on \(O_0\) and be shared by every
+Candidate generation must depend only on $O_0$ and be shared by every
 representation baseline.  Otherwise better candidate recall would be
 incorrectly attributed to EdgeFlux.
 
@@ -5547,7 +5546,7 @@ Synthetic paired renders provide exact visibility provenance and arbitrary
 queried grasp labels.  Real static pairs provide sensor-noise and registration
 adaptation.  A minimal objective is
 
-\[
+$$
  \mathcal L
  =
  \operatorname{BCE}(Y,\widehat q_\theta(g))
@@ -5555,17 +5554,17 @@ adaptation.  A minimal objective is
  +\lambda_{\rm weak}
   \sum_{\epsilon\in\mathcal E_{\rm local}}
   \|\widehat z_\epsilon-z^{\rm oracle}_v\|_1.
-\]
+$$
 
 The weak-response loss is applied only inside the empirically verified local
 window.  Wider views expose genuinely different finite surfaces and must not be
 forced to have the same normalized feature.  Training samples should be
 balanced in parallax coordinate
 
-\[
+$$
  \chi=f_{\rm px}|\epsilon_\perp|
  \left|z_f^{-1}-z_b^{-1}\right|,
-\]
+$$
 
 not merely in millimetres or global occlusion ratio.
 
@@ -5574,15 +5573,15 @@ not merely in millimetres or global occlusion ratio.
 1. **Weak visibility derivative:** existence and boundary support under an
    explicit piecewise-smooth camera model.
 2. **Finite-resolution estimator:** bias
-   \(O(\epsilon)\), variance \(O((n\epsilon)^{-1})\), and the resulting local
+   $O(\epsilon)$, variance $O((n\epsilon)^{-1})$, and the resulting local
    scale trade-off.
 3. **Rare-stratum grasp-regret bound:** cycle 105's
-   \(K=\Omega(1/\epsilon)\) separation for unstratified local tokens.
+   $K=\Omega(1/\epsilon)$ separation for unstratified local tokens.
 4. **Uniform decision transfer:** if every candidate score is within
-   \(\delta\), maximizing the predicted score incurs at most \(2\delta\)
+   $\delta$, maximizing the predicted score incurs at most $2\delta$
    top-one regret.
 5. **Noise impossibility:** false-birth mass not scaling as
-   \(O(\epsilon)\) destroys the normalized limit.
+   $O(\epsilon)$ destroys the normalized limit.
 
 Only items 1 and 3 are plausible core theory contributions.  Items 2, 4, and 5
 make the claims operationally honest.
@@ -5628,9 +5627,9 @@ frontier** under a fixed small sensing budget.
 The evidence is indirect but nontrivial:
 
 1. The 2026 cross-view grasp paper reports that one auxiliary view and
-   grasp-local post-fusion improve AP by \(6.41\) over its baseline, by
-   \(28.11\) on selected corner views, and real success from \(82\%\) to
-   \(96\%\).  This supports the value of localized cross-view evidence.
+   grasp-local post-fusion improve AP by $6.41$ over its baseline, by
+   $28.11$ on selected corner views, and real success from $82\%$ to
+   $96\%$.  This supports the value of localized cross-view evidence.
 2. Robot peering demonstrates that controlled lateral motion can efficiently
    overcome partial occlusion without ordinary feature-based reconstruction.
 3. Dynamic-occlusion studies show that accretion/deletion contributes powerful
@@ -5646,11 +5645,11 @@ and hardware:
 3. full raw two-view encoding;
 4. the CVPR 2026 cross-view local-cylinder model;
 5. ActiveNGF and a GCNGrasp-VP-style adaptation where feasible;
-6. equal-\(K\) uniform and learned-saliency auxiliary tokens;
+6. equal-$K$ uniform and learned-saliency auxiliary tokens;
 7. EdgeFlux with and without normalization, raw residual tokens, confidence,
    and weak-response supervision.
 
-Report physical top-one success and AP against \(\chi\), target visibility,
+Report physical top-one success and AP against $\chi$, target visibility,
 motion distance, end-to-end latency, learned FLOPs, peak memory, calibration
 error, depth noise, and unseen object geometry.  EdgeFlux supports a SOTA claim
 only if it is Pareto-undominated and improves physical success by a practically
@@ -5695,7 +5694,7 @@ The adversarial reviewer summaries and required answers are:
 
 1. **“This is engineered frame differencing.”**
    The paper fails if its contribution is a mask concatenated to RGB-D.  The
-   answer must be the weak-measure limit, the \(1/\epsilon\) intensity
+   answer must be the weak-measure limit, the $1/\epsilon$ intensity
    preservation, the grasp-regret separation, and empirical scale transfer.
 2. **“A sufficiently large two-view network can learn it.”**
    Correct in principle.  The claim is a finite learned-compute/data frontier,
@@ -5707,10 +5706,10 @@ The adversarial reviewer summaries and required answers are:
    from known camera action and depth registration.  Oracle-only results are
    insufficient.
 4. **“Micro-motion reveals too little geometry.”**
-   The \(\chi\) and \(n\epsilon\) gates make this falsifiable.  A result outside
+   The $\chi$ and $n\epsilon$ gates make this falsifiable.  A result outside
    the local window supports ordinary two-view grasping, not EdgeFlux.
 5. **“Noise explodes under normalization.”**
-   Correct unless \(\beta_\epsilon=O(\epsilon)\).  The static-camera and
+   Correct unless $\beta_\epsilon=O(\epsilon)$.  The static-camera and
    target-removed controls in cycle 97 must be reported before model results.
 6. **“The active-view problem is already solved.”**
    The selector is held fixed in the main experiment.  The claim concerns the

@@ -13,25 +13,25 @@
 
 ## 1. Коротко: что именно предлагается
 
-Пусть скрытая полная геометрия объекта равна \(S\), единственное наблюдение — шумное RGB-D изображение \(x\), а \(g\in\mathcal G\subset SE(3)\times\mathbb R_+\) — поза и раскрытие parallel-jaw gripper. Полная геометрия индуцирует не только отдельную метку «этот захват успешен», но целое множество допустимых локальных захватов
+Пусть скрытая полная геометрия объекта равна $S$, единственное наблюдение — шумное RGB-D изображение $x$, а $g\in\mathcal G\subset SE(3)\times\mathbb R_+$ — поза и раскрытие parallel-jaw gripper. Полная геометрия индуцирует не только отдельную метку «этот захват успешен», но целое множество допустимых локальных захватов
 
-\[
+$$
 F_S=\{g\in\mathcal G:Y(S,g)=1\}.
-\]
+$$
 
-Из-за окклюзии одно и то же \(x\) совместимо с несколькими \(S\), а значит — с несколькими разными \(F_S\). Главный объект предсказания должен быть не реконструкция \(S\), не одна grasp pose и не независимый Bernoulli-score для каждого кандидата, а условный закон случайного множества
+Из-за окклюзии одно и то же $x$ совместимо с несколькими $S$, а значит — с несколькими разными $F_S$. Главный объект предсказания должен быть не реконструкция $S$, не одна grasp pose и не независимый Bernoulli-score для каждого кандидата, а условный закон случайного множества
 
-\[
+$$
 \Pi_x = \mathcal L(F_S\mid x).
-\]
+$$
 
-Для вычислимости множество кодируется его **знаковым action-space margin field** \(r_S:\mathcal G\to\mathbb R\): положительное значение означает допустимый grasp, модуль — минимальное возмущение позы/ширины, нужное для смены допустимости. Модель учит непосредственно
+Для вычислимости множество кодируется его **знаковым action-space margin field** $r_S:\mathcal G\to\mathbb R$: положительное значение означает допустимый grasp, модуль — минимальное возмущение позы/ширины, нужное для смены допустимости. Модель учит непосредственно
 
-\[
+$$
 \mathcal L(r_S(\cdot)\mid x),
-\]
+$$
 
-запрашивая значения только в \(K\) кандидатах. Один сэмпл модели даёт одну согласованную гипотезу о всей границе множества допустимых действий. На инференсе выбирается grasp с лучшим нижним CVaR/квантилем margin; робот воздерживается, если даже лучший нижний risk-score не положителен.
+запрашивая значения только в $K$ кандидатах. Один сэмпл модели даёт одну согласованную гипотезу о всей границе множества допустимых действий. На инференсе выбирается grasp с лучшим нижним CVaR/квантилем margin; робот воздерживается, если даже лучший нижний risk-score не положителен.
 
 **Ключевой тезис:** скрытую форму не нужно восстанавливать, если downstream-решения зависят лишь от её образа в пространстве действий. Мы учим posterior сразу на этом decision quotient.
 
@@ -61,13 +61,13 @@ F_S=\{g\in\mathcal G:Y(S,g)=1\}.
 
 ### 2.3 Узкое определение успеха
 
-Метка \(Y(S,g)\) означает **локальную grasp formation feasibility**:
+Метка $Y(S,g)$ означает **локальную grasp formation feasibility**:
 
-1. terminal gripper geometry в позе \(g\) не пересекает наблюдаемый foreground obstacle и полку;
+1. terminal gripper geometry в позе $g$ не пересекает наблюдаемый foreground obstacle и полку;
 2. замыкание пальцев по короткому фиксированному локальному движению образует допустимые контакты с target;
 3. квазистатический antipodal/force-closure proxy и ограниченный perturbation test проходят порог.
 
-Reachability руки, дальний approach path и полноценный lift trajectory не входят в \(Y\). В реальном опыте небольшой lift служит только бинарным readout качества сформированного захвата.
+Reachability руки, дальний approach path и полноценный lift trajectory не входят в $Y$. В реальном опыте небольшой lift служит только бинарным readout качества сформированного захвата.
 
 ---
 
@@ -91,7 +91,7 @@ Reachability руки, дальний approach path и полноценный li
 
 ### Ветка C — scalar grasp critic с uncertainty head
 
-**Идея.** Для каждого \((x,g)\) предсказывать среднее и дисперсию или evidential distribution и сортировать по uncertainty-adjusted score.
+**Идея.** Для каждого $(x,g)$ предсказывать среднее и дисперсию или evidential distribution и сортировать по uncertainty-adjusted score.
 
 **Почему отвергнута.** vMF-Contact уже моделирует направленную неопределённость контактов и разделяет типы uncertainty, одновременно используя auxiliary point reconstruction [R26]. Probabilistic directional models и FFHFlow уже демонстрируют пользу distributional prediction для noisy/partial point clouds [R25, R27]. Lundell, completion-uncertainty reranking и UNCLE также покрывают «uncertainty helps ranking» [R2, R5, R7].
 
@@ -126,25 +126,25 @@ Reachability руки, дальний approach path и полноценный li
 
 ## 4. Общая постановка: Decision-Quotient Posterior Learning
 
-Пусть \(Z\) — латентное состояние мира, \(X\sim p(x\mid Z)\) — неполное наблюдение, \(a\in\mathcal A\) — действие, а \(q_Z(a)\) — любой downstream-релевантный функционал: feasibility margin, constraint slack, robust cost или reachable-set membership. Определим отображение
+Пусть $Z$ — латентное состояние мира, $X\sim p(x\mid Z)$ — неполное наблюдение, $a\in\mathcal A$ — действие, а $q_Z(a)$ — любой downstream-релевантный функционал: feasibility margin, constraint slack, robust cost или reachable-set membership. Определим отображение
 
-\[
+$$
 \pi: Z\mapsto q_Z(\cdot).
-\]
+$$
 
 Два скрытых состояния эквивалентны, если они индуцируют один и тот же функционал:
 
-\[
+$$
 Z_1\sim_{\mathcal D} Z_2 \iff q_{Z_1}(a)=q_{Z_2}(a)\quad\forall a\in\mathcal A.
-\]
+$$
 
-Фактор \(Z/\!\sim_{\mathcal D}\) — **decision quotient**. DQPL предлагает аппроксимировать pushforward posterior
+Фактор $Z/\!\sim_{\mathcal D}$ — **decision quotient**. DQPL предлагает аппроксимировать pushforward posterior
 
-\[
+$$
 \pi_\#p(Z\mid X=x)=\mathcal L(q_Z(\cdot)\mid x)
-\]
+$$
 
-напрямую, минуя posterior над \(Z\).
+напрямую, минуя posterior над $Z$.
 
 Это широкая идея, применимая к grasping, safe control при частично наблюдаемых препятствиях, экспериментальному дизайну, inverse design и constraint satisfaction. Grasping — хороший тест, потому что object-space reconstruction дорога, а локальная допустимость действий зависит от маленькой, но часто скрытой части формы.
 
@@ -154,57 +154,57 @@ Z_1\sim_{\mathcal D} Z_2 \iff q_{Z_1}(a)=q_{Z_2}(a)\quad\forall a\in\mathcal A.
 
 ### 5.1 Action space и метрика
 
-\[
+$$
 g=(R,t,w)\in\mathcal G\subset SE(3)\times[w_{\min},w_{\max}].
-\]
+$$
 
 Используем геодезическую product metric
 
-\[
+$$
 d_{\mathcal G}(g,g')^2 =
 \frac{\|t-t'\|_2^2}{\sigma_t^2}+
 \frac{\operatorname{ang}(R^\top R')^2}{\sigma_R^2}+
 \frac{(w-w')^2}{\sigma_w^2}.
-\]
+$$
 
-Масштабы имеют физический смысл: допустимые ошибки position, rotation и width. Для parallel jaws следует факторизовать симметрию поворота на \(\pi\) вокруг closing axis, иначе одно физическое действие будет представлено дважды.
+Масштабы имеют физический смысл: допустимые ошибки position, rotation и width. Для parallel jaws следует факторизовать симметрию поворота на $\pi$ вокруг closing axis, иначе одно физическое действие будет представлено дважды.
 
 ### 5.2 Feasible set
 
-Для полной сцены \(S\), включая target и геометрию foreground obstacle в terminal neighborhood,
+Для полной сцены $S$, включая target и геометрию foreground obstacle в terminal neighborhood,
 
-\[
+$$
 F_S=\{g:Y(S,g)=1\}.
-\]
+$$
 
 Важно: это не множество arm trajectories и не policy support. Это локальное множество terminal grasps.
 
 ### 5.3 Signed robustness field
 
-\[
+$$
 r_S(g)=
 \begin{cases}
 d_{\mathcal G}(g,\mathcal G\setminus F_S), & g\in F_S,\\
 -d_{\mathcal G}(g,F_S), & g\notin F_S.
 \end{cases}
-\]
+$$
 
-Тогда \(F_S=\{g:r_S(g)\ge 0\}\). Знак даёт feasibility, величина — pose/width robustness. Для численно шумного oracle boundary points можно считать infeasible; это делает \(F_S\) closed после явного margin threshold.
+Тогда $F_S=\{g:r_S(g)\ge 0\}$. Знак даёт feasibility, величина — pose/width robustness. Для численно шумного oracle boundary points можно считать infeasible; это делает $F_S$ closed после явного margin threshold.
 
 Практически exact nearest boundary слишком дорога. Label approximation:
 
-1. вычислить dense local cloud кандидатов вокруг \(g\);
-2. прогнать analytic/physics oracle \(Y\);
+1. вычислить dense local cloud кандидатов вокруг $g$;
+2. прогнать analytic/physics oracle $Y$;
 3. взять расстояние до ближайшего противоположного класса;
-4. censor значения сверху \(r_{\max}\), поскольку далеко от boundary точность не нужна.
+4. censor значения сверху $r_{\max}$, поскольку далеко от boundary точность не нужна.
 
-Альтернатива для первого прототипа — two-channel field \((d(g,F_S),d(g,F_S^c))\), где обе компоненты гарантированно 1-Lipschitz. Это безопаснее, если regularity signed distance на выбранном quotient space неудобно доказывать.
+Альтернатива для первого прототипа — two-channel field $(d(g,F_S),d(g,F_S^c))$, где обе компоненты гарантированно 1-Lipschitz. Это безопаснее, если regularity signed distance на выбранном quotient space неудобно доказывать.
 
 ### 5.4 Наблюдение без реконструкции
 
-\[
+$$
 x=(I,D,M_T,M_O,K_{cam}).
-\]
+$$
 
 Из depth строятся только **наблюдаемые** target points, occluder points и ray tags:
 
@@ -217,11 +217,11 @@ x=(I,D,M_T,M_O,K_{cam}).
 
 ### 5.5 Что именно случайно
 
-Для одного изображения \(x\) training distribution задаёт
+Для одного изображения $x$ training distribution задаёт
 
-\[
+$$
 R_x(\cdot)\sim\mathcal L(r_S(\cdot)\mid X=x).
-\]
+$$
 
 Например, видимая часть кружки за коробкой может быть совместима с ручкой слева и справа. В первом sampled field безопасны одни grasps, во втором — другие. Независимые per-grasp logits могут совпасть по marginals, но не показывают, какие feasibility events должны меняться совместно.
 
@@ -233,49 +233,49 @@ R_x(\cdot)\sim\mathcal L(r_S(\cdot)\mid X=x).
 
 Классическая теория random closed sets говорит, что закон случайного замкнутого множества характеризуется capacity/hitting functional
 
-\[
+$$
 T(K)=\Pr(F\cap K\neq\varnothing)
-\]
+$$
 
-для компактных \(K\) [M11, M12]. Это даёт правильный вероятностный объект: не fuzzy membership map, а распределение над множествами. Signed distance embedding удобнее capacity functional для оптимизации отдельного действия, но должен сохранять тот же sampled-set semantics.
+для компактных $K$ [M11, M12]. Это даёт правильный вероятностный объект: не fuzzy membership map, а распределение над множествами. Signed distance embedding удобнее capacity functional для оптимизации отдельного действия, но должен сохранять тот же sampled-set semantics.
 
 ### 6.2 Proposition 1 — decision sufficiency
 
 Пусть downstream loss имеет вид
 
-\[
+$$
 \ell(Z,a)=\bar\ell(q_Z(a),a).
-\]
+$$
 
-Тогда для любой decision rule, выбирающей одно действие, условный Bayes risk полностью определяется \(\mathcal L(q_Z(\cdot)\mid x)\). Если два posteriors над \(Z\) имеют один pushforward через \(\pi\), никакое решение этого класса не может их различить.
+Тогда для любой decision rule, выбирающей одно действие, условный Bayes risk полностью определяется $\mathcal L(q_Z(\cdot)\mid x)$. Если два posteriors над $Z$ имеют один pushforward через $\pi$, никакое решение этого класса не может их различить.
 
 **Смысл.** Это не утверждение, что quotient сохраняет всю форму. Он сохраняет ровно всю информацию для заранее определённого класса локальных grasp decisions.
 
 ### 6.3 Proposition 2 — ошибка posterior и decision regret
 
-Пусть \(U(a,q(a))\) является \(L\)-Lipschitz по второму аргументу. Если истинный и выученный process posteriors удовлетворяют
+Пусть $U(a,q(a))$ является $L$-Lipschitz по второму аргументу. Если истинный и выученный process posteriors удовлетворяют
 
-\[
+$$
 W_1(\widehat\Pi_x,\Pi_x;\|\cdot\|_\infty)\le \varepsilon,
-\]
+$$
 
-то ошибка ожидаемой полезности каждого действия не превосходит \(L\varepsilon\), а regret оптимизатора по выученному posterior относительно Bayes action — не более \(2L\varepsilon\).
+то ошибка ожидаемой полезности каждого действия не превосходит $L\varepsilon$, а regret оптимизатора по выученному posterior относительно Bayes action — не более $2L\varepsilon$.
 
-Для нижнего CVaR уровня \(\alpha\) аналогичная граница масштабируется как \(O(\varepsilon/\alpha)\). Для quantile без предположения о плотности около квантиля стабильной границы нет; поэтому CVaR теоретически чище и должен быть главным risk functional.
+Для нижнего CVaR уровня $\alpha$ аналогичная граница масштабируется как $O(\varepsilon/\alpha)$. Для quantile без предположения о плотности около квантиля стабильной границы нет; поэтому CVaR теоретически чище и должен быть главным risk functional.
 
 ### 6.4 Proposition 3 — покрытие непрерывного action space
 
-В геодезическом length space signed distance до регулярного feasible set 1-Lipschitz. Если конечный candidate set \(C\) является \(\delta\)-net интересующей области, то разрыв между лучшим margin в непрерывном пространстве и лучшим margin среди кандидатов не больше \(\delta\). Если геометрические условия для signed field не выполнены, two-channel distances дают константу не хуже 2 после восстановления знака.
+В геодезическом length space signed distance до регулярного feasible set 1-Lipschitz. Если конечный candidate set $C$ является $\delta$-net интересующей области, то разрыв между лучшим margin в непрерывном пространстве и лучшим margin среди кандидатов не больше $\delta$. Если геометрические условия для signed field не выполнены, two-channel distances дают константу не хуже 2 после восстановления знака.
 
 Это связывает representation с candidate density и даёт осмысленную метрику sample efficiency: сколько action queries нужно, чтобы не пропустить robust grasp.
 
 ### 6.5 Почему Chamfer reconstruction не даёт такой гарантии
 
-Средний Chamfer может стремиться к нулю, если ошибка сосредоточена на малой скрытой области. Но тонкий выступ, край или участок второго контакта может иметь исчезающе малую площадь и одновременно переключать \(Y(S,g)\) для лучшего grasp. Поэтому малый average reconstruction error не гарантирует малый decision regret. Это нужно показать явным counterexample и synthetic experiment, а не оставить риторикой.
+Средний Chamfer может стремиться к нулю, если ошибка сосредоточена на малой скрытой области. Но тонкий выступ, край или участок второго контакта может иметь исчезающе малую площадь и одновременно переключать $Y(S,g)$ для лучшего grasp. Поэтому малый average reconstruction error не гарантирует малый decision regret. Это нужно показать явным counterexample и synthetic experiment, а не оставить риторикой.
 
 ### 6.6 Важное ограничение sufficiency claim
 
-Для **одного фиксированного risk-neutral решения** scalar \(p(Y=1\mid x,g)\) уже Bayes-sufficient. Нельзя утверждать, что joint random field информационно минимален для top-1 expected success.
+Для **одного фиксированного risk-neutral решения** scalar $p(Y=1\mid x,g)$ уже Bayes-sufficient. Нельзя утверждать, что joint random field информационно минимален для top-1 expected success.
 
 Joint field оправдан для более богатого, но всё ещё one-step класса запросов:
 
@@ -298,11 +298,11 @@ Joint field оправдан для более богатого, но всё е�
 
 - один RGB-D frame и intrinsics;
 - target/occluder masks;
-- query set \(C=\{g_1,\ldots,g_K\}\).
+- query set $C=\{g_1,\ldots,g_K\}$.
 
 Выход:
 
-- \(M\) совместных сэмплов \((r^{(m)}(g_1),\ldots,r^{(m)}(g_K))\);
+- $M$ совместных сэмплов $(r^{(m)}(g_1),\ldots,r^{(m)}(g_K))$;
 - marginal mean, lower-CVaR и feasibility probability для каждого кандидата;
 - optional scene-level abstention/OOD score.
 
@@ -314,7 +314,7 @@ Encoder вычисляется один раз. Он должен быть equiv
 
 ### 7.3 Query encoder
 
-Каждый \(g_i\) кодируется через:
+Каждый $g_i$ кодируется через:
 
 - relative pose к видимым target features;
 - gripper closing axis и approach axis;
@@ -328,36 +328,36 @@ Cross-attention извлекает локальный видимый конте�
 
 Предпочтительный вариант — conditional **Flow-Matching Neural Process** или function-space flow model, вдохновлённый Functional Flow Matching [M1] и stochastic-process extensions [M2–M5]. Он моделирует конечномерные распределения
 
-\[
+$$
 p_\theta(r_C\mid x,C),\qquad r_C=(r(g_1),\ldots,r(g_K)),
-\]
+$$
 
 с shared scene latent и attention между grasp queries.
 
-Базовый conditional flow-matching loss для interpolant \(u_t=(1-t)u_0+t r_C\):
+Базовый conditional flow-matching loss для interpolant $u_t=(1-t)u_0+t r_C$:
 
-\[
+$$
 \mathcal L_{FM}=\mathbb E_{t,u_0,r_C}
 \left[\left\|v_\theta(t,u_t,C,h_x)-(r_C-u_0)\right\|_W^2\right].
-\]
+$$
 
-Здесь \(W\) усиливает область около \(r=0\), потому что именно boundary определяет решение.
+Здесь $W$ усиливает область около $r=0$, потому что именно boundary определяет решение.
 
-**Критическая инженерная оговорка:** permutation equivariance по queries сама по себе не обеспечивает projective consistency. Архитектура должна сэмплировать один глобальный latent function/object и затем детерминированно query его в любых \(g\), либо явно обучаться marginal-consistency loss на вложенных query sets. Consistency надо измерять в эксперименте.
+**Критическая инженерная оговорка:** permutation equivariance по queries сама по себе не обеспечивает projective consistency. Архитектура должна сэмплировать один глобальный latent function/object и затем детерминированно query его в любых $g$, либо явно обучаться marginal-consistency loss на вложенных query sets. Consistency надо измерять в эксперименте.
 
 ### 7.5 Structure losses
 
-\[
+$$
 \mathcal L=\mathcal L_{FM}+\lambda_b\mathcal L_{boundary}
 +\lambda_L\mathcal L_{Lip}+\lambda_c\mathcal L_{cons}.
-\]
+$$
 
-- \(\mathcal L_{boundary}\): повышенный вес ошибкам знака и margin около нуля.
-- \(\mathcal L_{Lip}\): штраф за нарушение известной Lipschitz bound между соседними action queries.
-- \(\mathcal L_{cons}\): согласованность marginals на \(C_1\subset C_2\).
+- $\mathcal L_{boundary}$: повышенный вес ошибкам знака и margin около нуля.
+- $\mathcal L_{Lip}$: штраф за нарушение известной Lipschitz bound между соседними action queries.
+- $\mathcal L_{cons}$: согласованность marginals на $C_1\subset C_2$.
 - Hard observed-collision mask: sampled margin не может быть положительным для gripper volume, пересекающего достоверно наблюдаемую полку/occluder.
 
-Не следует навязывать Eikonal equality \(\|\nabla r\|=1\) везде: приблизительный physics oracle, quotient symmetries и негладкие пересечения feasible components могут её нарушать. Lipschitz inequality безопаснее; Eikonal можно тестировать как ablation только вдали от medial axis.
+Не следует навязывать Eikonal equality $\|\nabla r\|=1$ везде: приблизительный physics oracle, quotient symmetries и негладкие пересечения feasible components могут её нарушать. Lipschitz inequality безопаснее; Eikonal можно тестировать как ablation только вдали от medial axis.
 
 ### 7.6 Training data
 
@@ -365,8 +365,8 @@ p_\theta(r_C\mid x,C),\qquad r_C=(r(g_1),\ldots,r(g_K)),
 
 1. sample target shape, pose, shelf and foreground occluder;
 2. render one noisy RGB-D;
-3. sample many grasps \(g\), особенно около feasibility boundary;
-4. вычислить \(Y(S,g)\) и approximate \(r_S(g)\);
+3. sample many grasps $g$, особенно около feasibility boundary;
+4. вычислить $Y(S,g)$ и approximate $r_S(g)$;
 5. обучать на случайных subsets queries и на нескольких независимых occlusions одной shape.
 
 Ни один loss не сравнивает предсказанную геометрию с mesh. Это принципиальная ablation boundary: если auxiliary reconstruction улучшает результат, её можно показать отдельно, но основная модель должна оставаться reconstruction-free.
@@ -383,18 +383,18 @@ p_\theta(r_C\mid x,C),\qquad r_C=(r(g_1),\ldots,r(g_K)),
 
 ### 7.8 Inference и abstention
 
-Для \(M\) сэмплов поля:
+Для $M$ сэмплов поля:
 
-\[
+$$
 s_\alpha(g\mid x)=\operatorname{LCVaR}_\alpha
 \{r^{(m)}(g)\}_{m=1}^M,
 \qquad
 g^*=\arg\max_{g\in C}s_\alpha(g\mid x).
-\]
+$$
 
-Исполнять grasp, если \(s_\alpha(g^*\mid x)>\tau\); иначе abstain. \(\alpha\) и \(\tau\) подбираются только на validation/calibration set.
+Исполнять grasp, если $s_\alpha(g^*\mid x)>\tau$; иначе abstain. $\alpha$ и $\tau$ подбираются только на validation/calibration set.
 
-LCVaR предпочтительнее LCB вида \(\mu-\beta\sigma\): он не предполагает Gaussian posterior и корректно реагирует на multimodality.
+LCVaR предпочтительнее LCB вида $\mu-\beta\sigma$: он не предполагает Gaussian posterior и корректно реагирует на multimodality.
 
 ### 7.9 Optional conformal calibration
 
@@ -423,13 +423,13 @@ LCVaR предпочтительнее LCB вида \(\mu-\beta\sigma\): он н
 
 ### 8.1 Вычислительно
 
-Вместо dense \(128^3\)–\(256^3\) grid, mesh extraction и повторного grasp analysis модель делает:
+Вместо dense $128^3$–$256^3$ grid, mesh extraction и повторного grasp analysis модель делает:
 
-\[
+$$
 O(\text{encode one RGB-D})+O(MTKL)
-\]
+$$
 
-для \(K\) queries, \(M\) samples и \(L\) flow steps. Цель прототипа: \(K=256\)–1024, \(M=8\)–32, \(L=4\)–8 с batching. Нельзя заранее обещать real-time; wall-clock и peak memory должны измеряться против completion pipelines.
+для $K$ queries, $M$ samples и $L$ flow steps. Цель прототипа: $K=256$–1024, $M=8$–32, $L=4$–8 с batching. Нельзя заранее обещать real-time; wall-clock и peak memory должны измеряться против completion pipelines.
 
 ### 8.2 Статистически
 
@@ -558,7 +558,7 @@ Functional Flow Matching строит generative models прямо в function s
 - real robot lift success;
 - success **при фиксированном attempt coverage**;
 - risk–coverage curve и area under it;
-- calibration of \(P(r>0)\), lower-CVaR calibration и Brier/NLL;
+- calibration of $P(r>0)$, lower-CVaR calibration и Brier/NLL;
 - worst-bin success по decision occlusion;
 - candidate-regret к full-shape oracle;
 - function posterior quality: energy score / sliced Wasserstein на joint query vectors;
@@ -719,7 +719,7 @@ Boundary-focused active sampling offline, local perturbations, cached oracle, bi
 
 ### Риск 3: posterior неидентифицируем из обычного supervised dataset
 
-Если на каждый \(x\) есть ровно один \(S\), conditional generative model может игнорировать noise. Нужны repeated occlusion renderings, deliberate ambiguous families и population-level conditional variation. В synthetic benchmark полезны парные shapes, совпадающие на visible surface.
+Если на каждый $x$ есть ровно один $S$, conditional generative model может игнорировать noise. Нужны repeated occlusion renderings, deliberate ambiguous families и population-level conditional variation. В synthetic benchmark полезны парные shapes, совпадающие на visible surface.
 
 ### Риск 4: action correlations не нужны для top-1
 
@@ -848,9 +848,9 @@ Boundary-focused active sampling offline, local perturbations, cached oracle, bi
 
 1. Для выбора одного grasp по ожидаемому бинарному успеху достаточно скаляра
 
-   \[
+   $$
    p_x(g)=\mathbb P(g\in F_S\mid x).
-   \]
+   $$
 
    Полный совместный posterior над полем не является минимально достаточным объектом для этой узкой decision rule.
 
@@ -885,31 +885,31 @@ Boundary-focused active sampling offline, local perturbations, cached oracle, bi
 
 Для полной формы можно определить
 
-\[
+$$
 R_S(g)=\sup\{\rho:B_\rho(g)\subseteq F_S\}
-\]
+$$
 
 и учить survival function
 
-\[
+$$
 H_x(g,\rho)=\mathbb P(R_S(g)\ge \rho\mid x).
-\]
+$$
 
 Это давало красивый monotone survival objective и непосредственно решало robust grasp selection. Однако GraspNet-1Billion уже содержит **Tolerance Network / grasp affinity fields**, где target — максимальное perturbation, которое выдерживает grasp, и этот prediction используется для reranking [N2]. Наш posterior под окклюзией сильнее deterministic tolerance, но headline выглядел бы как «ToleranceNet + conditional uncertainty». Ветка остаётся baseline/special case, не основной идеей.
 
 ### Ветка H — martingale consistency по уровням раскрытия
 
-Для вложенных наблюдений \(\mathcal F_1\subset\mathcal F_2\) Bayes-предикторы удовлетворяют
+Для вложенных наблюдений $\mathcal F_1\subset\mathcal F_2$ Bayes-предикторы удовлетворяют
 
-\[
+$$
 \mathbb E[m_{\mathcal F_2}\mid\mathcal F_1]=m_{\mathcal F_1}.
-\]
+$$
 
 Это привлекательнее обычной augmentation invariance: fine-view prediction может законно измениться, но не должен иметь систематический drift до раскрытия информации. В мае 2026 вышла работа **Martingale-Consistent Self-Supervised Learning**, которая формулирует ровно этот тезис, предлагает prediction/latent-space penalties и unbiased two-sample Monte Carlo estimator [N1]. Совпадение полное; ветка отвергнута как headline.
 
 ### Ветка I — minimax regret по observational fiber
 
-Можно выбирать действие по worst-case regret среди скрытых форм, совместимых с \(x\). Но robust decision-focused learning уже учит uncertainty sets и минимизирует worst-case regret [N10], а learning feasible regions через inverse optimization занято отдельной линией [N9]. В grasping такая постановка также легко становится чрезмерно консервативной. Не основной вклад.
+Можно выбирать действие по worst-case regret среди скрытых форм, совместимых с $x$. Но robust decision-focused learning уже учит uncertainty sets и минимизирует worst-case regret [N10], а learning feasible regions через inverse optimization занято отдельной линией [N9]. В grasping такая постановка также легко становится чрезмерно консервативной. Не основной вклад.
 
 ### Ветка J — random utility/ranking posterior
 
@@ -917,13 +917,13 @@ H_x(g,\rho)=\mathbb P(R_S(g)\ge \rho\mid x).
 
 ### Ветка K — conditional Laplace functional
 
-Для бинарного feasible-vector \(Y\in\{0,1\}^N\) закон задаётся
+Для бинарного feasible-vector $Y\in\{0,1\}^N$ закон задаётся
 
-\[
+$$
 L_x(t)=\mathbb E[\exp(-t^\top Y)\mid x],\qquad t\ge 0.
-\]
+$$
 
-Его можно учить MSE по случайным sparse \(t\). Формально это корректно и может быть полезной relaxation CQS, но characteristic-function learning и distribution learning через transforms уже существуют [N14]. Поэтому Laplace functional стоит оставить как ablation, а не как novelty claim.
+Его можно учить MSE по случайным sparse $t$. Формально это корректно и может быть полезной relaxation CQS, но characteristic-function learning и distribution learning через transforms уже существуют [N14]. Поэтому Laplace functional стоит оставить как ablation, а не как novelty claim.
 
 ---
 
@@ -933,34 +933,34 @@ L_x(t)=\mathbb E[\exp(-t^\top Y)\mid x],\qquad t\ge 0.
 
 ### 24.1 Обычный top-1 expected success
 
-Если робот выполняет ровно выбранный \(g\), utility равна \(Y(S,g)\), а цель — максимизировать средний успех, то Bayes rule есть
+Если робот выполняет ровно выбранный $g$, utility равна $Y(S,g)$, а цель — максимизировать средний успех, то Bayes rule есть
 
-\[
+$$
 g^*(x)=\arg\max_g \mathbb P(Y(S,g)=1\mid x).
-\]
+$$
 
-Зависимости между соседними grasps и полный закон \(F_S\) для этого не нужны. Любая статья, которая скрывает этот факт, уязвима для простого reviewer objection.
+Зависимости между соседними grasps и полный закон $F_S$ для этого не нужны. Любая статья, которая скрывает этот факт, уязвима для простого reviewer objection.
 
 ### 24.2 Новая, операционально оправданная задача
 
-Пусть команда \(g\) реализуется с неизвестной ошибкой \(\delta\) из калиброванного компактного множества \(E_g\) в локальном tangent space позы/раскрытия. Тогда сильное событие надёжности равно
+Пусть команда $g$ реализуется с неизвестной ошибкой $\delta$ из калиброванного компактного множества $E_g$ в локальном tangent space позы/раскрытия. Тогда сильное событие надёжности равно
 
-\[
+$$
 Z(S,g,E_g)=\mathbf 1\{g\oplus E_g\subseteq F_S\}.
-\]
+$$
 
 Его posterior-вероятность
 
-\[
+$$
 I_x(g\oplus E_g)=
 \mathbb P(g\oplus E_g\subseteq F_S\mid x)
-\]
+$$
 
 гарантирует локальную grasp-formation feasibility для **любого** residual error внутри заявленного calibration envelope. Выбор
 
-\[
+$$
 \hat g(x)=\arg\max_g I_x(g\oplus E_g)
-\]
+$$
 
 уже не сводится к одному marginal score, потому что событие требует совместной допустимости целого набора соседних действий.
 
@@ -971,9 +971,9 @@ I_x(g\oplus E_g)=
 - нет active view;
 - нет reconstruction;
 - маленький lift остаётся только physical readout;
-- \(E_g\) описывает лишь calibration/control/depth-induced terminal-pose error.
+- $E_g$ описывает лишь calibration/control/depth-induced terminal-pose error.
 
-Если реальная система не может обосновать компактный \(E_g\) калибровочными измерениями, robust-set semantics становится искусственной. Тогда лучше вернуться к marginal success probability, а эту идею закрыть.
+Если реальная система не может обосновать компактный $E_g$ калибровочными измерениями, robust-set semantics становится искусственной. Тогда лучше вернуться к marginal success probability, а эту идею закрыть.
 
 ---
 
@@ -981,55 +981,55 @@ I_x(g\oplus E_g)=
 
 ### 25.1 Объект предсказания
 
-Пусть \(\mathcal G\) — компактное метрическое пространство локальных gripper configurations, а
+Пусть $\mathcal G$ — компактное метрическое пространство локальных gripper configurations, а
 
-\[
+$$
 F_S=\{g:r_S(g)\ge 0\}
-\]
+$$
 
-— замкнутое feasible set, индуцированное полной формой и локальным grasp oracle. При наблюдении \(x\) оно становится random closed set с условным законом \(\Pi_x\).
+— замкнутое feasible set, индуцированное полной формой и локальным grasp oracle. При наблюдении $x$ оно становится random closed set с условным законом $\Pi_x$.
 
 Классическая capacity functional равна
 
-\[
+$$
 T_x(K)=\mathbb P(F_S\cap K\neq\varnothing\mid x),
 \qquad K\subset\mathcal G\text{ compact}.
-\]
+$$
 
-По Choquet–Kendall–Matheron theorem значения \(T_x(K)\) на всех компактных \(K\) однозначно определяют закон random closed set [M11, M12, N7]. Для robust decision дополнительно удобна inclusion functional
+По Choquet–Kendall–Matheron theorem значения $T_x(K)$ на всех компактных $K$ однозначно определяют закон random closed set [M11, M12, N7]. Для robust decision дополнительно удобна inclusion functional
 
-\[
+$$
 I_x(K)=\mathbb P(K\subseteq F_S\mid x).
-\]
+$$
 
 ### 25.2 Supervision одним set-valued observation
 
-Для каждого training scene полная форма используется только offline, чтобы получить один sample \(F_S\). Затем случайно выбирается query set \(K\), и образуются две дешёвые бинарные метки:
+Для каждого training scene полная форма используется только offline, чтобы получить один sample $F_S$. Затем случайно выбирается query set $K$, и образуются две дешёвые бинарные метки:
 
-\[
+$$
 h(F_S,K)=\mathbf 1\{F_S\cap K\neq\varnothing\},
-\]
+$$
 
-\[
+$$
 i(F_S,K)=\mathbf 1\{K\subseteq F_S\}.
-\]
+$$
 
-Не нужны ни ground-truth posterior, ни несколько hidden shapes для каждого точного \(x\), ни matching между generated и true modes.
+Не нужны ни ground-truth posterior, ни несколько hidden shapes для каждого точного $x$, ни matching между generated и true modes.
 
 ### 25.3 Loss
 
 Основной bounded loss:
 
-\[
+$$
 \mathcal L_{\mathrm{CQS}}(\theta)=
 \mathbb E_{(x,F),K\sim\nu_x}
 \left[
 (T_\theta(x,K)-h(F,K))^2
 +\lambda_I(I_\theta(x,K)-i(F,K))^2
 \right].
-\]
+$$
 
-Здесь \(\nu_x\) может зависеть от наблюдения и геометрии candidate bank, но **не должна зависеть от скрытой метки \(F\)**, если не используется явная importance correction. Иначе balanced query mining меняет elicited target.
+Здесь $\nu_x$ может зависеть от наблюдения и геометрии candidate bank, но **не должна зависеть от скрытой метки $F$**, если не используется явная importance correction. Иначе balanced query mining меняет elicited target.
 
 Возможны log/BCE variants, но Brier выбран основным по трём причинам:
 
@@ -1039,23 +1039,23 @@ i(F_S,K)=\mathbf 1\{K\subseteq F_S\}.
 
 ### 25.4 Почему singleton loss недостаточен
 
-При \(K=\{g\}\)
+При $K=\{g\}$
 
-\[
+$$
 T_x(K)=I_x(K)=\mathbb P(g\in F_S\mid x),
-\]
+$$
 
-то есть CQS превращается в обычный per-grasp BCE/Brier. Новая информация появляется только для \(|K|\ge 2\), где hit/inclusion probes наблюдают зависимости между действиями.
+то есть CQS превращается в обычный per-grasp BCE/Brier. Новая информация появляется только для $|K|\ge 2$, где hit/inclusion probes наблюдают зависимости между действиями.
 
 ### 25.5 Fell-event extension
 
-Более общий запрос задаётся hit-regions \(H_1,\dots,H_q\) и miss-region \(K_0\):
+Более общий запрос задаётся hit-regions $H_1,\dots,H_q$ и miss-region $K_0$:
 
-\[
+$$
 A_\zeta=\{F:F\cap H_j\neq\varnothing\ \forall j,\ F\cap K_0=\varnothing\}.
-\]
+$$
 
-Такие события образуют базис hit-or-miss/Fell topology. Brier score вероятностей \(\mathbb P(F\in A_\zeta\mid x)\) даёт общий **Fell Event Score**. В первой реализации достаточно capacity + inclusion queries; полный cylinder score нужен как теоретическое расширение и evaluation metric.
+Такие события образуют базис hit-or-miss/Fell topology. Brier score вероятностей $\mathbb P(F\in A_\zeta\mid x)$ даёт общий **Fell Event Score**. В первой реализации достаточно capacity + inclusion queries; полный cylinder score нужен как теоретическое расширение и evaluation metric.
 
 ---
 
@@ -1063,69 +1063,69 @@ A_\zeta=\{F:F\cap H_j\neq\varnothing\ \forall j,\ F\cap K_0=\varnothing\}.
 
 ### Proposition 1 — strict propriety CQS
 
-Пусть \(P_x\) — истинный условный закон random closed set, \(Q_x\) — report, а \(\nu_x\) имеет поддержку на countable convergence-determining family компактных запросов. Тогда capacity-часть CQS строго proper:
+Пусть $P_x$ — истинный условный закон random closed set, $Q_x$ — report, а $\nu_x$ имеет поддержку на countable convergence-determining family компактных запросов. Тогда capacity-часть CQS строго proper:
 
-\[
+$$
 \mathcal R(Q_x;P_x)-\mathcal R(P_x;P_x)
 =
 \mathbb E_{K\sim\nu_x}
 \left(T_{Q_x}(K)-T_{P_x}(K)\right)^2\ge 0.
-\]
+$$
 
-Равенство возможно только если capacities совпадают на определяющей семье; по uniqueness theorem тогда \(Q_x=P_x\). Inclusion term не нужен для идентифицируемости, но напрямую усиливает signal на robust decision queries.
+Равенство возможно только если capacities совпадают на определяющей семье; по uniqueness theorem тогда $Q_x=P_x$. Inclusion term не нужен для идентифицируемости, но напрямую усиливает signal на robust decision queries.
 
 ### Proposition 2 — конечный candidate bank
 
-Для \(N\) кандидатов обозначим \(Y_j=\mathbf1\{g_j\in F\}\) и
+Для $N$ кандидатов обозначим $Y_j=\mathbf1\{g_j\in F\}$ и
 
-\[
+$$
 T(J)=\mathbb P\left(\bigvee_{j\in J}Y_j=1\right),\qquad J\subseteq[N].
-\]
+$$
 
-Все \(2^N\) значения \(T(J)\) однозначно задают joint law \(Y\). Если у конкретного pattern множество нулей равно \(Z\), а множество единиц — \(O\), то
+Все $2^N$ значения $T(J)$ однозначно задают joint law $Y$. Если у конкретного pattern множество нулей равно $Z$, а множество единиц — $O$, то
 
-\[
+$$
 \mathbb P(Y_Z=0,Y_O=1)
 =
 \sum_{B\subseteq O}(-1)^{|B|}
 \left[1-T(Z\cup B)\right].
-\]
+$$
 
-Это обычная inclusion–exclusion/Möbius inversion. Экспоненциально перечислять запросы не требуется: Monte Carlo по \(J\) даёт unbiased stochastic objective. Но если обучать только singleton/pair queries, полный law не идентифицируется; это осознанный statistical-computational trade-off.
+Это обычная inclusion–exclusion/Möbius inversion. Экспоненциально перечислять запросы не требуется: Monte Carlo по $J$ даёт unbiased stochastic objective. Но если обучать только singleton/pair queries, полный law не идентифицируется; это осознанный statistical-computational trade-off.
 
 ### Proposition 3 — regret robust-set decision
 
 Пусть
 
-\[
+$$
 u_x(g)=I_x(g\oplus E_g),
 \qquad
 \hat u_x(g)=I_\theta(x,g\oplus E_g),
-\]
+$$
 
-и \(\sup_g|\hat u_x(g)-u_x(g)|\le\varepsilon\). Тогда для \(g^*=\arg\max u_x\) и \(\hat g=\arg\max\hat u_x\)
+и $\sup_g|\hat u_x(g)-u_x(g)|\le\varepsilon$. Тогда для $g^*=\arg\max u_x$ и $\hat g=\arg\max\hat u_x$
 
-\[
+$$
 u_x(g^*)-u_x(\hat g)\le 2\varepsilon.
-\]
+$$
 
 Это простой, но важный мост от calibration of set queries к downstream grasp regret.
 
 ### Proposition 4 — discretization query set
 
-Если каждое learned field \(f_m(x,\cdot)\) \(L_f\)-Lipschitz, \(K_\delta\) — \(\delta\)-net для \(K\), а threshold CDF \(G\) имеет bounded density \(\|G'\|_\infty\), то
+Если каждое learned field $f_m(x,\cdot)$ $L_f$-Lipschitz, $K_\delta$ — $\delta$-net для $K$, а threshold CDF $G$ имеет bounded density $\|G'\|_\infty$, то
 
-\[
+$$
 \left|G\!\left(\inf_{g\in K}f_m(g)\right)
 -G\!\left(\min_{g\in K_\delta}f_m(g)\right)\right|
 \le \|G'\|_\infty L_f\delta.
-\]
+$$
 
 Аналогично для capacity через supremum. Это даёт явный контроль ошибки finite perturbation stencil.
 
 ### Что здесь не следует заявлять без отдельного доказательства
 
-- finite \(M\) не восстанавливает произвольный posterior без approximation error;
+- finite $M$ не восстанавливает произвольный posterior без approximation error;
 - calibration in simulation не даёт distribution-free real-world guarantee;
 - random queries низкого порядка не идентифицируют high-order topology;
 - uniform capacity error нельзя выводить из малого empirical CQS без complexity/generalization bound;
@@ -1137,90 +1137,90 @@ u_x(g^*)-u_x(\hat g)\le 2\varepsilon.
 
 ### 27.1 Генеративное определение, хотя training не требует sampling
 
-Encoder строит representation \(h=E_\theta(x)\). Head выдаёт \(M\) mode weights
+Encoder строит representation $h=E_\theta(x)$. Head выдаёт $M$ mode weights
 
-\[
+$$
 \pi_m(x)\ge 0,\qquad \sum_{m=1}^M\pi_m(x)=1,
-\]
+$$
 
-и \(M\) непрерывных action fields
+и $M$ непрерывных action fields
 
-\[
+$$
 f_m(x,g)=D_\theta(h,z_m,g).
-\]
+$$
 
 Сэмпл случайного feasible set определяется так:
 
-1. \(m\sim\mathrm{Categorical}(\pi(x))\);
-2. \(U\sim G\), где в минимальной версии \(G\) — fixed standard logistic CDF;
+1. $m\sim\mathrm{Categorical}(\pi(x))$;
+2. $U\sim G$, где в минимальной версии $G$ — fixed standard logistic CDF;
 3. 
 
-   \[
+   $$
    F_{m,U}(x)=\{g\in\mathcal G:f_m(x,g)\ge U\}.
-   \]
+   $$
 
-Если \(f_m\) непрерывен, каждый sample — замкнутое excursion set. Один общий threshold \(U\) связывает все action queries; поэтому модель не создаёт независимый salt-and-pepper posterior.
+Если $f_m$ непрерывен, каждый sample — замкнутое excursion set. Один общий threshold $U$ связывает все action queries; поэтому модель не создаёт независимый salt-and-pepper posterior.
 
 ### 27.2 Capacity и inclusion без Monte Carlo
 
-Для конечного query set \(K=\{g_1,\dots,g_k\}\):
+Для конечного query set $K=\{g_1,\dots,g_k\}$:
 
-\[
+$$
 T_\theta(x,K)
 =\sum_{m=1}^M\pi_m(x)
 G\!\left(\max_{g\in K}f_m(x,g)\right),
-\]
+$$
 
-\[
+$$
 I_\theta(x,K)
 =\sum_{m=1}^M\pi_m(x)
 G\!\left(\min_{g\in K}f_m(x,g)\right).
-\]
+$$
 
-Для пустого запроса используются set-theoretic conventions \(T_\theta(x,\varnothing)=0\) и \(I_\theta(x,\varnothing)=1\); max/min formulas выше относятся к непустому \(K\).
+Для пустого запроса используются set-theoretic conventions $T_\theta(x,\varnothing)=0$ и $I_\theta(x,\varnothing)=1$; max/min formulas выше относятся к непустому $K$.
 
-Цена запроса — \(O(M|K|)\); ODE solve, posterior sampling и dense voxel field не нужны.
+Цена запроса — $O(M|K|)$; ODE solve, posterior sampling и dense voxel field не нужны.
 
 ### 27.3 Общий hit-or-miss event
 
-Для hit-regions \(H_1,\dots,H_q\) и miss-set \(K_0\) внутри одного mode:
+Для hit-regions $H_1,\dots,H_q$ и miss-set $K_0$ внутри одного mode:
 
-\[
+$$
 a_m=\min_j\sup_{g\in H_j}f_m(x,g),
 \qquad
 b_m=\sup_{g\in K_0}f_m(x,g).
-\]
+$$
 
 Тогда
 
-\[
+$$
 \mathbb P(F\cap H_j\neq\varnothing\ \forall j,
 F\cap K_0=\varnothing\mid x,m)
 =
 \left[G(a_m)-G(b_m)\right]_+.
-\]
+$$
 
 Это аналитический query operator над распределением множеств.
 
 ### 27.4 Почему capacity корректна по конструкции
 
-CEN сначала задаёт настоящий probability law через mixture случайных excursion sets, а уже затем вычисляет \(T\). Поэтому автоматически выполняются:
+CEN сначала задаёт настоящий probability law через mixture случайных excursion sets, а уже затем вычисляет $T$. Поэтому автоматически выполняются:
 
-- \(T(\varnothing)=0\);
-- монотонность по \(K\);
+- $T(\varnothing)=0$;
+- монотонность по $K$;
 - complete alternation;
 - projective consistency между разными конечными наборами action queries.
 
-Direct Set Transformer, который независимо регрессирует \(T(x,K)\), этих свойств не гарантирует и должен быть отдельным baseline.
+Direct Set Transformer, который независимо регрессирует $T(x,K)$, этих свойств не гарантирует и должен быть отдельным baseline.
 
 ### 27.5 Approximation capacity
 
-На конечном bank любая distribution на \(\{0,1\}^N\) аппроксимируется CEN с не более чем \(2^N\) modes: каждому binary pattern соответствует field с большими положительными значениями на feasible actions и отрицательными на остальных, а mixture weight равен вероятности pattern.
+На конечном bank любая distribution на $\{0,1\}^N$ аппроксимируется CEN с не более чем $2^N$ modes: каждому binary pattern соответствует field с большими положительными значениями на feasible actions и отрицательными на остальных, а mixture weight равен вероятности pattern.
 
-Для компактного непрерывного \(\mathcal G\):
+Для компактного непрерывного $\mathcal G$:
 
 1. finite-support probability measures плотны в пространстве probability measures на random closed sets;
-2. каждый deterministic closed set \(A\) можно задать level set функции типа signed distance;
+2. каждый deterministic closed set $A$ можно задать level set функции типа signed distance;
 3. neural field аппроксимирует эту функцию;
 4. при увеличении масштаба field влияние logistic threshold сжимается к deterministic level set.
 
@@ -1232,9 +1232,9 @@ Direct Set Transformer, который независимо регрессиру
 
 - target points, foreground points и shelf points имеют разные type embeddings;
 - каждый point хранит 3D coordinate, RGB, depth confidence и camera ray;
-- grasp query кодируется не только quaternion, а небольшим point cloud gripper geometry в позе \(g\), что поддержано свежими данными о пользе explicit gripper geometry [N17];
+- grasp query кодируется не только quaternion, а небольшим point cloud gripper geometry в позе $g$, что поддержано свежими данными о пользе explicit gripper geometry [N17];
 - shared cross-attention/equivariant point encoder формирует action feature;
-- \(M\) learned mode tokens дают \(f_m(x,g)\) и \(\pi_m(x)\).
+- $M$ learned mode tokens дают $f_m(x,g)$ и $\pi_m(x)$.
 
 SE(3)-equivariance желательна, но не должна быть novelty claim: OrbitGrasp уже показывает сильный continuous/equivariant grasp field [N18].
 
@@ -1244,7 +1244,7 @@ SE(3)-equivariance желательна, но не должна быть novelty
 
 ### 28.1 Candidate bank
 
-Для каждого наблюдения frozen proposal mechanism создаёт \(N\) terminal grasps \(g_{1:N}\). Он одинаков для всех методов. Для каждого полного training mesh offline oracle выдаёт \(Y_{1:N}\).
+Для каждого наблюдения frozen proposal mechanism создаёт $N$ terminal grasps $g_{1:N}$. Он одинаков для всех методов. Для каждого полного training mesh offline oracle выдаёт $Y_{1:N}$.
 
 Нужно обязательно публиковать **oracle proposal recall**: если bank не содержит надёжного grasp, posterior head не может исправить ошибку proposal stage.
 
@@ -1257,25 +1257,25 @@ SE(3)-equivariance желательна, но не должна быть novelty
 - 35% local perturbation stencils вокруг nominal grasp — целевая robust inclusion;
 - 15% union-of-regions / anisotropic stencils — не дать задаче схлопнуться к scalar tolerance.
 
-Cardinality и геометрия \(K\) выбираются по observed candidate bank, не по \(Y\). Для локального \(E_g\) использовать центр, \(\pm\) principal axes и небольшое число boundary points в tangent coordinates; одинаковые физические единицы задаются через calibrated metric на translation/rotation/width.
+Cardinality и геометрия $K$ выбираются по observed candidate bank, не по $Y$. Для локального $E_g$ использовать центр, $\pm$ principal axes и небольшое число boundary points в tangent coordinates; одинаковые физические единицы задаются через calibrated metric на translation/rotation/width.
 
 ### 28.3 Labels и loss в batch
 
-Для индексов \(J\subset[N]\):
+Для индексов $J\subset[N]$:
 
-\[
+$$
 h_J=\max_{j\in J}Y_j,
 \qquad
 i_J=\min_{j\in J}Y_j.
-\]
+$$
 
-CEN оценивает соответствующие max/min своих mode fields. На один scene можно дешёво сэмплировать десятки \(J\), переиспользуя action features.
+CEN оценивает соответствующие max/min своих mode fields. На один scene можно дешёво сэмплировать десятки $J$, переиспользуя action features.
 
 ### 28.4 Регуляризация
 
 Допустимы только вспомогательные terms, чья роль проверяется ablation:
 
-- entropy floor для \(\pi\) в начале обучения против mode collapse;
+- entropy floor для $\pi$ в начале обучения против mode collapse;
 - mild diversity по mode fields на multi-point queries;
 - Lipschitz/spectral control action decoder для стабильной discretization;
 - temperature annealing softmax/softmin только как numerical approximation.
@@ -1287,23 +1287,23 @@ CEN оценивает соответствующие max/min своих mode fi
 ## 29. Inference и связь с физическим grasp
 
 1. Из одного noisy RGB-D строятся target/occluder/shelf point sets.
-2. Frozen proposer даёт \(g_{1:N}\).
-3. Для каждого nominal \(g_j\) строится calibrated perturbation stencil \(K_j\approx g_j\oplus E_{g_j}\).
+2. Frozen proposer даёт $g_{1:N}$.
+3. Для каждого nominal $g_j$ строится calibrated perturbation stencil $K_j\approx g_j\oplus E_{g_j}$.
 4. CEN вычисляет
 
-   \[
+   $$
    s_j=I_\theta(x,K_j).
-   \]
+   $$
 
-5. Выбирается \(j^*=\arg\max_j s_j\).
-6. Если \(\max_j s_j<\eta\), система abstains.
+5. Выбирается $j^*=\arg\max_j s_j$.
+6. Если $\max_j s_j<\eta$, система abstains.
 7. Иначе выполняются только terminal placement, короткое close и небольшой lift.
 
 Дополнительно доступны без переобучения:
 
-- \(T(\{g\})\): обычная вероятность feasible grasp;
-- \(I(K)\): uniform robustness;
-- \(T(K)\): вероятность, что хотя бы один action в локальном/семантическом bundle допустим;
+- $T(\{g\})$: обычная вероятность feasible grasp;
+- $I(K)$: uniform robustness;
+- $T(K)$: вероятность, что хотя бы один action в локальном/семантическом bundle допустим;
 - coherent set samples для диагностики;
 - hit-or-miss probabilities для сложных action patterns.
 
@@ -1350,7 +1350,7 @@ CEN оценивает соответствующие max/min своих mode fi
 
 Сначала не использовать robot data.
 
-- \(N=10\)–16 actions, чтобы exact joint law можно было перечислить.
+- $N=10$–16 actions, чтобы exact joint law можно было перечислить.
 - Hidden mode создаёт несколько сильно коррелированных feasible patterns с одинаковым partial observation.
 - Сравнить independent Bernoulli, mixture Bernoulli, latent NP, CRFSP и CEN.
 - Метрики: exact TV/KL, all-subset capacity error, pair/high-order correlation, calibration after selection.
@@ -1364,7 +1364,7 @@ CEN оценивает соответствующие max/min своих mode fi
 - Train/test split по visible families и по hidden variants.
 - Query sets включают singletons, local perturbation bodies и disconnected bundles.
 
-Главная картинка: один partial observation, несколько истинных compatible feasible sets, CEN mode fields и откалиброванные \(T/I\) queries. Никаких reconstructed shapes как model output.
+Главная картинка: один partial observation, несколько истинных compatible feasible sets, CEN mode fields и откалиброванные $T/I$ queries. Никаких reconstructed shapes как model output.
 
 **Kill criterion:** multi-point CQS не улучшает robust-set Brier/regret относительно singleton-trained CEN.
 
@@ -1382,10 +1382,10 @@ CEN оценивает соответствующие max/min своих mode fi
 Основные metrics:
 
 1. single-grasp success;
-2. robust-set success \(\mathbf1\{K_g\subseteq F\}\) на dense offline stencil;
+2. robust-set success $\mathbf1\{K_g\subseteq F\}$ на dense offline stencil;
 3. CQS/Brier по held-out query families и cardinalities;
 4. risk–coverage/selective curve;
-5. regret к oracle \(\max_g I_x(K_g)\);
+5. regret к oracle $\max_g I_x(K_g)$;
 6. calibration after argmax selection;
 7. inference latency и memory;
 8. capacity-axiom violation для unconstrained direct-query baseline.
@@ -1394,7 +1394,7 @@ CEN оценивает соответствующие max/min своих mode fi
 
 - Single wrist RGB-D.
 - Target on shelf, один foreground occluder.
-- Несколько заранее измеренных calibration envelopes \(E_g\).
+- Несколько заранее измеренных calibration envelopes $E_g$.
 - Один nominal grasp на trial; close + 2–3 cm lift.
 - Blind randomization методов, одинаковые candidates, threshold и retry policy.
 - Отдельно сообщать perception failure, terminal collision, no-contact, slip, unstable lift.
@@ -1411,7 +1411,7 @@ Matched-coverage сравнение обязательно: success rate CEN и 
 6. latent neural process или mixture-of-Bernoulli field;
 7. CRFSP/functional-flow baseline;
 8. posterior shape completion + LCB/CVaR в стиле UNCLE-Grasp;
-9. direct Set Transformer \(T(x,K)\) без capacity-valid architecture;
+9. direct Set Transformer $T(x,K)$ без capacity-valid architecture;
 10. CEN singleton-only;
 11. CEN без mixture и CEN без inclusion term.
 
@@ -1419,7 +1419,7 @@ Matched-coverage сравнение обязательно: success rate CEN и 
 
 - query cardinality curriculum;
 - random threshold против independent point noise;
-- число modes \(M\);
+- число modes $M$;
 - fixed против learned threshold CDF;
 - local-only против mixed query geometry;
 - explicit gripper point query против pose vector;
@@ -1438,9 +1438,9 @@ Matched-coverage сравнение обязательно: success rate CEN и 
 
 Отчасти верно. Если определить
 
-\[
+$$
 \phi_K(F)=\mathbf1\{F\cap K\neq\varnothing\},
-\]
+$$
 
 то интегрированный Brier excess risk равен squared distance между mean embeddings этих features. Новизна должна быть сформулирована как **выбор canonical convergence-determining features random-set space + tractable capacity-valid conditional architecture**, а не как изобретение distribution embeddings. Characteristic-kernel literature [N8] нужно цитировать открыто.
 
@@ -1454,7 +1454,7 @@ Matched-coverage сравнение обязательно: success rate CEN и 
 
 ### «Mixture of thresholded fields слишком ограничена»
 
-Нужны finite-bank universality theorem, approximation ablation по \(M\) и сравнение с flow/latent NP. При малом \(M\) честно обсуждать bias.
+Нужны finite-bank universality theorem, approximation ablation по $M$ и сравнение с flow/latent NP. При малом $M$ честно обсуждать bias.
 
 ### «Нет повторных одинаковых x, posterior неидентифицируем»
 
@@ -1462,7 +1462,7 @@ Matched-coverage сравнение обязательно: success rate CEN и 
 
 ### «Query sampler задаёт метрику и может скрыть ошибки»
 
-Публиковать результаты по нескольким held-out \(\nu\), cardinalities и geometries; train/test query distributions должны различаться. Directly report worst-family error, не только среднее CQS.
+Публиковать результаты по нескольким held-out $\nu$, cardinalities и geometries; train/test query distributions должны различаться. Directly report worst-family error, не только среднее CQS.
 
 ---
 
@@ -1508,27 +1508,27 @@ Matched-coverage сравнение обязательно: success rate CEN и 
 
 ### Минимальный протокол на 2–3 дня
 
-1. \(N=12\), четыре latent feasible-set modes, два из них имеют одинаковые singleton marginals, но разные correlations.
+1. $N=12$, четыре latent feasible-set modes, два из них имеют одинаковые singleton marginals, но разные correlations.
 2. Partial observation скрывает mode частично; exact conditional law известен.
-3. CEN: \(M=4\), маленький encoder и action decoder.
+3. CEN: $M=4$, маленький encoder и action decoder.
 4. Baselines: independent Bernoulli, mixture Bernoulli, direct set-query MLP.
 5. Train singleton-only и mixed-cardinality CQS.
-6. Evaluate all \(2^{12}\) capacities, pattern TV и robust-cluster regret.
+6. Evaluate all $2^{12}$ capacities, pattern TV и robust-cluster regret.
 
 ### Go
 
 - mixed CQS восстанавливает high-order capacities;
 - CEN сохраняет capacity validity и выигрывает robust regret;
 - direct query MLP нарушает coherence или хуже переносится на unseen query cardinality;
-- результат устойчив к \(M\), seed и query distribution.
+- результат устойчив к $M$, seed и query distribution.
 
 ### Stop / pivot
 
 - singleton/marginal baseline имеет тот же robust regret;
 - mixture Bernoulli полностью доминирует CEN;
 - CQS хорошо fit’ится только на seen query geometry;
-- posterior recovery требует почти \(2^N\) modes;
-- калиброванный \(E_g\) в реальном роботе слишком мал, чтобы joint set event влияло на выбор.
+- posterior recovery требует почти $2^N$ modes;
+- калиброванный $E_g$ в реальном роботе слишком мал, чтобы joint set event влияло на выбор.
 
 Только после прохождения gate стоит строить 3D RGB-D dataset и humanoid experiment.
 

@@ -42,9 +42,9 @@
 
 Utility не оценивает весь длинный цикл approach-to-lift. Она локальна:
 
-\[
+$$
 q(s,g)=\Pr_{\zeta}\{\text{collision-free local closure, stable contacts, retain object after a 1 cm lift}\},
-\]
+$$
 
 где `s` — полная target geometry и локальные физические параметры, а `ζ` — небольшие perturbations pose, friction и execution. Коллизии с наблюдаемой полкой/препятствием лучше сначала использовать как hard filter. Это не RL, не VLA и не causal failure-mode model.
 
@@ -112,23 +112,23 @@ q(s,g)=\Pr_{\zeta}\{\text{collision-free local closure, stable contacts, retain 
 
 Пусть `s ∈ S` — полный hidden state. Наблюдение `x` задаёт набор допустимых sensor constraints. Вместо posterior density определим distribution-supported consistency set
 
-\[
+$$
 \mathcal C_\epsilon(x)=\{s\in \operatorname{supp}(P_{\rm train}):d_{\rm obs}(O(s),x)\le \epsilon\}.
-\]
+$$
 
 `ε` включает tolerances depth, calibration и segmentation. Это не множество всех геометрически мыслимых тел, а множество worlds, правдоподобных под обучающим shape distribution.
 
 Создадим filtration наблюдений
 
-\[
+$$
 x_0\preceq x_1\preceq\dots\preceq x_L,
-\]
+$$
 
 где каждый следующий уровень добавляет ray/point constraints. Тогда по определению
 
-\[
+$$
 \mathcal C(x_{\ell+1})\subseteq \mathcal C(x_\ell).
-\]
+$$
 
 Это set-based, а не Bayesian statement: даже с bounded sensor noise добавление constraints реализуется пересечением и не может расширить consistency set.
 
@@ -136,29 +136,29 @@ x_0\preceq x_1\preceq\dots\preceq x_L,
 
 Для candidate grasps `G={g_1,...,g_N}` полный state создаёт joint response vector
 
-\[
+$$
 U_G(s)=[q(s,g_1),\dots,q(s,g_N)]\in[0,1]^N.
-\]
+$$
 
 Target uncertainty object:
 
-\[
+$$
 \mathcal Y_G(x)=\{U_G(s):s\in\mathcal C(x)\}.
-\]
+$$
 
 FiRe учит его closed convex hull
 
-\[
+$$
 \mathcal P_G(x)=\operatorname{cl\,conv}\mathcal Y_G(x).
-\]
+$$
 
 Convexification — не удобная hallucination. Для любого randomized one-shot decision `p ∈ Δ_N`
 
-\[
+$$
 \min_{u\in\mathcal Y_G(x)}p^\top u
 =
 \min_{u\in\mathcal P_G(x)}p^\top u.
-\]
+$$
 
 То есть convex hull lossless для worst-case linear utility. Он также сохраняет deterministic max-min и worst-case regret. Геометрически разные shapes с одинаковым `U_G` collapse автоматически; shape details, не влияющие ни на один candidate grasp, не требуют capacity.
 
@@ -168,29 +168,29 @@ Convexification — не удобная hallucination. Для любого rando
 
 **Robust Success Floor**
 
-\[
+$$
 F(x)=\max_n\min_{u\in\mathcal P_G(x)}u_n.
-\]
+$$
 
 Это лучший guaranteed utility среди candidates.
 
 **Occlusion Ambiguity Tax**
 
-\[
+$$
 \operatorname{OAT}(x)
 =\min_n\max_{u\in\mathcal P_G(x)}
 \left[\max_j u_j-u_n\right].
-\]
+$$
 
 OAT — минимальный worst-case regret, неизбежный для любого deterministic selector, видящего только `x`. Если две hidden geometries дают одно RGB-D, но требуют несовместимых grasps, OAT положителен даже для бесконечно большой модели.
 
 Для selector `a_θ(x)`:
 
-\[
+$$
 \operatorname{EAR}_\theta(x)
 =\max_{u\in\mathcal P_G(x)}[\max_j u_j-u_{a_\theta(x)}]
 -\operatorname{OAT}(x)\ge 0.
-\]
+$$
 
 **Excess Ambiguity Regret (EAR)** измеряет только avoidable model/optimization error. Это более научная diagnosis, чем raw grasp success: она отделяет «наблюдение принципиально не содержит ответа» от «модель плохо использовала доступную информацию».
 
@@ -200,9 +200,9 @@ OAT — минимальный worst-case regret, неизбежный для л
 
 Для training observation `x_i^ℓ` строится ambiguity bag `B_i^ℓ` полных worlds, совместимых с ним. Physics/analytic labeling даёт matrix
 
-\[
+$$
 Y_i^\ell=[U_G(s_1),\dots,U_G(s_M)]^\top\in[0,1]^{M\times N}.
-\]
+$$
 
 Target polytope — `conv(rows(Y_i^ℓ))`. Model outputs `K` witness vectors/functions `V_i^ℓ` и polytope `hat P_i^ℓ=conv(rows(V_i^ℓ))`.
 
@@ -210,20 +210,20 @@ Target polytope — `conv(rows(Y_i^ℓ))`. Model outputs `K` witness vectors/fun
 
 Для compact convex set `P`, support function
 
-\[
+$$
 h_P(z)=\max_{u\in P}z^\top u.
-\]
+$$
 
 Для vertex set она вычисляется одним `max`. Under `ℓ∞` Hausdorff geometry:
 
-\[
+$$
 d_H^{\infty}(P,Q)
 =\sup_{\lVert z\rVert_1\le1}|h_P(z)-h_Q(z)|.
-\]
+$$
 
 Поэтому основной objective:
 
-\[
+$$
 \mathcal L_{\rm RSM}
 =\sum_{\ell=0}^{L}
 \mathbb E_{z\sim\nu_G}
@@ -231,7 +231,7 @@ d_H^{\infty}(P,Q)
 \operatorname{LSE}_{k}(z^\top V_{ik}^{\ell})-
 \operatorname{LSE}_{m}(z^\top Y_{im}^{\ell})
 \right).
-\]
+$$
 
 `ρ` — Huber loss, LSE — smooth approximation maximum. Direction distribution `ν_G` не isotropic-only, а action-directed:
 
@@ -250,14 +250,14 @@ d_H^{\infty}(P,Q)
 
 Полный training objective:
 
-\[
+$$
 \begin{aligned}
 \mathcal L_{\rm FiRe}
 &=\mathcal L_{\rm RSM}\\
 &\quad+\lambda_{\rm sel}\mathcal L_{\rm EAR}\\
 &\quad+\lambda_{\rm prop}\mathcal L_{\rm proposal}.
 \end{aligned}
-\]
+$$
 
 `L_EAR` — differentiable listwise surrogate, сопоставляющий predicted robust-regret ranking с empirical bag oracle. Это вспомогательный term; главный novelty test обязан показать, что `L_RSM` даёт выигрыш сам по себе.
 
@@ -297,9 +297,9 @@ noisy RGB-D + target/obstacle roles
 
 Coarsest level `x_0` порождает `K` latent witness slots. Shared action decoder получает slot, relative grasp pose и local visible features:
 
-\[
+$$
 f_k^0(g)=\sigma(D_\theta(z_k^0,\phi(x_0,g)))\in[0,1].
-\]
+$$
 
 Один slot задаёт coherent function по **всем** grasps. Он не является независимым quantile для каждого action.
 
@@ -307,23 +307,23 @@ f_k^0(g)=\sigma(D_\theta(z_k^0,\phi(x_0,g)))\in[0,1].
 
 Новые evidence tokens не создают произвольные новые functions. Они предсказывают matrix
 
-\[
+$$
 A_\ell\in\mathbb R_+^{K\times K},\qquad
 \mathbf 1^\top A_\ell=\mathbf 1^\top,
-\]
+$$
 
 то есть каждый column лежит на simplex. Update для любого continuous grasp query:
 
-\[
+$$
 f^{\ell}(g)=A_\ell^\top f^{\ell-1}(g).
-\]
+$$
 
 Каждый новый witness — convex combination прежних functions, поэтому **для всех grasps одновременно**
 
-\[
+$$
 \widehat{\mathcal P}(x_\ell)\subseteq
 \widehat{\mathcal P}(x_{\ell-1}).
-\]
+$$
 
 Это exact architectural property, а не soft penalty. Standard uncertainty heads могут стать более широкими после дополнительной информации; здесь это невозможно по конструкции.
 
@@ -331,16 +331,16 @@ f^{\ell}(g)=A_\ell^\top f^{\ell-1}(g).
 
 Primary reliable rule:
 
-\[
+$$
 \hat g_{\rm floor}=\arg\max_g\min_k f_k^L(g).
-\]
+$$
 
 Diagnostic/minimax-regret rule:
 
-\[
+$$
 \hat g_{\rm regret}=\arg\min_g\max_k
 \left[\max_{g'}f_k^L(g')-f_k^L(g)\right].
-\]
+$$
 
 Для лабораторного reliability deployment предпочтителен max-min floor с abstention threshold. Minimax regret нужен для OAT/EAR и как secondary policy; он не должен незаметно подменять absolute success reliability.
 
@@ -364,11 +364,11 @@ Secondary end-to-end experiment может добавить lightweight equivari
 
 Если `x^- ≼ x^+`, то
 
-\[
+$$
 \mathcal P(x^+)\subseteq\mathcal P(x^-),\quad
 F(x^+)\ge F(x^-),\quad
 \operatorname{OAT}(x^+)\le\operatorname{OAT}(x^-),
-\]
+$$
 
 при фиксированном action set. Больше valid evidence не может ухудшить oracle robust floor и не может увеличить irreducible ambiguity. В направлении усиления occlusion inequalities обращаются.
 
@@ -376,9 +376,9 @@ F(x^+)\ge F(x^-),\quad
 
 Если
 
-\[
+$$
 \sup_{\|z\|_1\le1}|h_{\widehat P}(z)-h_P(z)|\le\varepsilon,
-\]
+$$
 
 то coordinate robust floors отличаются не более чем на `ε`. Grasp, выбранный max-min на `hat P`, имеет true robust-floor suboptimality не более `2ε`.
 

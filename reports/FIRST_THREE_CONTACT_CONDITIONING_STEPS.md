@@ -17,37 +17,37 @@
 
 Состояние модели
 
-\[
+$$
 x_k=(q_k,r_k),\qquad q_k=(R_k,p_k),\qquad r_k\in\mathbb R^6,
-\]
+$$
 
-где \(q\) переводит object coordinates в gripper frame,
+где $q$ переводит object coordinates в gripper frame,
 
-\[
+$$
 x_G=R x_O+p.
-\]
+$$
 
-Скалярная aperture \(A(r)\) оставлена только как derived diagnostic. Геометрия пальцев везде вычисляется из фактических шести joints через FK.
+Скалярная aperture $A(r)$ оставлена только как derived diagnostic. Геометрия пальцев везде вычисляется из фактических шести joints через FK.
 
-Для collision point \(y_i^G(r)\) геометрический gap равен
+Для collision point $y_i^G(r)$ геометрический gap равен
 
-\[
+$$
 h_i^{\rm geo}(q,r)
 =
 \phi\!\left(R^\top(y_i^G(r)-p)\right).
-\]
+$$
 
 Входной contact signal и gate используют PhysX contact envelope,
 
-\[
+$$
 h_i^{\rm contact}=h_i^{\rm geo}-2.56\;{\rm mm},
-\]
+$$
 
-но feasibility loss использует только \(h^{\rm geo}\), то есть 2.56 mm из геометрической допустимости не вычитаются.
+но feasibility loss использует только $h^{\rm geo}$, то есть 2.56 mm из геометрической допустимости не вычитаются.
 
 Оценочная state-distance:
 
-\[
+$$
 d_X=
 \sqrt{
 \frac{\|\Delta p\|^2}{L^2}
@@ -55,40 +55,40 @@ d_X=
 +\frac16\sum_{m=1}^{6}
 \left(\frac{\Delta r_m}{s_m}\right)^2
 },
-\]
+$$
 
-где \(L\) — gripper length scale, \(s_m\) — travel range joint \(m\), а
+где $L$ — gripper length scale, $s_m$ — travel range joint $m$, а
 
-\[
+$$
 \theta(R,R^*)=
 \cos^{-1}\!\left(
 \operatorname{clip}\frac{\operatorname{tr}(R^\top R^*)-1}{2},-1,1
 \right).
-\]
+$$
 
 В таблицах ниже:
 
-- **T** — mean \(\|\Delta p\|\), m;
-- **R** — mean \(\theta(R,R^*)\), rad;
-- **J** — mean \(\sqrt{\frac16\sum_m(\Delta r_m/s_m)^2}\).
+- **T** — mean $\|\Delta p\|$, m;
+- **R** — mean $\theta(R,R^*)$, rad;
+- **J** — mean $\sqrt{\frac16\sum_m(\Delta r_m/s_m)^2}$.
 
 Loss, kernel, pooling, hidden dimension и optimizer не менялись:
 
-\[
+$$
 \mathcal L=\mathcal L_{\rm state}+\lambda_K\mathcal L_K,
 \qquad
 \lambda_R=\lambda_r=\lambda_K=1,
-\]
+$$
 
-\[
+$$
 \mathcal L_K=
 \frac1M\sum_i
 \left[
 \frac{(h_{\rm admissible}-h_i^{\rm geo})_+}{s_{\rm sdf}}
 \right]^2.
-\]
+$$
 
-Использованы AdamW, learning rate \(3\cdot10^{-4}\), weight decay \(10^{-4}\), clipping 1.0, BF16 cell и float32 geometry/loss. Seeds: 0, 1, 2. Local batches: 4 objects × 256 transitions; rollout batches: 4 objects × 8 trajectories.
+Использованы AdamW, learning rate $3\cdot10^{-4}$, weight decay $10^{-4}$, clipping 1.0, BF16 cell и float32 geometry/loss. Seeds: 0, 1, 2. Local batches: 4 objects × 256 transitions; rollout batches: 4 objects × 8 trajectories.
 
 ## 2. Шаг 1 — rollout `gap` против `gap+J_q`
 
@@ -96,37 +96,37 @@ Loss, kernel, pooling, hidden dimension и optimizer не менялись:
 
 Аналитический metric-gradient SDF вычисляется из тех же восьми voxel corners, что и trilinear value. Вне grid gradient равен нулю. Для ненулевого gradient:
 
-\[
+$$
 n_i^O=\frac{\nabla\phi(z_i)}{\max(\|\nabla\phi(z_i)\|,10^{-8})},
 \qquad
 n_i^G=R n_i^O,
 \qquad
 \rho_i=\frac{y_i^G}{L}.
-\]
+$$
 
 Left/spatial pose Jacobian contact gap:
 
-\[
+$$
 J_{q,i}=
 \left[-n_i^G,\;-\rho_i\times n_i^G\right]\in\mathbb R^6.
-\]
+$$
 
 Baseline node feature:
 
-\[
+$$
 f_i^{\rm gap}=\left[h_i^{\rm contact}/s_{\rm sdf}\right]\in\mathbb R.
-\]
+$$
 
 Candidate node feature:
 
-\[
+$$
 f_i^{J_q}=
 \left[
 h_i^{\rm contact}/s_{\rm sdf},
 -n_i^G,
 -(\rho_i\times n_i^G)
 \right]\in\mathbb R^7.
-\]
+$$
 
 Изменились только два lifting-слоя `Linear(1,64)` → `Linear(7,64)`. Число параметров: 31 436 → 32 204, то есть +768 (+2.44%). Kernel, pooling и 12-dimensional head не менялись.
 
@@ -134,32 +134,32 @@ h_i^{\rm contact}/s_{\rm sdf},
 
 Предшествующий чистый local ablation подтвердил one-step gain:
 
-| Arm | val \(d_X\) | test \(d_X\) | test T, m | test R, rad | test J |
+| Arm | val $d_X$ | test $d_X$ | test T, m | test R, rad | test J |
 |---|---:|---:|---:|---:|---:|
 | `gap` | 0.031033 | 0.037118 | 0.001396 | 0.006539 | 0.031965 |
 | `gap_jq` | 0.020098 | 0.025833 | 0.001232 | 0.006932 | 0.019982 |
 
 Local test paired difference была
 
-\[
+$$
 E_{\rm test}^{J_q}-E_{\rm test}^{\rm gap}=-0.011286,
-\]
+$$
 
-с hierarchical bootstrap 95% CI \([-0.012980,-0.009451]\). Validation была лучше во всех трёх seeds.
+с hierarchical bootstrap 95% CI $[-0.012980,-0.009451]$. Validation была лучше во всех трёх seeds.
 
 ### 2.3. Чистый autoregressive rollout
 
 Каждый из шести `best-local.pt` независимо продолжен новым rollout optimizer без teacher forcing:
 
-\[
+$$
 H4\rightarrow H8\rightarrow H16\rightarrow H32.
-\]
+$$
 
 На каждом horizon использованы максимум 25 epochs и patience 10. Для каждого horizon сохранён собственный best checkpoint.
 
 Средние terminal metrics по трём seeds:
 
-| Arm | H | split | \(d_X\) | T, m | R, rad | J |
+| Arm | H | split | $d_X$ | T, m | R, rad | J |
 |---|---:|---|---:|---:|---:|---:|
 | `gap` | 4 | val | 0.013552 | 0.001112 | 0.007668 | 0.001603 |
 | `gap` | 4 | test | 0.018253 | 0.001636 | 0.008576 | 0.002754 |
@@ -178,7 +178,7 @@ H4\rightarrow H8\rightarrow H16\rightarrow H32.
 | `gap_jq` | 32 | val | 0.197533 | 0.015290 | 0.117959 | 0.056369 |
 | `gap_jq` | 32 | test | 0.219773 | 0.016757 | 0.125666 | 0.072085 |
 
-H32 terminal \(d_X\) по seeds:
+H32 terminal $d_X$ по seeds:
 
 | Seed | `gap` val | `gap_jq` val | difference | `gap` test | `gap_jq` test | difference |
 |---:|---:|---:|---:|---:|---:|---:|
@@ -188,32 +188,32 @@ H32 terminal \(d_X\) по seeds:
 
 Hierarchical bootstrap выполнялся в порядке seed → object → trajectory, 10 000 replicates:
 
-\[
+$$
 E_{\rm test,H32}^{J_q}-E_{\rm test,H32}^{\rm gap}
 =+0.013183,
-\]
+$$
 
-\[
+$$
 95\%\;CI=[+0.006825,+0.019440].
-\]
+$$
 
-Итог: rollout gain **не подтверждён**. `gap_jq` хуже на H32 validation во всех трёх seeds, а test CI целиком положителен. На H4–H16 \(J_q\) уменьшает joint и частично translation error, но к H32 rotation error возрастает с 0.10438 до 0.12567 rad и перевешивает этот выигрыш.
+Итог: rollout gain **не подтверждён**. `gap_jq` хуже на H32 validation во всех трёх seeds, а test CI целиком положителен. На H4–H16 $J_q$ уменьшает joint и частично translation error, но к H32 rotation error возрастает с 0.10438 до 0.12567 rad и перевешивает этот выигрыш.
 
-## 3. Шаг 2 — условный \(J_r\)
+## 3. Шаг 2 — условный $J_r$
 
 План разрешал добавлять
 
-\[
+$$
 [J_{r,i}]_m=(n_i^G)^\top\frac{\partial y_i^G(r)}{\partial r_m}
-\]
+$$
 
 и feature
 
-\[
+$$
 f_i=[h_i^{\rm contact}/s_{\rm sdf},J_{q,i},J_{r,i}]\in\mathbb R^{13}
-\]
+$$
 
-только если \(J_q\) проходит строгий H32-критерий. Критерий не выполнен, поэтому этот пункт намеренно пропущен: режим `gap_jq_jr`, его параметры и local runs не добавлялись. Это не отсутствующий результат, а заранее заданное условное решение. Рабочей веткой для следующего шага остался `gap`.
+только если $J_q$ проходит строгий H32-критерий. Критерий не выполнен, поэтому этот пункт намеренно пропущен: режим `gap_jq_jr`, его параметры и local runs не добавлялись. Это не отсутствующий результат, а заранее заданное условное решение. Рабочей веткой для следующего шага остался `gap`.
 
 ## 4. Шаг 3 — actuator audit
 
@@ -221,15 +221,15 @@ f_i=[h_i^{\rm contact}/s_{\rm sdf},J_{q,i},J_{r,i}]\in\mathbb R^{13}
 
 До обучения выполнен headless fail-fast read-back всех шести drives одновременно из IsaacLab actuator object и live PhysX tensors/USD:
 
-\[
+$$
 \text{drive type}=\text{force},\qquad
 \text{target type}=\text{position},
-\]
+$$
 
-\[
+$$
 K=14,\qquad D=0.35,\qquad
 \tau_{\max}=480,\qquad \dot r_{\max}=0.1.
-\]
+$$
 
 Проверены точный порядок joint names, implicit actuator model, stiffness, damping, effort/velocity limits, USD drive type и runtime position target read-back. Тот же fail-fast audit включён в будущий collector до начала записи trajectories.
 
@@ -250,48 +250,48 @@ Audit sidecar связан с simulator config SHA-256 `04c3bd96f35cf7fe3d038949
 
 Для первого train object `snek-ovoshchnoy-iz-batata-30-g-62734`, source pose 4091, сохранены все 33 settled states:
 
-\[
+$$
 r,\quad \bar r,\quad \dot r,\quad
 \widetilde\tau_{\rm PD}=
 \operatorname{clip}
 \left(K(\bar r-r)-D\dot r,-\tau_{\max},\tau_{\max}\right).
-\]
+$$
 
 Все 33 increments settled. Получено:
 
-- maximum \(|\dot r|=1.41835\cdot10^{-4}\) rad/s;
-- maximum approximate PD effort \(=1.51123\cdot10^{-5}\) N·m;
-- maximum runtime-vs-settled formula discrepancy \(=1.05226\cdot10^{-6}\) N·m при допуске 0.02 N·m.
+- maximum $|\dot r|=1.41835\cdot10^{-4}$ rad/s;
+- maximum approximate PD effort $=1.51123\cdot10^{-5}$ N·m;
+- maximum runtime-vs-settled formula discrepancy $=1.05226\cdot10^{-6}$ N·m при допуске 0.02 N·m.
 
 `robot.data.applied_torque` в sidecar явно назван `approximate_pd_effort`: для implicit PhysX drive это вычисленный clipped PD diagnostic, а не измеренная contact reaction. Старый scalar `actuator_effort=max_m|tau_m|` как вход модели не используется.
 
 ## 5. Actuator-conditioning local ablation
 
-Поскольку rollout-\(J_q\) не подтвердился, сравнение проведено поверх последней подтверждённой H32 feature-ветки `gap`.
+Поскольку rollout-$J_q$ не подтвердился, сравнение проведено поверх последней подтверждённой H32 feature-ветки `gap`.
 
 Старая global conditioning:
 
-\[
+$$
 c_k^{\rm aperture}
 =
 \left[A(r_k)/L,\;\bar a_{k+1}/L\right]\in\mathbb R^2.
-\]
+$$
 
 Новая conditioning вычисляется внутри неизменных публичных `forward_step`/`rollout`:
 
-\[
+$$
 \bar r_{k+1}=R_{\rm free}(\bar a_{k+1}),
 \qquad
 u_k=\frac{\bar r_{k+1}-r_k}{s}\in\mathbb R^6,
-\]
+$$
 
-где деление на joint travel \(s=(s_1,\ldots,s_6)\) покомпонентное. Это состояние actuator mismatch перед следующим increment, а не torque.
+где деление на joint travel $s=(s_1,\ldots,s_6)$ покомпонентное. Это состояние actuator mismatch перед следующим increment, а не torque.
 
-Изменён только первый head layer: вход \(64+2\to64+6\), +512 параметров. Полный размер: 31 436 → 31 948. Contact lifting, kernel, pooling, output head, loss и training schedule не менялись. Baseline — замороженные исходные `gap` checkpoints, candidate обучен с нуля для seeds 0, 1, 2.
+Изменён только первый head layer: вход $64+2\to64+6$, +512 параметров. Полный размер: 31 436 → 31 948. Contact lifting, kernel, pooling, output head, loss и training schedule не менялись. Baseline — замороженные исходные `gap` checkpoints, candidate обучен с нуля для seeds 0, 1, 2.
 
 ### 5.1. Результаты
 
-| Arm | split | \(d_X\) | T, m | R, rad | J |
+| Arm | split | $d_X$ | T, m | R, rad | J |
 |---|---|---:|---:|---:|---:|
 | `aperture` | train | 0.036429 | 0.001398 | 0.010630 | 0.027883 |
 | `drive_error` | train | 0.018299 | 0.001200 | 0.010289 | 0.005663 |
@@ -300,7 +300,7 @@ u_k=\frac{\bar r_{k+1}-r_k}{s}\in\mathbb R^6,
 | `aperture` | test | 0.037118 | 0.001396 | 0.006539 | 0.031965 |
 | `drive_error` | test | 0.015041 | 0.001117 | 0.006040 | 0.007423 |
 
-Paired \(d_X\) по seeds:
+Paired $d_X$ по seeds:
 
 | Seed | baseline val | candidate val | difference | baseline test | candidate test | difference |
 |---:|---:|---:|---:|---:|---:|---:|
@@ -310,18 +310,18 @@ Paired \(d_X\) по seeds:
 
 Hierarchical test bootstrap:
 
-\[
+$$
 E_{\rm test}^{\rm drive\ error}-E_{\rm test}^{\rm aperture}
 =-0.022086,
-\]
+$$
 
-\[
+$$
 95\%\;CI=[-0.023543,-0.020797].
-\]
+$$
 
 Итог: local gain **подтверждён** — candidate лучше на validation во всех трёх seeds, а верхняя граница test CI строго ниже нуля. Основной эффект физически ожидаемо находится в joint-компоненте: test J уменьшилась с 0.031965 до 0.007423 (−76.8%). Одновременно улучшились translation (−20.0%) и rotation (−7.6%), поэтому aggregate gain не является только переобозначением joint metric.
 
-После local-result обучение остановлено: дополнительный H32 для actuator arm, \(J_t\) и multiplier head не запускались.
+После local-result обучение остановлено: дополнительный H32 для actuator arm, $J_t$ и multiplier head не запускались.
 
 ## 6. Реализация и проверки
 
@@ -334,7 +334,7 @@ E_{\rm test}^{\rm drive\ error}-E_{\rm test}^{\rm aperture}
 - fail-fast actuator runtime audit и collector integration;
 - paired rollout/local experiment runners, hierarchical bootstrap, JSON/NPZ, TensorBoard и графики.
 
-Проверены analytic SDF gradients, anisotropic voxels, boundary/out-of-grid, finite-difference \(J_q\), frame/sign convention, zero-gradient without NaN, exact free bypass, permutation invariance, active and 32-step finite gradients, old checkpoint loading, точный знак/нормировка \(u_k\), +512 parameter delta и runtime actuator read-back.
+Проверены analytic SDF gradients, anisotropic voxels, boundary/out-of-grid, finite-difference $J_q$, frame/sign convention, zero-gradient without NaN, exact free bypass, permutation invariance, active and 32-step finite gradients, old checkpoint loading, точный знак/нормировка $u_k$, +512 parameter delta и runtime actuator read-back.
 
 Полный результат:
 
@@ -350,4 +350,4 @@ Warnings не связаны с изменениями: 11 deprecation warnings 
 - actuator audit: `runs/actuator-audit/results.json`, `actuator_trace.npz`, `actuator_trace.png`;
 - actuator local: `runs/ablation-actuator-local/results.json`, `comparison.npz`, per-run evaluations/checkpoints/TensorBoard logs, `actuator_local_ablation.png`.
 
-Главный вывод этих трёх шагов: локальная информация \(J_q\) действительно снижает one-step error, но в текущей cell не композируется устойчиво до H32. Поэтому расширение до \(J_r\) не было оправдано заданным критерием. В отличие от него, явный actuator mismatch \(u_k=(\bar r-r)/s\) дал большой и статистически устойчивый local gain при минимальном изменении head-а.
+Главный вывод этих трёх шагов: локальная информация $J_q$ действительно снижает one-step error, но в текущей cell не композируется устойчиво до H32. Поэтому расширение до $J_r$ не было оправдано заданным критерием. В отличие от него, явный actuator mismatch $u_k=(\bar r-r)/s$ дал большой и статистически устойчивый local gain при минимальном изменении head-а.

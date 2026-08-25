@@ -16,71 +16,71 @@
 
 > **условный avoidance functional случайного множества неуспешных parallel-jaw действий в пространстве grasp-поз.**
 
-Полная геометрия объекта во время обучения индуцирует множество неуспешных grasp-поз \(\mathcal B(S)\). После частичного наблюдения \(X=x\) это множество неизвестно и становится random closed set. Для компактного pose packet \(K\), например малой окрестности номинального grasp, модель предсказывает
+Полная геометрия объекта во время обучения индуцирует множество неуспешных grasp-поз $\mathcal B(S)$. После частичного наблюдения $X=x$ это множество неизвестно и становится random closed set. Для компактного pose packet $K$, например малой окрестности номинального grasp, модель предсказывает
 
-\[
+$$
 A^\star(K\mid x)
 =
 \Pr\!\left(\mathcal B(S)\cap K=\varnothing\mid X=x\right).
-\]
+$$
 
-Это вероятность того, что **ни одна** поза из заданной окрестности не является неуспешной при истинной, скрытой форме. Singleton \(K=\{g\}\) даёт обычную вероятность успеха grasp; непустая окрестность является принципиально более сильным запросом. Архитектура AvoGrasp представляет условный закон \(\mathcal B(S)\mid X=x\) как малую смесь латентных implicit sets непосредственно в action space, а не как смесь 3D shapes. Обучение выполняется новым integrated avoidance-Brier objective на compact-set queries. На population level этот objective является proper для avoidance functional; при достаточно богатом семействе запросов capacity functional однозначно задаёт закон random closed set. На inference не строятся mesh, occupancy, SDF или completed point cloud.
+Это вероятность того, что **ни одна** поза из заданной окрестности не является неуспешной при истинной, скрытой форме. Singleton $K=\{g\}$ даёт обычную вероятность успеха grasp; непустая окрестность является принципиально более сильным запросом. Архитектура AvoGrasp представляет условный закон $\mathcal B(S)\mid X=x$ как малую смесь латентных implicit sets непосредственно в action space, а не как смесь 3D shapes. Обучение выполняется новым integrated avoidance-Brier objective на compact-set queries. На population level этот objective является proper для avoidance functional; при достаточно богатом семействе запросов capacity functional однозначно задаёт закон random closed set. На inference не строятся mesh, occupancy, SDF или completed point cloud.
 
 Главная формула статьи:
 
-\[
+$$
 g^\star
 =
 \arg\max_{g\in\mathcal C(x)}
 \widehat A_\theta(K_{\rho_{\rm hw}}(g)\mid x),
-\]
+$$
 
-где \(\mathcal C(x)\) — candidate pool, а \(K_{\rho_{\rm hw}}(g)\) — калиброванная окрестность допустимой ошибки позы gripper.
+где $\mathcal C(x)$ — candidate pool, а $K_{\rho_{\rm hw}}(g)$ — калиброванная окрестность допустимой ошибки позы gripper.
 
 ## 1. Почему это не «ещё один grasp scorer»
 
 Обычный discriminative grasp network учит
 
-\[
+$$
 p_{\rm point}(g,x)=\Pr(Y(S,g)=1\mid X=x).
-\]
+$$
 
 Он отвечает только на вопрос о единственной математически точной позе. Две позы могут иметь одинаковый point success, но одна может лежать на узком пике: малое смещение приводит к провалу. Вторая может лежать внутри широкой области успешных действий. При шумном RGB-D и неоднозначной скрытой форме это различие существенно.
 
 AvoGrasp учит событие более высокого порядка:
 
-\[
+$$
 Z_K(S)=
 \mathbf 1\{\forall h\in K:\;Y(S,h)=1\}.
-\]
+$$
 
 Соответственно:
 
-\[
+$$
 A^\star(K\mid x)=\mathbb E[Z_K(S)\mid X=x].
-\]
+$$
 
 Это не свёртка point score с известным pose-noise distribution. Свёртка оценивает средний успех случайно выбранной perturbation:
 
-\[
+$$
 \mathbb E_{\Delta}[Y(S,g\circ\Delta)].
-\]
+$$
 
 Avoidance query оценивает вероятность того, что **весь заданный uncertainty set** не пересекает множество неуспеха. Поэтому он различает широкую безопасную область и набор разрозненных успешных точек с тем же средним score.
 
-Также это не «causal failure modes». \(\mathcal B(S)\) — только математическое множество action configurations, не прошедших один стандартизованный grasp test. Модель не строит причинную таксономию, не прогнозирует последовательность отказов и не оценивает весь manipulation cycle.
+Также это не «causal failure modes». $\mathcal B(S)$ — только математическое множество action configurations, не прошедших один стандартизованный grasp test. Модель не строит причинную таксономию, не прогнозирует последовательность отказов и не оценивает весь manipulation cycle.
 
 ## 2. Точная постановка
 
 ### 2.1 Скрытое состояние и наблюдение
 
-Пусть \(S\) содержит полную геометрию и физические параметры target, необходимые только simulator/oracle во время обучения. Камера формирует
+Пусть $S$ содержит полную геометрию и физические параметры target, необходимые только simulator/oracle во время обучения. Камера формирует
 
-\[
+$$
 X=\Pi_{\omega}(S,O)+\varepsilon,
-\]
+$$
 
-где \(O\) — foreground-occluder, \(\Pi_{\omega}\) — физический RGB-D rendering с depth ordering, \(\omega\) — camera/occluder configuration, а \(\varepsilon\) — sensor noise.
+где $O$ — foreground-occluder, $\Pi_{\omega}$ — физический RGB-D rendering с depth ordering, $\omega$ — camera/occluder configuration, а $\varepsilon$ — sensor noise.
 
 На inference доступны:
 
@@ -97,18 +97,18 @@ X=\Pi_{\omega}(S,O)+\varepsilon,
 
 Действие
 
-\[
+$$
 g=(T,w)\in
 \mathcal G
 \subset
 SE(3)\times[w_{\min},w_{\max}]
-\]
+$$
 
-задаёт final parallel-jaw frame и commanded opening width. Рассматривается компактная рабочая область \(\mathcal G\), ограниченная shelf ROI и параметрами gripper.
+задаёт final parallel-jaw frame и commanded opening width. Рассматривается компактная рабочая область $\mathcal G$, ограниченная shelf ROI и параметрами gripper.
 
 Метрика задаётся в hardware-normalized координатах:
 
-\[
+$$
 d_{\mathcal G}(g,h)^2
 =
 \frac{\|t_g-t_h\|_2^2}{\sigma_t^2}
@@ -116,76 +116,76 @@ d_{\mathcal G}(g,h)^2
 \frac{\|\log(R_g^\top R_h)\|_2^2}{\sigma_R^2}
 +
 \frac{(w_g-w_h)^2}{\sigma_w^2}.
-\]
+$$
 
-\(\sigma_t,\sigma_R,\sigma_w\) измеряются по calibration/repeatability робота, а не подбираются для улучшения test score.
+$\sigma_t,\sigma_R,\sigma_w$ измеряются по calibration/repeatability робота, а не подбираются для улучшения test score.
 
 ### 2.3 Что считается успехом
 
-\(Y(S,g)=1\), если при известной полной target geometry:
+$Y(S,g)=1$, если при известной полной target geometry:
 
 1. gripper, уже находясь в final/pre-contact configuration, может закрыться;
 2. формируется устойчивый parallel-jaw contact;
-3. target удерживается при фиксированном коротком подъёме \(\epsilon_{\rm lift}\).
+3. target удерживается при фиксированном коротком подъёме $\epsilon_{\rm lift}$.
 
 В этот label не входят global reachability, движение humanoid к полке, motion planning от текущей конфигурации, оценка длинной траектории или полное поднятие. Коллизия открытого gripper с **видимой** частью obstacle в final configuration проверяется отдельным консервативным geometric filter и не превращается в изучение всего manipulation cycle.
 
 ### 2.4 Random closed set неуспешных действий
 
-Для полной сцены введём oracle margin (q(S,g)): положительное значение означает успешный standardized grasp test, ноль — границу, отрицательное — отказ. Тогда:
+Для полной сцены введём oracle margin $q(S,g)$: положительное значение означает успешный standardized grasp test, ноль — границу, отрицательное — отказ. Тогда:
 
-\[
+$$
 \mathcal B(S)
 =
 \{g\in\mathcal G:q(S,g)\le 0\}.
-\]
+$$
 
-При непрерывном (q) это замкнутое множество, причём (Y(S,g)=\mathbf 1\{q(S,g)>0\}): boundary points консервативно считаются отказом. Если simulator возвращает только binary labels, практическая аппроксимация \(\mathcal B(S)\) строится как замыкание отрицательных samples с заранее фиксированным local interpolation/certification rule. В таком случае точный объект эксперимента — конечный pose packet, а не заявленная без доказательства continuous guarantee.
+При непрерывном $q$ это замкнутое множество, причём $Y(S,g)=\mathbf 1\{q(S,g)>0\}$: boundary points консервативно считаются отказом. Если simulator возвращает только binary labels, практическая аппроксимация $\mathcal B(S)$ строится как замыкание отрицательных samples с заранее фиксированным local interpolation/certification rule. В таком случае точный объект эксперимента — конечный pose packet, а не заявленная без доказательства continuous guarantee.
 
-После наблюдения \(X=x\) форма неизвестна, поэтому
+После наблюдения $X=x$ форма неизвестна, поэтому
 
-\[
+$$
 \mathcal B_x\sim P(\mathcal B(S)\mid X=x).
-\]
+$$
 
-Для compact \(K\subset\mathcal G\) определим capacity и avoidance:
+Для compact $K\subset\mathcal G$ определим capacity и avoidance:
 
-\[
+$$
 T^\star(K\mid x)
 =
 \Pr(\mathcal B_x\cap K\ne\varnothing\mid x),
-\]
+$$
 
-\[
+$$
 A^\star(K\mid x)
 =
 1-T^\star(K\mid x)
 =
 \Pr(\mathcal B_x\cap K=\varnothing\mid x).
-\]
+$$
 
-Выражение \(A^\star(K\mid x)\) и есть новый learning target.
+Выражение $A^\star(K\mid x)$ и есть новый learning target.
 
-### 2.5 Какие \(K\) нужны
+### 2.5 Какие $K$ нужны
 
 Основной deployment query:
 
-\[
+$$
 K_\rho(g)=\{h:d_{\mathcal G}(g,h)\le\rho\}.
-\]
+$$
 
 На практике непрерывный шар аппроксимируется детерминированным pose packet:
 
-\[
+$$
 \widetilde K_{\rho,L}(g)
 =
 \{g\circ\Delta_\ell\}_{\ell=1}^{L},
-\]
+$$
 
 где perturbations покрывают translation, rotation и width boundary. Для richer supervision используются:
 
-- singleton packets \(K=\{g\}\);
-- nested packets \(K_{\rho_1}(g)\subset K_{\rho_2}(g)\);
+- singleton packets $K=\{g\}$;
+- nested packets $K_{\rho_1}(g)\subset K_{\rho_2}(g)$;
 - anisotropic packets из эмпирической hardware error model;
 - небольшая доля finite unions разнесённых packets, чтобы учить зависимости между action regions, а не только point marginals.
 
@@ -193,16 +193,16 @@ K_\rho(g)=\{h:d_{\mathcal G}(g,h)\le\rho\}.
 
 ### 3.1 Integrated avoidance-Brier score
 
-Для training tuple \((S,x,K)\) oracle label:
+Для training tuple $(S,x,K)$ oracle label:
 
-\[
+$$
 Z_K(S)=
 \mathbf 1\{\mathcal B(S)\cap K=\varnothing\}.
-\]
+$$
 
-Модель возвращает \(\widehat A_\theta(K\mid x)\in[0,1]\). Основной objective:
+Модель возвращает $\widehat A_\theta(K\mid x)\in[0,1]$. Основной objective:
 
-\[
+$$
 \mathcal L_{\rm avoid}(\theta)
 =
 \mathbb E_{S,X}
@@ -212,39 +212,39 @@ Z_K(S)=
 \widehat A_\theta(K\mid X)-Z_K(S)
 \right)^2
 \right].
-\]
+$$
 
-\(\nu\) — заранее определённое распределение compact queries. Оно должно покрывать singleton, local robustness packets и finite unions. Баланс достигается sampling queries, а не label-dependent weighting: последнее разрушило бы простой properness argument.
+$\nu$ — заранее определённое распределение compact queries. Оно должно покрывать singleton, local robustness packets и finite unions. Баланс достигается sampling queries, а не label-dependent weighting: последнее разрушило бы простой properness argument.
 
 ### 3.2 Proposition 1: propriety
 
-Для фиксированных \(x,K\):
+Для фиксированных $x,K$:
 
-\[
+$$
 \mathbb E[(a-Z_K)^2\mid x,K]
 =
 (a-A^\star(K\mid x))^2
 +
 A^\star(K\mid x)(1-A^\star(K\mid x)).
-\]
+$$
 
 Следовательно, единственный population minimizer:
 
-\[
+$$
 a=A^\star(K\mid x).
-\]
+$$
 
 То есть objective честно elicит вероятность avoidance event, а не произвольный ranking score.
 
 ### 3.3 Proposition 2: идентифицируемость random set
 
-Классическая random-set theory утверждает: закон random closed set однозначно задаётся capacity functional на compact sets. Пусть \(\mathcal K_0\) — **счётная convergence-determining family** compact sets для выбранной topology на \(\mathcal G\). При нужных regularity assumptions её можно построить из finite unions balls с центрами и радиусами из счётных плотных множеств. Тогда, если:
+Классическая random-set theory утверждает: закон random closed set однозначно задаётся capacity functional на compact sets. Пусть $\mathcal K_0$ — **счётная convergence-determining family** compact sets для выбранной topology на $\mathcal G$. При нужных regularity assumptions её можно построить из finite unions balls с центрами и радиусами из счётных плотных множеств. Тогда, если:
 
 1. action ROI является compact metric space;
-2. \(\nu(\{K\})>0\) для каждого \(K\in\mathcal K_0\), а не только имеет topological support около этих queries;
+2. $\nu(\{K\})>0$ для каждого $K\in\mathcal K_0$, а не только имеет topological support около этих queries;
 3. model class достаточно выразителен;
 
-то population minimizer integrated Brier risk совпадает с \(A^\star\) на каждом \(K\in\mathcal K_0\). Равенство на convergence-determining family идентифицирует условный закон \(\mathcal B(S)\mid X=x\), а не только независимые pointwise probabilities. Здесь положительная масса каждого элемента важна: одно лишь dense continuous sampling без дополнительных continuity assumptions не даёт этот вывод автоматически.
+то population minimizer integrated Brier risk совпадает с $A^\star$ на каждом $K\in\mathcal K_0$. Равенство на convergence-determining family идентифицирует условный закон $\mathcal B(S)\mid X=x$, а не только независимые pointwise probabilities. Здесь положительная масса каждого элемента важна: одно лишь dense continuous sampling без дополнительных continuity assumptions не даёт этот вывод автоматически.
 
 Практическая модель не должна заявлять exact recovery по конечным данным. Теорема задаёт корректный population object и объясняет, почему packets/unions содержат больше информации, чем singleton BCE.
 
@@ -252,32 +252,32 @@ a=A^\star(K\mid x).
 
 Для utility
 
-\[
+$$
 U_K(S,g)=
 \mathbf 1\{\mathcal B(S)\cap K_\rho(g)=\varnothing\},
-\]
+$$
 
 решение
 
-\[
+$$
 g^\star=\arg\max_g A^\star(K_\rho(g)\mid x)
-\]
+$$
 
 является Bayes-optimal. Это соответствие между training target и deployment decision. Completion metrics вроде Chamfer distance в objective не нужны.
 
 ### 3.5 Почему не BCE на perturbed grasps
 
-Независимый BCE для каждого \(h\in K\) учит только marginals
+Независимый BCE для каждого $h\in K$ учит только marginals
 
-\[
+$$
 \Pr(Y(S,h)=1\mid x).
-\]
+$$
 
 Из них нельзя восстановить
 
-\[
+$$
 \Pr(\forall h\in K:Y(S,h)=1\mid x),
-\]
+$$
 
 потому что успехи соседних poses зависимы через одну и ту же скрытую форму. Packet-level label обучает именно joint event.
 
@@ -287,22 +287,22 @@ g^\star=\arg\max_g A^\star(K_\rho(g)\mid x)
 
 AvoGrasp не выводит shape samples. Он выводит небольшую условную смесь implicit sets в action space:
 
-\[
+$$
 \widehat{\mathcal B}_x
 \sim
 \sum_{m=1}^{M}\pi_m(x)\,
 \delta_{\mathcal B_{\theta,m}(x)}.
-\]
+$$
 
 Каждый atom:
 
-\[
+$$
 \mathcal B_{\theta,m}(x)
 =
 \{g:s_{\theta,m}(x,g)\le0\},
-\]
+$$
 
-где \(s_{\theta,m}\) — непрерывное implicit action-margin field. Латентный atom не обязан соответствовать какой-либо 3D shape; он кодирует только один совместно согласованный вариант множества grasp outcomes.
+где $s_{\theta,m}$ — непрерывное implicit action-margin field. Латентный atom не обязан соответствовать какой-либо 3D shape; он кодирует только один совместно согласованный вариант множества grasp outcomes.
 
 Это важное отличие от shape-completion ensemble: latent capacity тратится на decision boundary в низкоразмерном action space, а не на grasp-irrelevant back surface.
 
@@ -316,7 +316,7 @@ Encoder получает sparse token set трёх типов:
 
 Ray tokens не образуют dense SDF. Они нужны, чтобы сеть различала «пространство измерено как пустое» и «пространство скрыто obstacle».
 
-Backbone должен быть \(SE(3)\)-equivariant или по меньшей мере использовать gripper-relative coordinates. Практический первый вариант:
+Backbone должен быть $SE(3)$-equivariant или по меньшей мере использовать gripper-relative coordinates. Практический первый вариант:
 
 - sparse point/ray transformer;
 - equivariant vector features для geometry;
@@ -327,72 +327,72 @@ Backbone должен быть \(SE(3)\)-equivariant или по меньшей 
 
 Global encoder output создаёт:
 
-\[
+$$
 \{(\pi_m,z_m)\}_{m=1}^{M},
 \qquad
 \pi_m\ge0,\quad\sum_m\pi_m=1.
-\]
+$$
 
-\(M=8\) или \(16\) — стартовый диапазон. \(z_m\) не является shape code. Он параметризует коррелированную карту успешности по многим grasp queries.
+$M=8$ или $16$ — стартовый диапазон. $z_m$ не является shape code. Он параметризует коррелированную карту успешности по многим grasp queries.
 
 Mixture atoms нужны не ради красивой визуализации. Без shared latent atom модель легко сведётся к независимым point probabilities и потеряет информацию о том, какие action regions появляются или исчезают совместно при разных скрытых shapes.
 
 ### 4.4 Gripper-chart query decoder
 
-Для candidate \(g\):
+Для candidate $g$:
 
 1. target, obstacle и ray tokens переводятся в gripper frame;
 2. cross-attention queries соответствуют левой jaw sweep, правой jaw sweep и центральному grasp corridor;
 3. relative features агрегируются только в ограниченных gripper-centric neighborhoods;
-4. decoder получает \(z_m\), local features и \(g\), после чего выдаёт \(s_{\theta,m}(x,g)\).
+4. decoder получает $z_m$, local features и $g$, после чего выдаёт $s_{\theta,m}(x,g)$.
 
 Таким образом computation зависит от числа queried grasps, но не от resolution полного 3D volume.
 
 Можно обеспечить equivariance:
 
-\[
+$$
 s_{\theta,m}(Tx,Tg)=s_{\theta,m}(x,g)
-\]
+$$
 
-для совместного rigid transform \(T\), если все geometric interactions строятся из gripper-relative invariants/equivariants.
+для совместного rigid transform $T$, если все geometric interactions строятся из gripper-relative invariants/equivariants.
 
 ### 4.5 Capacity-valid compact-set decoder
 
-Для дискретного packet \(K=\{g_\ell\}_{\ell=1}^{L}\):
+Для дискретного packet $K=\{g_\ell\}_{\ell=1}^{L}$:
 
-\[
+$$
 r_m(K,x)
 =
 \min_{\ell}s_{\theta,m}(x,g_\ell).
-\]
+$$
 
 Hard avoidance prediction:
 
-\[
+$$
 \widehat A_\theta^{\rm hard}(K\mid x)
 =
 \sum_{m=1}^{M}
 \pi_m(x)\,
 \mathbf 1\{r_m(K,x)>0\}.
-\]
+$$
 
-Это **точный avoidance functional** finite-mixture random closed set. Если \(K_1\subseteq K_2\), то:
+Это **точный avoidance functional** finite-mixture random closed set. Если $K_1\subseteq K_2$, то:
 
-\[
+$$
 \widehat A_\theta^{\rm hard}(K_2\mid x)
 \le
 \widehat A_\theta^{\rm hard}(K_1\mid x).
-\]
+$$
 
 Для обучения:
 
-\[
+$$
 \operatorname{softmin}_{\tau_q}\{s_\ell\}
 =
 -\tau_q\log\sum_{\ell=1}^{L}\exp(-s_\ell/\tau_q),
-\]
+$$
 
-\[
+$$
 \widehat A_\theta(K\mid x)
 =
 \sum_m\pi_m(x)\,
@@ -400,22 +400,22 @@ Hard avoidance prediction:
 \operatorname{softmin}_{\tau_q}
 \{s_{\theta,m}(x,g_\ell)\}/\tau_s
 \right).
-\]
+$$
 
 Ненормированный softmin выбран намеренно: добавление query points не увеличивает его, поэтому antitonicity сохраняется и в smooth approximation.
 
 Теоретический claim о точном avoidance functional относится к hard decoder. Smooth expression — дифференцируемый training surrogate: antitonicity у него сохраняется, но полный набор Choquet-capacity axioms автоматически не следует. После обучения primary calibrated prediction следует считать hard mixture; smooth prediction допустима как отдельная practical approximation только с явным отчётом discrepancy и capacity-violation tests.
 
-Если continuous field \(s_{\theta,m}\) является \(L_s\)-Lipschitz, а packet — \(\epsilon\)-net множества \(K\), то:
+Если continuous field $s_{\theta,m}$ является $L_s$-Lipschitz, а packet — $\epsilon$-net множества $K$, то:
 
-\[
+$$
 \left|
 \min_{g\in K}s_{\theta,m}(x,g)
 -
 \min_{g\in\widetilde K}s_{\theta,m}(x,g)
 \right|
 \le L_s\epsilon.
-\]
+$$
 
 Это даёт понятный trade-off между packet density и approximation error.
 
@@ -424,9 +424,9 @@ Hard avoidance prediction:
 Главный научный claim относится к selection, поэтому proposal mechanism должен быть отделён:
 
 - visible-contact proposals от Contact-GraspNet/OrbitGrasp-like generator;
-- coarse object-centric \(SE(3)\) seeds в ROI;
+- coarse object-centric $SE(3)$ seeds в ROI;
 - дополнительные camera-ray seeds внутри occlusion cone;
-- 5–10 gradient-ascent steps по \(\log \widehat A_\theta(K_{\rho_{\rm hw}}(g)\mid x)\).
+- 5–10 gradient-ascent steps по $\log \widehat A_\theta(K_{\rho_{\rm hw}}(g)\mid x)$.
 
 В selector-only benchmark все методы получают один candidate pool. В full-system benchmark AvoGrasp использует одинаковый strong proposal generator с ближайшими discriminative baselines. Это не позволит приписать selector преимущество более богатому sampler.
 
@@ -434,11 +434,11 @@ Hard avoidance prediction:
 
 1. Получить RGB-D и target mask.
 2. Построить sparse point/ray tokens.
-3. Сгенерировать \(N\) candidate grasps.
+3. Сгенерировать $N$ candidate grasps.
 4. Отфильтровать candidates, чья final open-gripper geometry пересекает inflated visible obstacle points.
-5. Для каждого \(g_i\) сформировать hardware packet \(K_{\rho_{\rm hw}}(g_i)\).
-6. Одним batched pass получить \(\widehat A_\theta(K_{\rho_{\rm hw}}(g_i)\mid x)\).
-7. Выбрать максимум или abstain, если максимум ниже \(1-\alpha\).
+5. Для каждого $g_i$ сформировать hardware packet $K_{\rho_{\rm hw}}(g_i)$.
+6. Одним batched pass получить $\widehat A_\theta(K_{\rho_{\rm hw}}(g_i)\mid x)$.
+7. Выбрать максимум или abstain, если максимум ниже $1-\alpha$.
 
 Если abstention в продукте запрещён, модель всё равно выбирает argmax и возвращает calibrated risk. В статье нужно показывать и forced-attempt, и selective режимы.
 
@@ -459,18 +459,18 @@ Random point dropout не должен заменять физическую о�
 
 ### 5.2 Oracle grasp test
 
-Для каждого nominal candidate \(g\):
+Для каждого nominal candidate $g$:
 
 - вычислить быстрый analytic antipodal/collision proxy;
 - запустить batched closing simulation;
 - выполнить фиксированный малый lift;
-- получить \(Y(S,g)\).
+- получить $Y(S,g)$.
 
-Для packet \(K\) выполнить oracle test для всех его pose samples:
+Для packet $K$ выполнить oracle test для всех его pose samples:
 
-\[
+$$
 Z_K(S)=\prod_{h\in K}Y(S,h).
-\]
+$$
 
 Continuous-ball claim допустим только после adaptive refinement packet и empirical Lipschitz audit. До этого корректное название target — **finite pose-packet avoidance**.
 
@@ -478,16 +478,16 @@ Continuous-ball claim допустим только после adaptive refineme
 
 Наивные random packets почти всегда полностью good или полностью bad и дают мало boundary information. Нужны:
 
-1. \(30\%\) singleton queries;
-2. \(40\%\) nested local packets вокруг успешных/пограничных grasps;
-3. \(20\%\) hard packets, где рядом есть positive и negative poses;
-4. \(10\%\) finite unions удалённых packets для joint-dependence supervision.
+1. $30\%$ singleton queries;
+2. $40\%$ nested local packets вокруг успешных/пограничных grasps;
+3. $20\%$ hard packets, где рядом есть positive и negative poses;
+4. $10\%$ finite unions удалённых packets для joint-dependence supervision.
 
 Проценты являются стартовой гипотезой и должны аблироваться.
 
 ### 5.4 Несколько occlusions одной формы
 
-Один и тот же \(S\) нужно рендерить при нескольких obstacle positions и visibility levels. Это даёт:
+Один и тот же $S$ нужно рендерить при нескольких obstacle positions и visibility levels. Это даёт:
 
 - одинаковый oracle action set при разных объёмах наблюдаемой информации;
 - прямую проверку calibration versus occlusion;
@@ -499,7 +499,7 @@ Continuous-ball claim допустим только после adaptive refineme
 
 Минимальный вариант:
 
-\[
+$$
 \mathcal L
 =
 \mathcal L_{\rm avoid}
@@ -507,13 +507,13 @@ Continuous-ball claim допустим только после adaptive refineme
 \lambda_{\rm eq}\mathcal L_{\rm equiv}
 +
 \lambda_{\rm lip}\mathcal L_{\rm local\text{-}Lip}.
-\]
+$$
 
 Где:
 
-- \(\mathcal L_{\rm avoid}\) — единственный probabilistic target;
-- \(\mathcal L_{\rm equiv}\) проверяет joint rigid-transform consistency;
-- \(\mathcal L_{\rm local\text{-}Lip}\) ограничивает чрезмерно рваное action field и делает packet approximation контролируемым.
+- $\mathcal L_{\rm avoid}$ — единственный probabilistic target;
+- $\mathcal L_{\rm equiv}$ проверяет joint rigid-transform consistency;
+- $\mathcal L_{\rm local\text{-}Lip}$ ограничивает чрезмерно рваное action field и делает packet approximation контролируемым.
 
 Не следует добавлять reconstruction, Chamfer или occupancy loss в main model. Иначе paper потеряет центральный тезис «predict the decision set, not the hidden state».
 
@@ -541,7 +541,7 @@ Continuous-ball claim допустим только после adaptive refineme
 
 - Robust Grasp Planning Over Uncertain Shape Completions делает MC-dropout shape samples с 2019 года;
 - UNCLE-Grasp в версии от августа 2026 агрегирует force-closure variability across completion hypotheses и использует conservative LCB/abstention;
-- стоимость растёт как number of shapes \(\times\) number of grasps;
+- стоимость растёт как number of shapes $\times$ number of grasps;
 - uncertainty остаётся привязана к качеству full reconstruction.
 
 Вывод: uncertainty-aware selection эффективна, но полный shape posterior не нов.
@@ -560,7 +560,7 @@ Continuous-ball claim допустим только после adaptive refineme
 
 ### Шаг 4: deterministic implicit grasp distance field
 
-Идея: учить distance from query \(g\) to valid grasp manifold.
+Идея: учить distance from query $g$ to valid grasp manifold.
 
 Почему отброшено:
 
@@ -573,7 +573,7 @@ Continuous-ball claim допустим только после adaptive refineme
 
 ### Шаг 5: direct scalar success probability
 
-Идея: учить \(\Pr(Y=1\mid x,g)\), возможно с quantile/LCB.
+Идея: учить $\Pr(Y=1\mid x,g)$, возможно с quantile/LCB.
 
 Почему отброшено:
 
@@ -631,7 +631,7 @@ Continuous-ball claim допустим только после adaptive refineme
 
 ### 8.1 Hidden geometry действительно нужна
 
-TARGO показывает, что performance текущих моделей падает с occlusion. В ablation удаление shape completion у TARGO-Net даёт до \(18\%\) падения на high occlusion. Значит, raw visible geometry недостаточна и training distribution shapes несёт полезный prior.
+TARGO показывает, что performance текущих моделей падает с occlusion. В ablation удаление shape completion у TARGO-Net даёт до $18\%$ падения на high occlusion. Значит, raw visible geometry недостаточна и training distribution shapes несёт полезный prior.
 
 ### 8.2 Но deterministic completion — плохое bottleneck
 
@@ -639,7 +639,7 @@ TARGO отдельно отмечает более сильное падение
 
 ### 8.3 Учет uncertainty улучшает реальные grasps
 
-IROS 2019 Robust Grasp Planning Over Uncertain Shape Completions сообщает статистически значимое улучшение относительно deterministic completion. UNCLE-Grasp v3 при примерно \(87\%\) synthetic occlusion на physical robot сообщает success among attempted grasps \(0.800\) против \(0.483\) у strongest completed baseline, хотя с меньшим attempt rate. Это сильное свидетельство полезности uncertainty, но также показывает необходимость честно строить risk-coverage curve.
+IROS 2019 Robust Grasp Planning Over Uncertain Shape Completions сообщает статистически значимое улучшение относительно deterministic completion. UNCLE-Grasp v3 при примерно $87\%$ synthetic occlusion на physical robot сообщает success among attempted grasps $0.800$ против $0.483$ у strongest completed baseline, хотя с меньшим attempt rate. Это сильное свидетельство полезности uncertainty, но также показывает необходимость честно строить risk-coverage curve.
 
 ### 8.4 Непрерывная структура action set полезна
 
@@ -651,28 +651,28 @@ NGDF сообщает большой прирост execution success по ср�
 
 ### 8.6 Математическая экономия
 
-Full shape completion прогнозирует \(10^4\)–\(10^6\) geometric degrees of freedom. AvoGrasp прогнозирует \(M\) low-dimensional implicit action fields и вычисляет их только в queried poses. Если downstream utility зависит от geometry только через \(Y(S,g)\), action-set law является decision-sufficient, тогда как shape posterior содержит нерелевантные детали.
+Full shape completion прогнозирует $10^4$–$10^6$ geometric degrees of freedom. AvoGrasp прогнозирует $M$ low-dimensional implicit action fields и вычисляет их только в queried poses. Если downstream utility зависит от geometry только через $Y(S,g)$, action-set law является decision-sufficient, тогда как shape posterior содержит нерелевантные детали.
 
 ## 9. Главные риски и способы фальсифицировать идею
 
 ### Риск 1: avoidance event слишком консервативен
 
-Для большого \(K\) событие «все poses успешны» почти всегда ложно.
+Для большого $K$ событие «все poses успешны» почти всегда ложно.
 
-**Mitigation:** hardware-calibrated малый packet; curves по \(\rho\); альтернативный \(q\)-content target только как отдельная версия:
+**Mitigation:** hardware-calibrated малый packet; curves по $\rho$; альтернативный $q$-content target только как отдельная версия:
 
-\[
+$$
 \mathbf 1\left\{
 \Pr_{\Delta\sim q_\rho}
 [Y(S,g\circ\Delta)=1]\ge1-\beta
 \right\}.
-\]
+$$
 
 Core paper лучше начать с finite packets, где semantics точна.
 
 ### Риск 2: label cost
 
-Packet из \(L\) poses увеличивает simulation cost в \(L\) раз.
+Packet из $L$ poses увеличивает simulation cost в $L$ раз.
 
 **Mitigation:** analytic prefilter, batched simulation, nested packets с reuse labels, adaptive refinement только у boundary grasps. Сначала выполнить oracle study на уже размеченном dense grasp set.
 
@@ -686,7 +686,7 @@ Packet из \(L\) poses увеличивает simulation cost в \(L\) раз.
 
 Лучший robust grasp может отсутствовать в candidate pool.
 
-**Mitigation:** отдельно измерять oracle top-\(N\) recall; selector-only и full-system результаты; camera-ray seeds; differentiable refinement.
+**Mitigation:** отдельно измерять oracle top-$N$ recall; selector-only и full-system результаты; camera-ray seeds; differentiable refinement.
 
 ### Риск 5: conditional prior shift
 
@@ -734,8 +734,8 @@ GT mask может искусственно упростить задачу.
 
 - singleton BCE;
 - independently smoothed BCE;
-- AvoGrasp \(M=1\);
-- AvoGrasp \(M>1\) + union packets.
+- AvoGrasp $M=1$;
+- AvoGrasp $M>1$ + union packets.
 
 **Go**, если AvoGrasp лучше по packet Brier, risk-coverage и selected-grasp success на unseen instances.
 
@@ -759,7 +759,7 @@ GT mask может искусственно упростить задачу.
 
 Факторы:
 
-- visibility bins: \(0.2\)–\(1.0\);
+- visibility bins: $0.2$–$1.0$;
 - object instance/category;
 - target minimum dimension;
 - obstacle width/position;
@@ -784,7 +784,7 @@ GT mask может искусственно упростить задачу.
 4. TARGO-Net without shape completion;
 5. MC completion + mean score;
 6. MC completion + LCB/CVaR;
-7. direct scalar \(p(Y=1\mid x,g)\) с тем же AvoGrasp encoder;
+7. direct scalar $p(Y=1\mid x,g)$ с тем же AvoGrasp encoder;
 8. pose-noise smoothed scalar grasp function;
 9. partial-observation NGDF adaptation;
 10. oracle full-shape selector upper bound.
@@ -806,14 +806,14 @@ Chamfer/IoU completion quality можно показывать только дл
 
 - singleton versus packets;
 - independent point marginals versus shared latent set atoms;
-- \(M=1,4,8,16\);
+- $M=1,4,8,16$;
 - balls only versus balls + finite unions;
 - no ray tokens;
 - random dropout versus physical occluders;
 - no hard boundary mining;
 - no equivariance;
 - softmin temperature;
-- packet density \(L\);
+- packet density $L$;
 - no gradient refinement;
 - GT versus predicted mask;
 - optional martingale regularizer.
@@ -827,7 +827,7 @@ Chamfer/IoU completion quality можно показывать только дл
 - randomized-block physical trials по object/occlusion;
 - заранее указать primary endpoint и high-occlusion range;
 - публиковать forced-attempt и selective metrics;
-- не выбирать \(\rho_{\rm hw}\) на test set.
+- не выбирать $\rho_{\rm hw}$ на test set.
 
 ## 12. Expected paper claims
 
@@ -863,7 +863,7 @@ ICLR 2026 формулирует основной вопрос review как «�
 
 **Потенциал: высокий.** Proposition 1 элементарна и точна; random-set identification опирается на классическую теорию; architecture гарантирует antitonicity by construction.
 
-**Угроза:** continuous-set claims при finite packet. Нужно чётко разделить exact finite-packet model и asymptotic \(\epsilon\)-net approximation.
+**Угроза:** continuous-set claims при finite packet. Нужно чётко разделить exact finite-packet model и asymptotic $\epsilon$-net approximation.
 
 ### Significance
 
@@ -900,21 +900,21 @@ ICLR 2026 формулирует основной вопрос review как «�
 - получить dense grasp labels;
 - построить finite packets вокруг grasps;
 - сравнить oracle selection objectives;
-- построить success versus \(\rho\) curves.
+- построить success versus $\rho$ curves.
 
 Результат: решение Gate 1 без training нового network.
 
-### Phase 2: scalar and \(M=1\) prototype, 2–3 недели
+### Phase 2: scalar and $M=1$ prototype, 2–3 недели
 
 - common point/ray encoder;
 - continuous gripper query field;
 - singleton BCE baseline;
-- \(M=1\) packet avoidance;
+- $M=1$ packet avoidance;
 - calibration and boundary mining.
 
 ### Phase 3: latent random-set mixture, 2–4 недели
 
-- \(M>1\) atoms;
+- $M>1$ atoms;
 - finite-union query training;
 - capacity monotonicity tests;
 - category-disjoint evaluation.
@@ -934,8 +934,8 @@ ICLR 2026 формулирует основной вопрос review как «�
 
 ## 15. Unit tests для научной реализации
 
-1. **Set inclusion:** если \(K_1\subseteq K_2\), hard и soft predictions не должны давать \(A(K_2)>A(K_1)+\epsilon\).
-2. **Singleton reduction:** \(K=\{g\}\) должен совпадать с mixture point-success prediction.
+1. **Set inclusion:** если $K_1\subseteq K_2$, hard и soft predictions не должны давать $A(K_2)>A(K_1)+\epsilon$.
+2. **Singleton reduction:** $K=\{g\}$ должен совпадать с mixture point-success prediction.
 3. **Permutation invariance:** порядок poses внутри packet не влияет на output.
 4. **Joint rigid equivariance:** совместный transform scene и grasp не меняет score.
 5. **Packet refinement:** prediction стабилизируется при увеличении packet density.
@@ -1024,19 +1024,19 @@ Reliable decisions from partial observations need not require reconstructing the
 
 AvoGrasp отличается от плохого шаблона «собрать несколько robotics pipelines» тем, что сначала меняет математический объект задачи:
 
-\[
+$$
 \text{hidden shape}
 \longrightarrow
 \text{random feasible action set}
 \longrightarrow
 \text{avoidance queries}.
-\]
+$$
 
 Robotics-работы здесь используются для проверки gap и косвенной эмпирической поддержки, а не как источник архитектурной композиции. Источник формализации — random closed sets, capacity functionals и proper scoring.
 
 Самая сильная часть идеи — не mixture network сама по себе, а согласованная тройка:
 
-1. новый target \(A^\star(K\mid x)\);
+1. новый target $A^\star(K\mid x)$;
 2. proper compact-set objective;
 3. architecture, которая по построению является conditional random set и сохраняет antitonicity.
 
