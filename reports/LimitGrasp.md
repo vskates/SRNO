@@ -1191,7 +1191,7 @@ Square-bracket text нельзя заменять положительным cla
   https://arxiv.org/abs/2607.25049
 
 Полный журнал broad search, отвергнутых циклов и novelty audit находится в
-reports/ICLR_GRASP_IDEA_RESEARCH.md.
+reports/EdgeFlux.md.
 
 ## 16. Submission timing и disclosure
 

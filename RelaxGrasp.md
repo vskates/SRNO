@@ -155,7 +155,7 @@ Observed shelf/blocker geometry проходит один и тот же determi
 
 ## 2. Explicit non-intersection with today's Markdown ideas
 
-Проверены markdown-файлы с occlusion ideas, изменённые 25 августа 2026. `ICLR_GRASP_OCCLSION_IDEA_RESEARCH.md` и `ICLR_GRASP_OCCLSION_IDEA_RESEARCH_5IDEA.md` идентичны и считаются одной веткой.
+Проверены markdown-файлы с occlusion ideas, изменённые 25 августа 2026. `MetaContact.md` и `MetaContact-2.md` идентичны и считаются одной веткой.
 
 | Сегодняшняя идея | Её estimand / objective / architecture | Почему RelaxGrasp не совпадает |
 |---|---|---|
@@ -204,7 +204,7 @@ Observed shelf/blocker geometry проходит один и тот же determi
 
 ### 2.2 Отличие от старой rejected heat-flow idea
 
-В `reports/ICLR_GRASP_IDEA_RESEARCH.md` была отклонена heat-flow smoothing binary grasp field **по grasp-pose manifold**. Там heat equation сглаживает success function в (SE(3)) и фактически обобщает pose-noise convolution Johns et al.
+В `reports/EdgeFlux.md` была отклонена heat-flow smoothing binary grasp field **по grasp-pose manifold**. Там heat equation сглаживает success function в (SE(3)) и фактически обобщает pose-noise convolution Johns et al.
 
 RelaxGrasp не диффундирует по action space. Время $t$ индексирует виртуальную релаксацию **object-twist modes после конкретного terminal contact**, а generator — query-specific $6\times6$ stability operator. Нет convolution соседних grasp poses и нет semigroup consistency по $SE(3)$.
 

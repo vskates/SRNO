@@ -101,7 +101,7 @@ Observed shelf/blocker geometry проходит одинаковый determinis
 
 ## 2. Explicit non-intersection with today's Markdown ideas
 
-Проверены все occlusion Markdown-файлы, изменённые 25 августа 2026. Два файла — `ICLR_GRASP_OCCLSION_IDEA_RESEARCH.md` и `ICLR_GRASP_OCCLSION_IDEA_RESEARCH_5IDEA.md` — побитно идентичны и считаются одной веткой.
+Проверены все occlusion Markdown-файлы, изменённые 25 августа 2026. Два файла — `MetaContact.md` и `MetaContact-2.md` — побитно идентичны и считаются одной веткой.
 
 | Сегодняшнее направление | Его основной estimand / objective / architecture | Почему MintyGrasp не пересекается |
 |---|---|---|

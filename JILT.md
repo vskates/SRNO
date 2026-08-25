@@ -100,7 +100,7 @@ The closest older repository idea is AcqGrasp, which estimates smooth visible-su
 
 ### 2.1 Late workspace collision audit
 
-During the final audit, `ICLR_GRASP_OCCLSION_6IDEA_RESEARCH.md` acquired an addendum that **compares** the prototype under its earlier working name “LiMON” with FiRe and CEN. That addendum does not make the method a FiRe/CEN component: it explicitly keeps it as an independent deterministic competitor and recommends not mixing the methods. The present report adopts the collision-free name JILT and incorporates the addendum's valid LoCoMo criticism below. The scientific separation is by estimand, loss, and architecture, not by renaming.
+During the final audit, `FELLAS.md` acquired an addendum that **compares** the prototype under its earlier working name “LiMON” with FiRe and CEN. That addendum does not make the method a FiRe/CEN component: it explicitly keeps it as an independent deterministic competitor and recommends not mixing the methods. The present report adopts the collision-free name JILT and incorporates the addendum's valid LoCoMo criticism below. The scientific separation is by estimand, loss, and architecture, not by renaming.
 
 ## 3. What the current literature occupies
 

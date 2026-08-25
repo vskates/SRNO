@@ -1759,7 +1759,7 @@ https://iclr.cc/Conferences/2027/AIPolicyForAuthors
 
 A standalone Russian-language proposal with the full mathematical model,
 benchmark, falsification gates, mock review, and execution order is available
-in reports/LIMITGRASP_PROPOSAL.md.
+in reports/LimitGrasp.md.
 
 ## Third independent search pass: acquisition law versus physical surface
 

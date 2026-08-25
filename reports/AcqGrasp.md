@@ -1006,4 +1006,4 @@ Target abstract:
   https://iclr.cc/Conferences/2027/ReviewerGuidelines
 
 Полный журнал search cycles и rejected directions находится в
-`reports/ICLR_GRASP_IDEA_RESEARCH.md`.
+`reports/EdgeFlux.md`.

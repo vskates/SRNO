@@ -718,4 +718,4 @@ candidate oracle и physical discriminator.
   https://arxiv.org/abs/2110.10961
 
 Полный журнал рассмотренных и отвергнутых направлений находится в
-reports/ICLR_GRASP_IDEA_RESEARCH.md.
+reports/EdgeFlux.md.

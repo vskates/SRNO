@@ -1606,7 +1606,7 @@ LiMON всё ещё отличается: он предсказывает скр
 | 8 | **Grasp-Certificate Process / RJPN** | posterior push-forward action-indexed certificate function | 5.7/10 | 7.2/10 | 7.2/10 | `5, 5, 5, 5`, mean 5.0 | 20–30% |
 | 9 | **FiGO / OC-GOP** | outcome process плюс Blackwell/tower consistency под nested occlusion | 5.4/10 | 7.4/10 | 6.3/10 | `5, 5, 5, 5`, mean 5.0 | 15–25% |
 
-`ICLR_GRASP_OCCLSION_IDEA_RESEARCH.md` и `ICLR_GRASP_OCCLSION_IDEA_RESEARCH_5IDEA.md` идентичны; они считаются одной темой, финальной версией которой является MetaContact.
+`MetaContact.md` и `MetaContact-2.md` идентичны; они считаются одной темой.
 
 ## 40. Почему FiRe выходит на первое место после понижения MetaContact
 
