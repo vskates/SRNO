@@ -1854,7 +1854,7 @@ The actual inference target is the posterior pushforward
 $$
 \Pi_O
 =
-(M_\cdot)_\# p_{\rm train}(S\mid O),
+(M_\cdot)_{\mathrm{push}} p_{\rm train}(S\mid O),
 $$
 
 a conditional distribution over mechanics functions. TQ-Grasp estimates $\Pi_O$ directly. It does

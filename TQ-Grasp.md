@@ -411,7 +411,7 @@ Optional real-calibration layer может conformalize threshold на held-out 
 
 $$
 R_\rho(g\mid o)
-=\rho\big((\mathrm{ev}_g)_\#\Pi_o\big),
+=\rho\big((\mathrm{ev}_g)_{\mathrm{push}}\Pi_o\big),
 $$
 
 где $\mathrm{ev}_g(f)=f(g)$. Следовательно, $\Pi_o$ достаточно для всех mean/quantile/CVaR/chance-constrained selectors на данном action domain.

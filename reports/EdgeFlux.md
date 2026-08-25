@@ -819,7 +819,7 @@ This is a goal-oriented inverse problem whose output is a distribution/set of sc
 For candidates $G=\{g_1,\ldots,g_M\}$, the relevant pushforward is the joint utility vector
 
 $$
-\nu_{o,G}=\big(Q(Z,g_1),\ldots,Q(Z,g_M)\big)_\#p(Z\mid o).
+\nu_{o,G}=\big(Q(Z,g_1),\ldots,Q(Z,g_M)\big)_{\mathrm{push}}p(Z\mid o).
 $$
 
 Independent confidence intervals for each grasp discard correlation across candidates. The hidden completion that is bad for one grasp can be good for another. A decision-aware representation must preserve entire hypothetical utility profiles.

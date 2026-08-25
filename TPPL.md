@@ -191,7 +191,7 @@ $$
 Геометрически разные объекты в одном equivalence class неразличимы для текущей grasping task. Искомый объект:
 
 $$
-\Pi_x := T_\# p(S\mid X=x),
+\Pi_x := T_{\mathrm{push}} p(S\mid X=x),
 $$
 
 то есть pushforward conditional shape distribution в quotient/function space. TPPL напрямую аппроксимирует $\Pi_x$, не аппроксимируя $p(S\mid x)$.
@@ -289,7 +289,7 @@ $$
 =\mathbb E_{G\sim\nu_0}
 \left[
 \mathcal S_E\!\left(
-(\operatorname{ev}_G)_\# Q,\,
+(\operatorname{ev}_G)_{\mathrm{push}} Q,\,
 \operatorname{ev}_G R
 \right)
 \right],

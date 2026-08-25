@@ -138,7 +138,7 @@ $$
 Из-за окклюзии $X$ неизвестен, поэтому для одного $y$ эта функция случайна. Целевой объект обучения:
 
 $$
-\Pi_y = (X\mapsto C_X(\cdot))_\# P(X\mid Y=y),
+\Pi_y = (X\mapsto C_X(\cdot))_{\mathrm{push}} P(X\mid Y=y),
 $$
 
 то есть posterior push-forward на function space.

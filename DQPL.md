@@ -159,7 +159,7 @@ $$
 Истинный conditional object:
 
 $$
-Q_x^* = T_\#p(S\mid X=x),
+Q_x^* = T_{\mathrm{push}}p(S\mid X=x),
 $$
 
 то есть pushforward shape posterior в function space $\mathcal F=C(\mathcal A_X,[-1,1])$. Model output — samples $F^{(\ell)}\sim Q_\theta(\cdot\mid x)$, но **никогда** samples формы.
@@ -171,7 +171,7 @@ $$
 **Proof sketch.** Любая такая величина имеет вид $h(T(S))$. По change of variables
 
 $$
-\mathbb E_{S\mid x}[h(T(S))]=\mathbb E_{F\sim T_\#p(S\mid x)}[h(F)].
+\mathbb E_{S\mid x}[h(T(S))]=\mathbb E_{F\sim T_{\mathrm{push}}p(S\mid x)}[h(F)].
 $$
 
 ### 4.5 Proposition 2: minimality и information contraction
@@ -181,7 +181,7 @@ $$
 Кроме того, для любого f-divergence выполняется data processing:
 
 $$
-D_f(T_\#P\,\|\,T_\#\widehat P)\le D_f(P\,\|\,\widehat P).
+D_f(T_{\mathrm{push}}P\,\|\,T_{\mathrm{push}}\widehat P)\le D_f(P\,\|\,\widehat P).
 $$
 
 Full shape modeling therefore solves a strictly stronger problem: его точность достаточна для grasp decisions, но обратное неверно. Это не доказывает автоматически меньшую finite-sample error neural network, но даёт точную причину ожидать более благоприятный bias–variance/compute trade-off.

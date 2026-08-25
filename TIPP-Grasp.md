@@ -73,7 +73,7 @@ $$
 Нас интересует не posterior $p(Y\mid O)$, а его pushforward
 
 $$
-\Pi_O=T_\#p(Y\mid O),
+\Pi_O=T_{\mathrm{push}}p(Y\mid O),
 $$
 
 то есть условное распределение random function $F_Y$. Это и есть **Task-Image Posterior Process (TIPP)**.
@@ -181,7 +181,7 @@ h_{\tau,\kappa}(\mathbf u)=
 \right].
 $$
 
-Второй characteristic kernel $k_D$ применяется к pushforward distribution $h_\#P_\theta^G$. Финальный objective:
+Второй characteristic kernel $k_D$ применяется к pushforward distribution $h_{\mathrm{push}}P_\theta^G$. Финальный objective:
 
 $$
 \boxed{
@@ -191,7 +191,7 @@ $$
 \mathcal S_{k_0}(P_\theta^G,\mathbf u_Y^G)
 +\lambda
 \mathcal S_{k_D}
-(h_\#P_\theta^G,h(\mathbf u_Y^G))
+(h_{\mathrm{push}}P_\theta^G,h(\mathbf u_Y^G))
 \right].}
 $$
 
@@ -500,7 +500,7 @@ $$
 
 Только после повторного literature search перед submission:
 
-1. постановка partial-observation learning как прямого восстановления pushforward posterior $T_\#p(Y\mid O)$ над task-induced utility functions без latent-state reconstruction;
+1. постановка partial-observation learning как прямого восстановления pushforward posterior $T_{\mathrm{push}}p(Y\mid O)$ над task-induced utility functions без latent-state reconstruction;
 2. state/task-image quotient, достаточный для семейства distribution-sensitive decisions;
 3. DTKS — strictly proper joint score с дополнительным proper score на regret/top-set/boundary pushforward;
 4. PCLO — observation-conditioned, symmetry-aware, projectively consistent implicit process для arbitrary grasp query sets;
