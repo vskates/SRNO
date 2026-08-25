@@ -141,7 +141,7 @@ $$
 Фактор $Z/\!\sim_{\mathcal D}$ — **decision quotient**. DQPL предлагает аппроксимировать pushforward posterior
 
 $$
-\pi_\#p(Z\mid X=x)=\mathcal L(q_Z(\cdot)\mid x)
+\pi_{\mathrm{push}}p(Z\mid X=x)=\mathcal L(q_Z(\cdot)\mid x)
 $$
 
 напрямую, минуя posterior над $Z$.
