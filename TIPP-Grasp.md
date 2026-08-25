@@ -108,7 +108,7 @@ Joint sample $\mathbf u^{(s)}$ отвечает одному возможном�
 
 $$
 g^*=\arg\min_{g_i\in G_O}
-\operatorname{CVaR}^{\rm upper}_{\alpha}
+\mathrm{CVaR}^{\rm upper}_{\alpha}
 \left[r_i(\mathbf U)\mid O\right]
 $$
 
@@ -175,7 +175,7 @@ $$
 h_{\tau,\kappa}(\mathbf u)=
 \left[
 \underbrace{b_\tau(\mathbf u)-\mathbf u}_{\text{statewise regret}},
-\underbrace{\operatorname{softmax}(\mathbf u/\tau)}_{\text{near-optimal set}},
+\underbrace{\mathrm{softmax}(\mathbf u/\tau)}_{\text{near-optimal set}},
 \underbrace{\sigma(\mathbf u/\kappa)}_{\text{signed boundary}},
 \underbrace{b_\tau(\mathbf u)}_{\text{oracle availability}}
 \right].
@@ -261,7 +261,7 @@ $$
 
 $$
 \hat{\mathbf u}^{(s)}(G')
-=\operatorname{restrict}_{G'}
+=\mathrm{restrict}_{G'}
 \hat{\mathbf u}^{(s)}(G).
 $$
 

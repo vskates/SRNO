@@ -601,7 +601,7 @@ For trajectory $n$, load index $k=0,\ldots,32$, and gripper SDF ray
 $r=1,\ldots,256$, define the free-loading clearance profile
 
 $$
-  g_n(k,r)=\operatorname{SDF}_{\phi_n}
+  g_n(k,r)=\mathrm{SDF}_{\phi_n}
   \!\left(T(x_{0,n})p_r(u_k)\right).
 $$
 

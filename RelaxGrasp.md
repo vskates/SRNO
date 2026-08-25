@@ -462,7 +462,7 @@ $$
 $$
 r_0(x,a;Q)
 =
-\operatorname{tr}(QA_0^\star)
+\mathrm{tr}(QA_0^\star)
 $$
 
 измеряет ambiguity-weighted mass нереставрируемых directions, релевантных задаче.
@@ -474,10 +474,10 @@ Zero-mode mass различает hard failure, но не positive near-zero mod
 $$
 C^\star(x,a)
 =
-\beta_0\operatorname{tr}(Q_0A_0^\star)
+\beta_0\mathrm{tr}(Q_0A_0^\star)
 {}+
 \int_{t_{min}}^{t_{max}}
-w(t)\operatorname{tr}(Q(t)\bar H(x,a,t))dt.
+w(t)\mathrm{tr}(Q(t)\bar H(x,a,t))dt.
 $$
 
 Большие $t$ чувствительны к near-zero eigenvalues, малые $t$ — к общей stiffness scale. $Q_0,Q(t),w(t)$ фиксируются из hardware disturbance model до test evaluation.
@@ -497,9 +497,9 @@ $\bar\Sigma$ sufficient только для losses линейных по expecte
 $$
 L(a,Z)
 =
-\beta_0\operatorname{tr}(Q_0P_{\ker K(Z,a)})
+\beta_0\mathrm{tr}(Q_0P_{\ker K(Z,a)})
 {}+
-\int w(t)\operatorname{tr}(Q(t)e^{-tK(Z,a)})dt.
+\int w(t)\mathrm{tr}(Q(t)e^{-tK(Z,a)})dt.
 $$
 
 Она не sufficient для:
@@ -566,7 +566,7 @@ K_{S,g}
 (\widetilde H_{S,g}-\tau I)_+.
 $$
 
-Здесь $(A)_+=V\operatorname{diag}(\max(\lambda_i,0))V^T$. Для invalid closure устанавливается $K=0$.
+Здесь $(A)_+=V\mathrm{diag}(\max(\lambda_i,0))V^T$. Для invalid closure устанавливается $K=0$.
 
 Интерпретация:
 
@@ -705,7 +705,7 @@ $$
 \mathbb E\|\widehat H(t)u-H_{S,g}(t)u\|^2
 =
 \|\widehat H(t)u-\bar H(t)u\|^2
-{}+\operatorname{Var}(H_{S,g}(t)u\mid x,g).
+{}+\mathrm{Var}(H_{S,g}(t)u\mid x,g).
 $$
 
 Therefore the unique population minimizer in transform space is
@@ -720,7 +720,7 @@ Claims should say `strictly proper for the conditional mean spectral measure und
 
 ### 7.6 Long-time emphasis without numerical explosion
 
-Use $t\sim\operatorname{LogUniform}(t_{min},t_{max})$ with normalized spectrum $\kappa\in[0,\kappa_{max}]$. Add explicit residue supervision
+Use $t\sim\mathrm{LogUniform}(t_{min},t_{max})$ with normalized spectrum $\kappa\in[0,\kappa_{max}]$. Add explicit residue supervision
 
 $$
 \mathcal L_0
@@ -804,7 +804,7 @@ These are deterministic query coordinates, not a predicted line transform. The h
 Concatenate observation context and grasp token:
 
 $$
-h_{x,g}=\operatorname{MLP}([h_x,h_g,h_{local}]).
+h_{x,g}=\mathrm{MLP}([h_x,h_g,h_{local}]).
 $$
 
 Small heads output:
@@ -919,9 +919,9 @@ Compute analytically
 $$
 \widehat C(x,g)
 =
-\beta_0\operatorname{tr}(Q_0A_0)
+\beta_0\mathrm{tr}(Q_0A_0)
 {}+\sum_k
-\operatorname{tr}(Q_kA_k)
+\mathrm{tr}(Q_kA_k)
 \int_{t_{min}}^{t_{max}}w(t)e^{-t\alpha_k}dt.
 $$
 
@@ -985,7 +985,7 @@ Thus long-time residue does not vanish merely because different hidden worlds fa
 
 ### Proposition 4 — CSLS propriety
 
-If $\operatorname{Cov}(u)\succ0$, $\nu_t$ has support with an accumulation point and measures have bounded mass/support, the unique population minimizer of CSLS is $\bar H$, and injectivity of the Laplace transform identifies $\bar\Sigma$.
+If $\mathrm{Cov}(u)\succ0$, $\nu_t$ has support with an accumulation point and measures have bounded mass/support, the unique population minimizer of CSLS is $\bar H$, and injectivity of the Laplace transform identifies $\bar\Sigma$.
 
 ### Proposition 5 — finite-atom approximation
 
@@ -1040,9 +1040,9 @@ This does not prove statistical sample-efficiency; it only establishes quotienti
 Observation $x$ is compatible with two equiprobable worlds. A given query grasp has two normalized stability operators:
 
 $$
-K_1=\operatorname{diag}(1,0),
+K_1=\mathrm{diag}(1,0),
 \qquad
-K_2=\operatorname{diag}(0,1).
+K_2=\mathrm{diag}(0,1).
 $$
 
 Each world has one non-restoring direction.

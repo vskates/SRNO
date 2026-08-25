@@ -340,7 +340,7 @@ $$
 \qquad
 \widehat\mu^c_{\mathrm{res}}\ge 0,
 \qquad
-\operatorname{supp}\widehat\mu^c_{\mathrm{res}}\subseteq I^c_{\mathrm{admissible}}.
+\mathrm{supp}\widehat\mu^c_{\mathrm{res}}\subseteq I^c_{\mathrm{admissible}}.
 $$
 
 For occupancy, $z^{\mathrm{occ}}_{\mathrm{anchor}}=0$ in the conservative main model. For normal flux, the anchor is the splatted visible surface measure. This preserves observed evidence without pretending that RGB-D observes hidden volume.
@@ -503,10 +503,10 @@ This is a transform identity, not pairwise equality of grasp scores under differ
 A separately trained differentiable decoder $D_\psi$ maps the line sketches of one candidate to a local mechanics score:
 
 $$
-\widehat q_g=D_\psi(\operatorname{sg}(\widehat Z_g)),
+\widehat q_g=D_\psi(\mathrm{sg}(\widehat Z_g)),
 $$
 
-where $\operatorname{sg}$ is stop-gradient in the clean two-stage formulation. This keeps the moment operator an estimator of the conditional mean rather than allowing decision gradients to deform the purported moment prediction. Joint fine-tuning without stop-gradient is allowed only as a separately named ablation; in that version the conditional-mean elicitation theorem no longer describes the final network.
+where $\mathrm{sg}$ is stop-gradient in the clean two-stage formulation. This keeps the moment operator an estimator of the conditional mean rather than allowing decision gradients to deform the purported moment prediction. Joint fine-tuning without stop-gradient is allowed only as a separately named ablation; in that version the conditional-mean elicitation theorem no longer describes the final network.
 
 The first version should use a small monotone MLP plus analytic features:
 
@@ -554,7 +554,7 @@ The decoder is trained in a second optimization
 
 $$
 \min_\psi\mathcal L_{\mathrm{dec}}
-\left(D_\psi(\operatorname{sg}(\widehat Z)),q^\star\right).
+\left(D_\psi(\mathrm{sg}(\widehat Z)),q^\star\right).
 $$
 
 An implementation may alternate the two optimizers, but $\mathcal L_{\mathrm{dec}}$ must not update the moment operator in the theorem-bearing model.

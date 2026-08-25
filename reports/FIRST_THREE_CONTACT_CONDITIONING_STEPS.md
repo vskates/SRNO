@@ -62,7 +62,7 @@ $$
 $$
 \theta(R,R^*)=
 \cos^{-1}\!\left(
-\operatorname{clip}\frac{\operatorname{tr}(R^\top R^*)-1}{2},-1,1
+\mathrm{clip}\frac{\mathrm{tr}(R^\top R^*)-1}{2},-1,1
 \right).
 $$
 
@@ -253,7 +253,7 @@ Audit sidecar связан с simulator config SHA-256 `04c3bd96f35cf7fe3d038949
 $$
 r,\quad \bar r,\quad \dot r,\quad
 \widetilde\tau_{\rm PD}=
-\operatorname{clip}
+\mathrm{clip}
 \left(K(\bar r-r)-D\dot r,-\tau_{\max},\tau_{\max}\right).
 $$
 

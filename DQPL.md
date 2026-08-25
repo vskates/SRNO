@@ -214,7 +214,7 @@ Full shape modeling therefore solves a strictly stronger problem: его точ�
 
 $$
 F_\theta(x,z;g)
-=\operatorname{clip}\left(
+=\mathrm{clip}\left(
 \mu_\theta(x,g)+
 s(x,g)\,\Delta_\theta(x,g,z),-1,1
 \right).
@@ -309,12 +309,12 @@ Warm-up mean loss допустим первые несколько epochs, но 
 
 1. absolute lower-tail robustness
    $$
-   A_j=\operatorname{LCVaR}_\alpha(m_{\cdot j});
+   A_j=\mathrm{LCVaR}_\alpha(m_{\cdot j});
    $$
 2. shape-wise opportunity regret
    $$
    r_{\ell j}=\max_h m_{\ell h}-m_{\ell j},\qquad
-   R_j=\operatorname{UCVaR}_\alpha(r_{\cdot j});
+   R_j=\mathrm{UCVaR}_\alpha(r_{\cdot j});
    $$
 3. final score
    $$

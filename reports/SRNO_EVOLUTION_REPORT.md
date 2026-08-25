@@ -80,7 +80,7 @@ $$
 
 $$
 \theta(R_1,R_2)
-=\cos^{-1}\!\left(\operatorname{clip}\frac{\operatorname{tr}(R_2^T R_1)-1}{2},-1,1\right).
+=\cos^{-1}\!\left(\mathrm{clip}\frac{\mathrm{tr}(R_2^T R_1)-1}{2},-1,1\right).
 $$
 
 В коде используется устойчивая эквивалентная форма через `atan2(sin, cos)`.
@@ -284,7 +284,7 @@ $$
 
 $$
 z_i^{\rm lat}
-=\operatorname{SiLU}\!\left(
+=\mathrm{SiLU}\!\left(
 W_0e_i+\frac{1}{M}\sum_{j=1}^{M}
 \kappa(\rho_i,\rho_j)\odot W_1e_j+b
 \right),
@@ -412,7 +412,7 @@ Validation best per horizon:
 При
 
 $$
-\operatorname{slope}_{[a,b]}
+\mathrm{slope}_{[a,b]}
 =\frac{d_X(b)-d_X(a)}{b-a},
 $$
 
@@ -512,7 +512,7 @@ $$
 Для simulator contact label $C_k=\mathbf1[\texttt{contact_count}_k>0]$ и trial minimum $m_k=\min_i h_{k,i}^{\rm contact}$:
 
 $$
-\operatorname{Recall}(\delta)
+\mathrm{Recall}(\delta)
 =\frac{\sum_k C_k\mathbf1[m_k\le\delta]}{\sum_k C_k}.
 $$
 
@@ -684,7 +684,7 @@ $$
 Пусть $r_o=r^{\rm free}(a_{\max})$, $r_c=r^{\rm free}(a_{\min})$, $d=r_c-r_o$. Тогда
 
 $$
-\chi(r)=\operatorname{clip}\left(
+\chi(r)=\mathrm{clip}\left(
 \frac{(r-r_o)^Td}{d^Td},0,1
 \right),
 $$
@@ -1146,7 +1146,7 @@ $$
 Integral cell не менялась:
 
 $$
-z_i=\operatorname{SiLU}\!\left(
+z_i=\mathrm{SiLU}\!\left(
 W_0f_i+
 \frac1M\sum_j
 \kappa(\rho_i,\rho_j)\odot W_1f_j+b
@@ -1204,7 +1204,7 @@ $$
 
 $$
 \hat q_{k+1}
-=\operatorname{Exp}(\widehat{\Delta\xi})\hat q_k,
+=\mathrm{Exp}(\widehat{\Delta\xi})\hat q_k,
 \qquad
 \hat r_{k+1}
 =\tilde r_{k+1}+\Delta r^c.
@@ -1223,8 +1223,8 @@ $$
 $$
 R_k=\theta(\hat R_k,R_k^*)
 =\arccos\!\left(
-\operatorname{clip}
-\frac{\operatorname{tr}(\hat R_kR_k^{*T})-1}{2},-1,1
+\mathrm{clip}
+\frac{\mathrm{tr}(\hat R_kR_k^{*T})-1}{2},-1,1
 \right),
 $$
 
@@ -1848,7 +1848,7 @@ pooled samples. Model объединяет три production H32 seeds.
 Формальный признак чрезмерной expansiveness был
 
 $$
-\operatorname{CI}_{95\%,low}
+\mathrm{CI}_{95\%,low}
 \left[\mathbb E\log\frac{A_{\rm model}}{A_{\rm sim}}\right]>0.
 $$
 
@@ -2551,7 +2551,7 @@ Pushforward-ветка сначала строила model-induced вход с �
 
 $$
 \tilde x_k
-=\operatorname{sg}\!\left[
+=\mathrm{sg}\!\left[
 R_\theta(x_{k-1}^*,\bar a_k,\phi)
 \right],
 $$
@@ -2684,7 +2684,7 @@ D_{\rm loc}(\theta)
 =\mathbb E_{(x_k^*,\bar a_{k+1})}
 d_X^2\!\left(
 R_\theta(x_k^*,\bar a_{k+1}),
-\operatorname{sg}[R_{\theta_0}(x_k^*,\bar a_{k+1})]
+\mathrm{sg}[R_{\theta_0}(x_k^*,\bar a_{k+1})]
 \right).
 $$
 
@@ -3164,7 +3164,7 @@ $$
    $$
    h_k=\left[
    \frac{p_k-p_{k-1}}{\ell},
-   \operatorname{Log}(R_kR_{k-1}^{T})
+   \mathrm{Log}(R_kR_{k-1}^{T})
    \right].
    $$
 
@@ -3954,7 +3954,7 @@ $$
 $$
 u_k=\left[
 \alpha\frac{p_k-p_{k-1}}L,\;
-\alpha\operatorname{Log}(R_kR_{k-1}^{T}),\;
+\alpha\mathrm{Log}(R_kR_{k-1}^{T}),\;
 \frac{r_{\rm free}(a_{k+1})-r_k}{s_r}
 \right].
 $$
@@ -4392,7 +4392,7 @@ $$
 -\sum_{s,i}\langle v_{s,i},\lambda_{s,i}\rangle
 -\sum_s\varepsilon_s\|z_s\|_{M_\theta}^2
 \right|\\
-&+\lambda_{feas}\sum_s\|\operatorname{ReLU}(-h_\phi(y_s))\|^2.
+&+\lambda_{feas}\sum_s\|\mathrm{ReLU}(-h_\phi(y_s))\|^2.
 \end{aligned}
 $$
 

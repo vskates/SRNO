@@ -163,7 +163,7 @@ $$
 $$
 d_{\mathcal G}(g,g')^2 =
 \frac{\|t-t'\|_2^2}{\sigma_t^2}+
-\frac{\operatorname{ang}(R^\top R')^2}{\sigma_R^2}+
+\frac{\mathrm{ang}(R^\top R')^2}{\sigma_R^2}+
 \frac{(w-w')^2}{\sigma_w^2}.
 $$
 
@@ -386,7 +386,7 @@ $$
 Для $M$ сэмплов поля:
 
 $$
-s_\alpha(g\mid x)=\operatorname{LCVaR}_\alpha
+s_\alpha(g\mid x)=\mathrm{LCVaR}_\alpha
 \{r^{(m)}(g)\}_{m=1}^M,
 \qquad
 g^*=\arg\max_{g\in C}s_\alpha(g\mid x).

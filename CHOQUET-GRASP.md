@@ -22,7 +22,7 @@ $$
 $$
 \mathcal L_{\mathrm{CCM}}=
 \mathbb E_{(x,S),K}\left[
-\operatorname{BCE}\left(
+\mathrm{BCE}\left(
 \widehat T_\theta(K\mid x),
 \mathbf 1\{U(S)\cap K\neq\varnothing\}
 \right)\right].
@@ -270,7 +270,7 @@ $$
 \widehat T_{U,\theta}(K\mid x)
 =\frac1M\sum_{j=1}^{M}
 \sigma\!\left(
--\tau^{-1}\operatorname{softmin}_{q=1:Q}
+-\tau^{-1}\mathrm{softmin}_{q=1:Q}
 m_\theta(x,z_j,g_q)
 \right).
 $$

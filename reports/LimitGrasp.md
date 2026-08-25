@@ -196,7 +196,7 @@ Paper изучает convergence этих action sets, а не trajectory contac
 quotient. Для path $\gamma$ определим
 
 $$
-\operatorname{Li}S_{\gamma,k}
+\mathrm{Li}S_{\gamma,k}
 =
 \left\{
 g:
@@ -206,7 +206,7 @@ d_{\mathcal G}(g,S_{\gamma,k})=0
 $$
 
 $$
-\operatorname{Ls}S_{\gamma,k}
+\mathrm{Ls}S_{\gamma,k}
 =
 \left\{
 g:
@@ -225,7 +225,7 @@ $$
 S_{\mathrm{core}}(z;\tau)
 =
 \bigcap_{\gamma\in\Gamma}
-\operatorname{Li}S_{\gamma,k}(z;\tau),
+\mathrm{Li}S_{\gamma,k}(z;\tau),
 $$
 
 $$
@@ -233,7 +233,7 @@ S_{\mathrm{possible}}(z;\tau)
 =
 \overline{
 \bigcup_{\gamma\in\Gamma}
-\operatorname{Ls}S_{\gamma,k}(z;\tau)
+\mathrm{Ls}S_{\gamma,k}(z;\tau)
 }.
 $$
 
@@ -535,9 +535,9 @@ $\sigma(a+b^+ + r^+)$. Architecture должна отражать partial order,
 числа successes строятся binomial confidence bounds
 
 $$
-\operatorname{LCB}_{\gamma,k}(z,g),
+\mathrm{LCB}_{\gamma,k}(z,g),
 \qquad
-\operatorname{UCB}_{\gamma,k}(z,g).
+\mathrm{UCB}_{\gamma,k}(z,g).
 $$
 
 Empirical tail envelopes:
@@ -546,14 +546,14 @@ $$
 \widehat\ell_k(z,g)
 =
 \min_{\gamma,\;j\ge k}
-\operatorname{LCB}_{\gamma,j}(z,g),
+\mathrm{LCB}_{\gamma,j}(z,g),
 $$
 
 $$
 \widehat u_k(z,g)
 =
 \max_{\gamma,\;j\ge k}
-\operatorname{UCB}_{\gamma,j}(z,g).
+\mathrm{UCB}_{\gamma,j}(z,g).
 $$
 
 При удалении coarse prefix lower target может только вырасти, upper target

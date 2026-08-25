@@ -289,13 +289,13 @@ $$
 =\mathbb E_{G\sim\nu_0}
 \left[
 \mathcal S_E\!\left(
-(\operatorname{ev}_G)_{\mathrm{push}} Q,\,
-\operatorname{ev}_G R
+(\mathrm{ev}_G)_{\mathrm{push}} Q,\,
+\mathrm{ev}_G R
 \right)
 \right],
 $$
 
-где $\operatorname{ev}_G(R)=[R(g_1),\ldots,R(g_M)]$, а в population construction base distribution $\nu_0$ имеет full support по расположению и конечным размерам panels. Это отличает objective от суммы независимых per-grasp scores: один panel оценивает joint finite-dimensional law, а интеграл по panels — stochastic process.
+где $\mathrm{ev}_G(R)=[R(g_1),\ldots,R(g_M)]$, а в population construction base distribution $\nu_0$ имеет full support по расположению и конечным размерам panels. Это отличает objective от суммы независимых per-grasp scores: один panel оценивает joint finite-dimensional law, а интеграл по panels — stochastic process.
 
 ### 6.2. Decision-sensitive embedding
 
@@ -380,14 +380,14 @@ Energy distance индуцирует MMD для distance kernel. Для любо
 
 $$
 |\mathbb E_{\Pi_x}h_g-\mathbb E_{Q_x}h_g|
-\le B\,\operatorname{MMD}(\Pi_x,Q_x).
+\le B\,\mathrm{MMD}(\Pi_x,Q_x).
 $$
 
 Если $g_Q$ максимизирует predicted expected utility, а $g_P$ — true utility, стандартное telescoping даёт
 
 $$
 J_P(g_P)-J_P(g_Q)
-\le 2B\,\operatorname{MMD}(\Pi_x,Q_x).
+\le 2B\,\mathrm{MMD}(\Pi_x,Q_x).
 $$
 
 Для CVaR аналогичный bound следует из Wasserstein approximation при Lipschitz quality, но **не следует автоматически только из малого empirical APES**. Поэтому paper должен либо доказать связь APES с нужной risk functional при дополнительных regularity assumptions, либо честно ограничить theorem expected smooth utilities и CVaR проверить эмпирически.
@@ -397,7 +397,7 @@ $$
 1. Sample $(X,S)$; $S$ доступна только data loader/oracle, не network.
 2. Один раз вычислить $c_X=E_\theta(X)$ и slots $(u_k,w_k)$.
 3. Sample panel $G\sim q_\theta(\cdot\mid X)$; sampling probabilities сохранить, sampling path и importance weight detach.
-4. Из precomputed table получить $y_G=\operatorname{ev}_G R_S$.
+4. Из precomputed table получить $y_G=\mathrm{ev}_G R_S$.
 5. Одним batched query call получить все $\hat y_G^{(k)}\in\mathbb R^M$.
 6. Вычислить $\omega_\theta(G,X)\mathcal L_{\rm APES}$ и backprop только через encoder, slots и query decoder.
 7. Периодически обновлять hard-panel proposal по detached predicted top/uncertain grasps.
@@ -419,8 +419,8 @@ $$
 $$
 g^*=\arg\max_{g\in\mathcal G(X)}
 \left[
-\operatorname{LCVaR}_{\alpha}(\hat R(g))
--\lambda\operatorname{UCVaR}_{\beta}(\Delta(g))
+\mathrm{LCVaR}_{\alpha}(\hat R(g))
+-\lambda\mathrm{UCVaR}_{\beta}(\Delta(g))
 \right].
 $$
 
@@ -434,7 +434,7 @@ $$
 Более консервативная constrained версия:
 
 $$
-\min_g\operatorname{UCVaR}_{\beta}(\Delta(g))
+\min_g\mathrm{UCVaR}_{\beta}(\Delta(g))
 \quad\text{s.t.}\quad
 \Pr_{Q_x}[R(g)\ge\tau]\ge1-\epsilon.
 $$

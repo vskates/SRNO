@@ -12,7 +12,7 @@
 $$
 \Pi_y
 =
-\operatorname{Law}\!\left(C_X(\cdot)\mid Y=y\right),
+\mathrm{Law}\!\left(C_X(\cdot)\mid Y=y\right),
 \qquad
 C_X:\mathcal G\to\mathbb R,
 $$
@@ -232,7 +232,7 @@ $$
 $$
 h_\gamma(c)
 =
-c-\gamma\tau\operatorname{softplus}(-c/\tau),
+c-\gamma\tau\mathrm{softplus}(-c/\tau),
 \qquad \gamma>0,\;\tau>0.
 $$
 
@@ -305,7 +305,7 @@ $$
 Тогда population minimizer ожидаемого random-design ES совпадает с истинными finite-dimensional conditional laws
 
 $$
-\operatorname{Law}\left((C_X(g_1),\ldots,C_X(g_B))\mid Y=y\right)
+\mathrm{Law}\left((C_X(g_1),\ldots,C_X(g_B))\mid Y=y\right)
 $$
 
 для $\nu$-почти всех finite designs; при continuity это идентифицирует law процесса на $\mathcal G_0$.
@@ -359,8 +359,8 @@ $$
 \phi(r_i,j)=
 \left[
 d_i^\top d_j,
-\operatorname{dist}(r_i,j),
-\operatorname{signedDepth}_{g}(z_i),
+\mathrm{dist}(r_i,j),
+\mathrm{signedDepth}_{g}(z_i),
 \mathbf 1[\text{ray tube overlap}],
 \ell_i
 \right].
@@ -443,7 +443,7 @@ $$
 $$
 \widehat q_\alpha(g)
 =
-\operatorname{Quantile}_\alpha
+\mathrm{Quantile}_\alpha
 \{\widehat C(g;z_s,y)\}_{s=1}^{S}.
 $$
 
@@ -454,7 +454,7 @@ $$
 При $N$ input rays, $B$ candidates, $k\ll N$ relevant rays/query и $S$ process samples:
 
 $$
-\text{cost}\approx O(\operatorname{Enc}(N))+O(Bk)+O(SB),
+\text{cost}\approx O(\mathrm{Enc}(N))+O(Bk)+O(SB),
 $$
 
 без $O(R^3)$ voxel grid, marching cubes или multi-camera ray marching. Это пока hypothesis, а не доказанный speedup. Design target: $N=2048$, $B=512$, $k=48$, $S=16$, менее 100 ms ranking после candidate generation на современной GPU. В paper надо сообщить end-to-end wall time, peak memory и energy, а не только decoder time.

@@ -80,7 +80,7 @@ $$
 
 $$
 z_i=
-\operatorname{SiLU}
+\mathrm{SiLU}
 \left(
 W_0f_i+
 \frac1M\sum_j
@@ -116,7 +116,7 @@ $$
 
 $$
 \hat q_{k+1}
-=\operatorname{Exp}(\widehat{\Delta\xi})\hat q_k,
+=\mathrm{Exp}(\widehat{\Delta\xi})\hat q_k,
 \qquad
 \hat r_{k+1}
 =\tilde r_{k+1}+\Delta r^c.
@@ -148,8 +148,8 @@ $$
 $$
 R_k=\theta(\hat R_k,R_k^*)
 =\arccos\left(
-\operatorname{clip}
-\frac{\operatorname{tr}(\hat R_kR_k^{*T})-1}{2},-1,1
+\mathrm{clip}
+\frac{\mathrm{tr}(\hat R_kR_k^{*T})-1}{2},-1,1
 \right),
 $$
 

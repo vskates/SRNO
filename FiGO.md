@@ -479,7 +479,7 @@ $$
 Для каждого candidate $g$ сэмплируем $M$ shared latents $z^{(1:M)}$ и получаем margins $m^{(1:M)}(g)$. Основной score:
 
 $$
-R_\alpha(g\mid X)=\operatorname{CVaR}_{\alpha}
+R_\alpha(g\mid X)=\mathrm{CVaR}_{\alpha}
 \big(F_S(g)\mid X\big),
 $$
 
@@ -497,7 +497,7 @@ CVaR — design choice, не novelty. Ablation обязана сравнить m
 
 $$
 \rho_\alpha(g\mid X)=
-\operatorname{CVaR}^{\mathrm{upper}}_{1-\alpha}
+\mathrm{CVaR}^{\mathrm{upper}}_{1-\alpha}
 \left(\max_{h\in\mathcal C}F_S(h)-F_S(g)\mid X\right).
 $$
 

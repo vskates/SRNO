@@ -387,7 +387,7 @@ $$
 Для обучения:
 
 $$
-\operatorname{softmin}_{\tau_q}\{s_\ell\}
+\mathrm{softmin}_{\tau_q}\{s_\ell\}
 =
 -\tau_q\log\sum_{\ell=1}^{L}\exp(-s_\ell/\tau_q),
 $$
@@ -397,7 +397,7 @@ $$
 =
 \sum_m\pi_m(x)\,
 \sigma\!\left(
-\operatorname{softmin}_{\tau_q}
+\mathrm{softmin}_{\tau_q}
 \{s_{\theta,m}(x,g_\ell)\}/\tau_s
 \right).
 $$

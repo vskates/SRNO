@@ -1018,7 +1018,7 @@ FiberGrasp использует support:
 $$
 \mathcal F_\varepsilon(o,c)
 =
-\operatorname{supp}p(x\mid o,c)
+\mathrm{supp}p(x\mid o,c)
 \quad\text{с сенсорным tolerance}.
 $$
 
@@ -1117,7 +1117,7 @@ $$
 $$
 \widehat m_+(o,g)
 =
-a_\theta(o,g)+\operatorname{softplus}b_\theta(o,g).
+a_\theta(o,g)+\mathrm{softplus}b_\theta(o,g).
 $$
 
 Так архитектурно гарантируется
@@ -1189,9 +1189,9 @@ $$
 =
 \frac1K\sum_j
 \left[
-\operatorname{ReLU}(\widehat m_- - M_j)^2
+\mathrm{ReLU}(\widehat m_- - M_j)^2
 +
-\operatorname{ReLU}(M_j-\widehat m_+)^2
+\mathrm{ReLU}(M_j-\widehat m_+)^2
 \right],
 $$
 
@@ -1800,7 +1800,7 @@ be the gravitational wrench under a declared density assumption. A clean definit
 $$
 \eta_{\rm lift}(g,S)
 =
-\operatorname{sd}
+\mathrm{sd}
 \left(
 -w_{\rm grav}(S),\partial\mathcal W_g(S)
 \right),
@@ -1988,7 +1988,7 @@ For posterior samples $\widehat M^{(1)},\ldots,\widehat M^{(J)}$, rank a candida
 functional such as
 
 $$
-R_\alpha(g\mid O)=\operatorname{CVaR}^{\rm lower}_\alpha
+R_\alpha(g\mid O)=\mathrm{CVaR}^{\rm lower}_\alpha
 \left[\widehat M(g)\mid O\right].
 $$
 

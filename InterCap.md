@@ -78,7 +78,7 @@ Candidate generator намеренно не является вкладом. Д�
 Выход InterCap — не grasp trajectory и не shape. Для каждого $g$ это условный закон небольшого hit pattern и derived score:
 
 $$
-\operatorname{score}_\alpha(g)
+\mathrm{score}_\alpha(g)
 =
 \sup\bigl\{\tau:
 \Pr_\theta(C_g=0,\ M_g\ge \tau\mid X,g)\ge 1-\alpha
@@ -450,7 +450,7 @@ $$
 Если $u\in[0,1]$ и для всех candidates
 
 $$
-\operatorname{TV}
+\mathrm{TV}
 \bigl(p_\theta(h\mid X,g),p^*(h\mid X,g)\bigr)
 \le\varepsilon,
 $$
@@ -490,7 +490,7 @@ Canonicalization даёт exact invariance к совместному rigid trans
 
 ### 9.3 Low-rank capacity head
 
-- mode head: $\pi_{1:K}=\operatorname{softmax}(f_\pi(z_X,z_g))$;
+- mode head: $\pi_{1:K}=\mathrm{softmax}(f_\pi(z_X,z_g))$;
 - hit head: $a_{kj}=\sigma(f_a(z_X,z_g,z_{X,g,j},e_j,k))$.
 
 Один observation encoding переиспользуется для всех $M$ candidates. При $M=128,m=12,K=8$ head вычисляет всего (12{,}288) Bernoulli parameters до batching overhead.

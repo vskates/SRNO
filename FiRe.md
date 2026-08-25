@@ -113,7 +113,7 @@ $$
 Пусть `s ∈ S` — полный hidden state. Наблюдение `x` задаёт набор допустимых sensor constraints. Вместо posterior density определим distribution-supported consistency set
 
 $$
-\mathcal C_\epsilon(x)=\{s\in \operatorname{supp}(P_{\rm train}):d_{\rm obs}(O(s),x)\le \epsilon\}.
+\mathcal C_\epsilon(x)=\{s\in \mathrm{supp}(P_{\rm train}):d_{\rm obs}(O(s),x)\le \epsilon\}.
 $$
 
 `ε` включает tolerances depth, calibration и segmentation. Это не множество всех геометрически мыслимых тел, а множество worlds, правдоподобных под обучающим shape distribution.
@@ -149,7 +149,7 @@ $$
 FiRe учит его closed convex hull
 
 $$
-\mathcal P_G(x)=\operatorname{cl\,conv}\mathcal Y_G(x).
+\mathcal P_G(x)=\mathrm{cl\,conv}\mathcal Y_G(x).
 $$
 
 Convexification — не удобная hallucination. Для любого randomized one-shot decision `p ∈ Δ_N`
@@ -177,7 +177,7 @@ $$
 **Occlusion Ambiguity Tax**
 
 $$
-\operatorname{OAT}(x)
+\mathrm{OAT}(x)
 =\min_n\max_{u\in\mathcal P_G(x)}
 \left[\max_j u_j-u_n\right].
 $$
@@ -187,9 +187,9 @@ OAT — минимальный worst-case regret, неизбежный для л
 Для selector `a_θ(x)`:
 
 $$
-\operatorname{EAR}_\theta(x)
+\mathrm{EAR}_\theta(x)
 =\max_{u\in\mathcal P_G(x)}[\max_j u_j-u_{a_\theta(x)}]
--\operatorname{OAT}(x)\ge 0.
+-\mathrm{OAT}(x)\ge 0.
 $$
 
 **Excess Ambiguity Regret (EAR)** измеряет только avoidable model/optimization error. Это более научная diagnosis, чем raw grasp success: она отделяет «наблюдение принципиально не содержит ответа» от «модель плохо использовала доступную информацию».
@@ -228,8 +228,8 @@ $$
 =\sum_{\ell=0}^{L}
 \mathbb E_{z\sim\nu_G}
 \rho\!\left(
-\operatorname{LSE}_{k}(z^\top V_{ik}^{\ell})-
-\operatorname{LSE}_{m}(z^\top Y_{im}^{\ell})
+\mathrm{LSE}_{k}(z^\top V_{ik}^{\ell})-
+\mathrm{LSE}_{m}(z^\top Y_{im}^{\ell})
 \right).
 $$
 
@@ -367,7 +367,7 @@ Secondary end-to-end experiment может добавить lightweight equivari
 $$
 \mathcal P(x^+)\subseteq\mathcal P(x^-),\quad
 F(x^+)\ge F(x^-),\quad
-\operatorname{OAT}(x^+)\le\operatorname{OAT}(x^-),
+\mathrm{OAT}(x^+)\le\mathrm{OAT}(x^-),
 $$
 
 при фиксированном action set. Больше valid evidence не может ухудшить oracle robust floor и не может увеличить irreducible ambiguity. В направлении усиления occlusion inequalities обращаются.

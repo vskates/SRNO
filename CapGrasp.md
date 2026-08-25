@@ -181,7 +181,7 @@ $$
 Наблюдение:
 
 $$
-O=\operatorname{Render}(S,\xi_{cam},S_{occ})+\epsilon,
+O=\mathrm{Render}(S,\xi_{cam},S_{occ})+\epsilon,
 $$
 
 где `S_occ` — foreground occluder, `ε` — depth noise/dropout. После наблюдения `S` остаётся случайным замкнутым множеством с conditional law `P(S|O)`.

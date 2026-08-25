@@ -576,7 +576,7 @@ functional set is
 
 $$
 \widehat{\mathcal U}_r(o)=
-\left\{\mu+U\operatorname{diag}(d)a+e:
+\left\{\mu+U\mathrm{diag}(d)a+e:
 \|a\|_2\le1,\ \|e\|_\infty\le\rho\right\}.
 $$
 
@@ -607,7 +607,7 @@ $$
  \sqrt{\sum_{j=1}^r d_j^2U_{mj}^2}
  +\lambda_v\sum_{j=1}^r\log(d_j+\epsilon)\\
 \text{s.t.}\quad &U^TWU=I_r,\quad \|a_s\|_2\le1,\\
-&\|q_{b,s}-\mu-U\operatorname{diag}(d)a_s\|_\infty\le\rho
+&\|q_{b,s}-\mu-U\mathrm{diag}(d)a_s\|_\infty\le\rho
 \quad\forall s.
 \end{aligned}
 $$
@@ -658,7 +658,7 @@ render/contact surrogates only as a secondary stress test.
    selector then has expected regret at least
 
    $$
-   \frac{\Delta}{2}\big(1-\operatorname{TV}(P_0,P_1)\big),
+   \frac{\Delta}{2}\big(1-\mathrm{TV}(P_0,P_1)\big),
    $$
 
    by reduction to binary testing and Le Cam's bound. Exact twins have
@@ -673,7 +673,7 @@ render/contact surrogates only as a secondary stress test.
 
    $$
    \sup_{\|h\|\le c}
-   \operatorname{dist}\big(F(h)-F(0),V_r\big)
+   \mathrm{dist}\big(F(h)-F(0),V_r\big)
    \le c\,s_{r+1}(A)+\tfrac12Kc^2.
    $$
 
@@ -1293,7 +1293,7 @@ For a metric $d_{\mathcal G}$ on the grasp quotient, define the
 Painlevé--Kuratowski limits along a refinement path:
 
 $$
-\operatorname{Li} S_{\gamma,k}
+\mathrm{Li} S_{\gamma,k}
 =
 \left\{
 g:\limsup_{k\to\infty}
@@ -1302,7 +1302,7 @@ d_{\mathcal G}(g,S_{\gamma,k})=0
 $$
 
 $$
-\operatorname{Ls} S_{\gamma,k}
+\mathrm{Ls} S_{\gamma,k}
 =
 \left\{
 g:\liminf_{k\to\infty}
@@ -1319,7 +1319,7 @@ $$
 S_{\mathrm{core}}(z;\tau)
 =
 \bigcap_{\gamma\in\Gamma}
-\operatorname{Li}S_{\gamma,k}(z;\tau),
+\mathrm{Li}S_{\gamma,k}(z;\tau),
 $$
 
 $$
@@ -1327,7 +1327,7 @@ S_{\mathrm{possible}}(z;\tau)
 =
 \overline{
 \bigcup_{\gamma\in\Gamma}
-\operatorname{Ls}S_{\gamma,k}(z;\tau)
+\mathrm{Ls}S_{\gamma,k}(z;\tau)
 }.
 $$
 
@@ -1438,9 +1438,9 @@ $(\gamma,k)$.  From the binomial observations form finite-sample lower and
 upper confidence bounds
 
 $$
-\operatorname{LCB}_{\gamma,k}(z,g),
+\mathrm{LCB}_{\gamma,k}(z,g),
 \qquad
-\operatorname{UCB}_{\gamma,k}(z,g).
+\mathrm{UCB}_{\gamma,k}(z,g).
 $$
 
 At refinement level $k$, empirical tail envelopes are
@@ -1449,14 +1449,14 @@ $$
 \widehat\ell_k(z,g)
 =
 \min_{\gamma,\;j\ge k}
-\operatorname{LCB}_{\gamma,j}(z,g),
+\mathrm{LCB}_{\gamma,j}(z,g),
 $$
 
 $$
 \widehat u_k(z,g)
 =
 \max_{\gamma,\;j\ge k}
-\operatorname{UCB}_{\gamma,j}(z,g).
+\mathrm{UCB}_{\gamma,j}(z,g).
 $$
 
 By construction, $\widehat\ell_k$ is nondecreasing and
@@ -1825,7 +1825,7 @@ The proposed model treated an unknown persistent $\Delta\in SE(3)$ as a
 shared latent variable:
 
 $$
- y_i\sim\operatorname{Bernoulli}
+ y_i\sim\mathrm{Bernoulli}
  \left(q_\theta(O_i,\exp(\delta)g_i)\right),
  \qquad \Delta=\exp(\delta),
 $$
@@ -3008,7 +3008,7 @@ hardware state $\eta$ shared across many grasps, such as closing-force scale,
 pad stiffness, wear, or a friction multiplier.  A hierarchical likelihood
 
 $$
- y_i\sim\operatorname{Bernoulli}
+ y_i\sim\mathrm{Bernoulli}
  \big(q_\theta(o_i,g_i;\eta)\big)
 $$
 
@@ -4388,7 +4388,7 @@ $$
  \left|
  \int \phi(s)\frac{f_\epsilon-f_0}{\epsilon}\,ds+\phi(0)
  \right|
- \le \frac12\operatorname{Lip}(\phi)\epsilon.
+ \le \frac12\mathrm{Lip}(\phi)\epsilon.
 $$
 
 Thus concatenating or subtracting rasterized frames forces a model to resolve
@@ -4953,12 +4953,12 @@ Suppose a local query network may read $K$ auxiliary tokens sampled without
 the birth label.  By coupling and tensorization,
 
 $$
- \operatorname{TV}
+ \mathrm{TV}
  \left(P_{0,\epsilon}^{\otimes K},
        P_{1,\epsilon}^{\otimes K}\right)
  \le
  K\alpha_\epsilon
- \operatorname{TV}(P_0,P_1).
+ \mathrm{TV}(P_0,P_1).
 $$
 
 Le Cam's testing bound then gives
@@ -4969,7 +4969,7 @@ $$
  \ge
  \frac12
  \left[1-K\alpha_\epsilon
- \operatorname{TV}(P_0,P_1)\right].
+ \mathrm{TV}(P_0,P_1)\right].
 $$
 
 For fixed $K$, the raw local-token experiment becomes uninformative as
@@ -4991,7 +4991,7 @@ $$
  \sum_{i=1}^{n}
  B_i\,\kappa_k(g^{-1}X_i),
  \qquad
- \operatorname{Var}(\widehat z_k)
+ \mathrm{Var}(\widehat z_k)
  =O((n\epsilon)^{-1}).
 $$
 
@@ -5258,7 +5258,7 @@ $$
  \delta(E_b,E_a)
  =
  \inf_K\sup_z
- \operatorname{TV}\!\left(E_b(\cdot\mid z),
+ \mathrm{TV}\!\left(E_b(\cdot\mid z),
  K E_a(\cdot\mid z)\right),
 $$
 
@@ -5377,11 +5377,11 @@ Therefore
 $$
 \begin{aligned}
  \inf_{\widehat g}
- \mathbb E\,\operatorname{Reg}(\widehat g)
+ \mathbb E\,\mathrm{Reg}(\widehat g)
  &\ge
  \frac{\Delta}{2}
  \left[
-  1-\operatorname{TV}
+  1-\mathrm{TV}
   \left(\mathbb P_{0,\epsilon}^{K},
         \mathbb P_{1,\epsilon}^{K}\right)
  \right] \\
@@ -5389,12 +5389,12 @@ $$
  \frac{\Delta}{2}
  \left[
   1-K\alpha_\epsilon
-  \operatorname{TV}(P_0,P_1)
+  \mathrm{TV}(P_0,P_1)
  \right].
 \end{aligned}
 $$
 
-If $\operatorname{TV}(P_0,P_1)=\rho>0$, making this lower bound smaller than
+If $\mathrm{TV}(P_0,P_1)=\rho>0$, making this lower bound smaller than
 $\Delta/4$ requires
 
 $$
@@ -5549,7 +5549,7 @@ adaptation.  A minimal objective is
 $$
  \mathcal L
  =
- \operatorname{BCE}(Y,\widehat q_\theta(g))
+ \mathrm{BCE}(Y,\widehat q_\theta(g))
  +\lambda_{\rm birth}\mathcal L_{\rm birth}
  +\lambda_{\rm weak}
   \sum_{\epsilon\in\mathcal E_{\rm local}}

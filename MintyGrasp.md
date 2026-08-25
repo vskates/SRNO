@@ -25,7 +25,7 @@ $$
 
 $$
 P^\lambda_{S,g}(u)
-=\operatorname{prox}_{\lambda\Phi_{S,g}}(u),
+=\mathrm{prox}_{\lambda\Phi_{S,g}}(u),
 $$
 
 $$
@@ -326,7 +326,7 @@ $$
 \Phi_{S,g}(z)
 =c_{S,g}
 +\frac12
-\operatorname{dist}_{W_c}^2
+\mathrm{dist}_{W_c}^2
 \left(A_{S,g}z-b_{S,g},\;\mathcal K_\mu\right)
 +\frac{\gamma}{2}\lVert B_{S,g}z-r_{S,g}\rVert^2
 +\iota_{\mathcal Z}(z).
@@ -347,8 +347,8 @@ Squared distance to a closed convex cone after an affine map is convex; quadrati
 If a hidden shape has no valid opposing contact, its local correction directions can look similar to another shape after regularization, while its absolute feasibility cost must remain higher. A response-only prox learner is blind to any additive `c_{S,g}` because
 
 $$
-\operatorname{prox}_{\lambda(\Phi+c)}
-=\operatorname{prox}_{\lambda\Phi}.
+\mathrm{prox}_{\lambda(\Phi+c)}
+=\mathrm{prox}_{\lambda\Phi}.
 $$
 
 The envelope value changes by `c`. CoPES therefore learns the anchored value and the response; removing the value term is not a mild ablation but deletes one class of occlusion evidence.
@@ -519,7 +519,7 @@ For candidate `g`, transform relevant evidence into left-pad and right-pad frame
 
 $$
 h^{\rm sym}(x,g)=
-\operatorname{Pool}
+\mathrm{Pool}
 \{h_L(x,g),h_R(x,g)\}.
 $$
 

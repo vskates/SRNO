@@ -424,8 +424,8 @@ $$
 \boxed{
 \kappa
 =
-\frac{\operatorname{diam}\{q_T^{(m)}\}}
-{\operatorname{diam}\{q_0^{(m)}\}}.
+\frac{\mathrm{diam}\{q_T^{(m)}\}}
+{\mathrm{diam}\{q_0^{(m)}\}}.
 }
 $$
 
@@ -783,7 +783,7 @@ Aperture correction параметризуется так, чтобы gripper м
 закрыться, частично отстать или stall, но не раскрывался самопроизвольно:
 
 $$
-\alpha_k=\operatorname{sigmoid}(\eta_k),
+\alpha_k=\mathrm{sigmoid}(\eta_k),
 $$
 
 $$
@@ -988,7 +988,7 @@ $$
 Feasibility:
 
 $$
-\operatorname{mean/max}_{k,j}
+\mathrm{mean/max}_{k,j}
 [-h_{\phi,\hat q_k,\hat a_k}(y_j)]_+.
 $$
 

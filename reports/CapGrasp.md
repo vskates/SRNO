@@ -299,7 +299,7 @@ $\Delta/2$ if $P_0=P_1$.  An enriched selector has Bayes regret
 
 $$
  \frac{\Delta}{2}
- \left(1-\operatorname{TV}(\mathcal L(E\mid h=0),
+ \left(1-\mathrm{TV}(\mathcal L(E\mid h=0),
                             \mathcal L(E\mid h=1))\right).
 $$
 
@@ -808,9 +808,9 @@ small-lift label $y$.  Train with
 $$
  \mathcal L=
  -\log p_\theta(\Xi_g(S)\mid E,g)
- +\lambda_{\rm mech}\operatorname{BCE}
+ +\lambda_{\rm mech}\mathrm{BCE}
        (\tilde q_\psi(g,\Xi_g(S)),y)
- +\lambda_{\rm dec}\operatorname{BCE}(\hat Q_\theta(g,E),y),
+ +\lambda_{\rm dec}\mathrm{BCE}(\hat Q_\theta(g,E),y),
 $$
 
 where $\hat Q_\theta$ integrates the mechanics head over the predicted
@@ -1063,7 +1063,7 @@ $$
 Only the low-dimensional mechanics decoder needs simulator small-lift labels:
 
 $$
- \mathcal L_{\rm mech}=\operatorname{BCE}
+ \mathcal L_{\rm mech}=\mathrm{BCE}
        (q_\psi(H_g(X),g),y),
 $$
 
