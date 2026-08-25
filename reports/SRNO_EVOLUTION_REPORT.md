@@ -1,6 +1,6 @@
 # Эволюция SRNO: от базового contact-resolvent к SRNO-r и clean actuator rollout ablation
 
-Дата последнего обновления отчёта: 20 августа 2026 года.
+Дата последнего обновления отчёта: 22 августа 2026 года.
 
 ## 1. Что именно сравнивается
 
@@ -31,10 +31,17 @@
 Последние два local-only эксперимента записаны отдельно в разделах 25–26:
 history-dependent candidate дал test \(d_X=0.029247\), а обучение исходной
 L1-архитектуры на smooth subset — \(d_X=0.034252\) при оценке на полном test.
-Они являются диагностическими ablation, а не новой production-линией.
-Актуальная production-архитектура остаётся архитектурой последнего коммита
-`2085f9f`; основной config
-[`srno-r-material-v2.toml`](../configs/srno-r-material-v2.toml) не изменён.
+Эти числа получены как диагностические ablation. Позднее, 22 августа, по
+явному решению data contract smooth-фильтр был принят для основной **local
+train/validation supervision**, при этом full test сохранён. Production
+архитектура не изменилась, но основной config
+[`srno-r-material-v2.toml`](../configs/srno-r-material-v2.toml) теперь указывает
+на train/val-filtered index и отдельный output directory. Отдельный дублирующий
+retrain после этого переключения не запускался: проверка по каждой паре
+`(object, trajectory, step)` установила, что его train/val supervision в
+точности совпадает с уже завершённым `ablation-local-no-pose-jumps`. Поэтому
+численные строки выше являются применимым controlled result этого data
+contract, но checkpoint по-прежнему хранится под именем диагностического run.
 
 От SRNO-\(a\)+PhysX-SDF до полного SRNO-\(r\)+material-v2 test H32 уменьшился с \(0.44044\) до \(0.20410\), то есть на 53.66%. Это суммарный эффект нового state/geometry representation, нового датасета, исправленного материала и нового split, а не чистый эффект только \(a\to r\).
 
@@ -174,6 +181,16 @@ Collector повторяет validation-generation pipeline для asset selecti
 - gripper закрывается 32 малыми command increments;
 - записываются начальное состояние и 32 последующих settled states, всего 33;
 - состояние записывается не через фиксированное wall-clock время, а после выполнения velocity/position settling criteria;
+- candidates, которые не выполнили settling criteria за 2400 control steps,
+  не записываются как валидные trajectories и заменяются следующими
+  deterministic pose candidates;
+- после collection из **train и validation local supervision** дополнительно
+  исключаются физически settled, но редкие pose/contact jumps
+  \(d_{\Delta q}>0.05\); удаляются ровно отдельные transition indices, а не
+  целые trajectories, поскольку jumps встречаются в 44.6% train и 29.0% val
+  trajectories;
+- test split остаётся полным, включая jumps, чтобы фильтр обучения не
+  искусственно улучшал итоговую оценку;
 - object SDF хранится один раз на объект, а не копируется на trajectories.
 
 Первый полный набор содержал 29 объектов \(\times\) 100 trajectories:
@@ -820,7 +837,7 @@ h_{\rm admissible}^{\rm geom}
 =-Q_{0.995}\left((-h_{\rm GT}^{\rm geom})_+\right).
 \]
 
-Active counts полного final index:
+Геометрический contact gate сначала даёт полный active index:
 
 | Split | Active transitions |
 |---|---:|
@@ -828,6 +845,37 @@ Active counts полного final index:
 | val | 9,168 |
 | test | 9,474 |
 | всего | 80,873 |
+
+После последующего решения использовать smooth train/validation supervision
+ground-truth transition помечается jump при
+
+\[
+d_{\Delta q,k}=
+\sqrt{(\|p_{k+1}-p_k\|/L)^2+d_{SO(3)}(R_k,R_{k+1})^2}>0.05,
+\qquad L=0.1114999652\ {\rm m}.
+\]
+
+Итоговый production local index имеет следующий contract:
+
+| Split | До фильтра | Найдено jumps | Удалено | После фильтра |
+|---|---:|---:|---:|---:|
+| train | 62,231 | 2,638 (4.24%) | 2,638 | **59,593** |
+| val | 9,168 | 135 (1.47%) | 135 | **9,033** |
+| test | 9,474 | 217 (2.29%) | 0 | **9,474** |
+
+Удалённые train/val transitions несут соответственно 91.47% и 69.28%
+squared pose-motion energy своих splits. Полные HDF5 trajectories сохраняются:
+физическое удаление одного state склеило бы соседние состояния в ложный
+transition. Фильтр применяется через
+`active-index-train-val-no-pose-jumps.npz`; точный hash, threshold и per-object
+counts записаны в `pose-jump-filter-contract.json`. Старый `active-index.npz`
+сохранён как immutable полный geometric-contact index для audit и full-test
+diagnostics.
+
+Следующие эксперименты с этим production index являются **local-only**.
+Rollout retrain не планируется, поэтому отдельная сегментация trajectories на
+smooth подпути не вводится: непрерывные HDF5 trajectories сохраняются только
+как исходный физический корпус и для диагностического full-path replay.
 
 ### 12.4 SRNO-r material-v2 retrain
 
@@ -3335,6 +3383,17 @@ object-balanced sampler и early stopping, что clean full-data L1. Отлич
 является частью наблюдаемого эффекта фильтра: tail transitions больше не
 делают validation criterion шумным.
 
+22 августа новый production index
+`active-index-train-val-no-pose-jumps.npz` был попарно сверен с использованным
+здесь historical smooth index. Для train совпали все 59,593, для validation —
+все 9,033 пар `(object, trajectory, step)`. Различается только test policy:
+новый index сохраняет полный test из 9,474 переходов, а приведённая ниже
+основная таблица и так вычислялась на этом полном test. Повторная one-step
+оценка обоих checkpoint текущим source в bfloat16 воспроизвела сохранённые
+метрики с расхождением менее (10^{-6}). Таким образом, этот run является
+точным before/after экспериментом для принятого train/val-фильтра; rollout в
+нём не выполнялся.
+
 Equal-object metrics на полном наборе, включая ранее удалённые transitions:
 
 | Split | Model | \(d_X\) | pose | translation, mm | rotation, rad | joints |
@@ -3422,6 +3481,14 @@ curriculum `smooth first, jumps later` остаются разумными optim
 экспериментальному history candidate на обоих regimes. Практический вывод:
 такой index полезен как diagnostic или первая фаза curriculum, но не как
 окончательная замена полного dataset.
+
+**Позднейшее изменение production data contract.** После simulator-variation
+audit было принято явное практическое решение всё же использовать этот фильтр
+для основной local train/validation supervision, сохранив полный test split.
+Это не меняет научный вывод ablation: jumps остаются физически валидными и
+нужны для честной оценки, но больше не входят в оптимизацию и model selection
+основного local checkpoint. Актуальный index и точные counts описаны в
+разделе 12.3.
 
 Воспроизводимость:
 [`simulator-r-v1-smooth`](../data/simulator-r-v1-smooth/README.md),
