@@ -1268,7 +1268,7 @@ operationally smoothed simulator utility is
 
 $$
 q_{\gamma,k}(z,g)
-=
+{}={}
 \Pr_{\xi\sim\Xi}
 \left[
 Y_{\mathcal M,\gamma,k}(z,g,\xi)=1
@@ -1283,7 +1283,7 @@ At a success threshold $\tau$, every level induces a closed action set
 
 $$
 S_{\gamma,k}(z;\tau)
-=
+{}={}
 \overline{\{g\in\mathcal G:q_{\gamma,k}(z,g)\ge\tau\}}.
 $$
 
@@ -1294,7 +1294,7 @@ Painlevé--Kuratowski limits along a refinement path:
 
 $$
 \mathrm{Li} S_{\gamma,k}
-=
+{}={}
 \left\{
 g:\limsup_{k\to\infty}
 d_{\mathcal G}(g,S_{\gamma,k})=0
@@ -1303,7 +1303,7 @@ $$
 
 $$
 \mathrm{Ls} S_{\gamma,k}
-=
+{}={}
 \left\{
 g:\liminf_{k\to\infty}
 d_{\mathcal G}(g,S_{\gamma,k})=0
@@ -1317,14 +1317,14 @@ refinement paths as
 
 $$
 S_{\mathrm{core}}(z;\tau)
-=
+{}={}
 \bigcap_{\gamma\in\Gamma}
 \mathrm{Li}S_{\gamma,k}(z;\tau),
 $$
 
 $$
 S_{\mathrm{possible}}(z;\tau)
-=
+{}={}
 \overline{
 \bigcup_{\gamma\in\Gamma}
 \mathrm{Ls}S_{\gamma,k}(z;\tau)
@@ -1335,7 +1335,7 @@ The difference
 
 $$
 B_{\mathrm{num}}(z;\tau)
-=
+{}={}
 S_{\mathrm{possible}}(z;\tau)
 \setminus
 S_{\mathrm{core}}(z;\tau)
@@ -1356,12 +1356,12 @@ The observation-conditioned fields are
 
 $$
 L(o,g)
-=
+{}={}
 \Pr_{Z\mid o}
 \left[g\in S_{\mathrm{core}}(Z;\tau)\right],
 \qquad
 U(o,g)
-=
+{}={}
 \Pr_{Z\mid o}
 \left[g\in S_{\mathrm{possible}}(Z;\tau)\right].
 $$
@@ -1397,7 +1397,7 @@ One parsimonious refinement model is
 
 $$
 \ell_\theta(o,g,\eta)
-=
+{}={}
 \sigma\!\left(
 a_\theta-b^-_\theta-c^-_\theta\eta^{p^-_\theta}
 \right),
@@ -1405,7 +1405,7 @@ $$
 
 $$
 u_\theta(o,g,\eta)
-=
+{}={}
 \sigma\!\left(
 a_\theta+b^+_\theta+c^+_\theta\eta^{p^+_\theta}
 \right),
@@ -1447,14 +1447,14 @@ At refinement level $k$, empirical tail envelopes are
 
 $$
 \widehat\ell_k(z,g)
-=
+{}={}
 \min_{\gamma,\;j\ge k}
 \mathrm{LCB}_{\gamma,j}(z,g),
 $$
 
 $$
 \widehat u_k(z,g)
-=
+{}={}
 \max_{\gamma,\;j\ge k}
 \mathrm{UCB}_{\gamma,j}(z,g).
 $$
@@ -1493,7 +1493,7 @@ asymptotic expansion of the signed distance to the success set,
 
 $$
 d_{\mathcal G}(g,S_{\gamma,k})_{\mathrm{signed}}
-=
+{}={}
 d_{\gamma,\infty}(g)
 +c_\gamma(g)\eta_{\gamma,k}^{p_\gamma(g)}
 +o(\eta_{\gamma,k}^{p_\gamma(g)}).
@@ -4026,9 +4026,9 @@ $\pi:\mathcal Z\to\mathcal G$ select one grasp.  Define decision distortion
 
 $$
  d(o,z)
- =
+ {}={}
  \max_{g\in\mathcal G}\eta(o,g)
- -
+ {}-{}
  \eta(o,\pi(z)).
 $$
 
@@ -4036,7 +4036,7 @@ The **grasp rate--regret function** would be
 
 $$
  R_{\mathrm{grasp}}(D)
- =
+ {}={}
  \inf_{\substack{p(z\mid o),\,\pi\\
                   E[d(O,Z)]\le D}}
  I(O;Z).
@@ -4049,7 +4049,7 @@ model, and a Lagrangian
 
 $$
  \mathcal L_{\beta}
- =
+ {}={}
  E[-Y\log q_\theta(Z,G)-(1-Y)\log(1-q_\theta(Z,G))]
  +\beta\,E[-\log p_\psi(Z)],
 $$
@@ -4323,7 +4323,7 @@ kinematics and measured depth.  The residual finite response is
 
 $$
  \mu_{\epsilon,v}
- =
+ {}={}
  \frac{R_{x+\epsilon v}(Z)
        -W_{\epsilon v}R_x(Z)}{\epsilon}\,\mathcal L^2.
 $$
@@ -4333,7 +4333,7 @@ decomposition
 
 $$
  \mu_v
- =
+ {}={}
  a_v(u)\,\mathcal L^2
  +
  [R_x](u)\,V_n(u;v)\,
@@ -4352,7 +4352,7 @@ point measure
 
 $$
  \nu_{\epsilon,v}
- =
+ {}={}
  \frac{1}{\epsilon}
  \sum_{i\in\mathcal B_{\epsilon,v}}
  A_i\,c_i\,\delta_{X_i},
@@ -4376,7 +4376,7 @@ already shows the issue:
 
 $$
  \frac{f_\epsilon-f_0}{\epsilon}
- =
+ {}={}
  -\frac1\epsilon\mathbf 1_{[0,\epsilon)}.
 $$
 
@@ -4417,7 +4417,7 @@ target/obstacle clearance band.  Query the visibility flux by
 
 $$
  z_k(g;v)
- =
+ {}={}
  \int \kappa_k(g^{-1}X)\,d\nu_v(X),
  \qquad k=1,\ldots,K.
 $$
@@ -4426,7 +4426,7 @@ The deployment estimator is a weighted segmented reduction,
 
 $$
  \widehat z_k(g;v,\epsilon)
- =
+ {}={}
  \frac1\epsilon
  \sum_{i\in\mathcal B_{\epsilon,v}}
  A_i c_i\,\kappa_k(g^{-1}X_i).
@@ -4441,7 +4441,7 @@ misattributed to visibility flux.  A small query head predicts
 
 $$
  q_\theta(O_{\cap},\nu_{\epsilon,v},g)
- =
+ {}={}
  \sigma\!\left(
  h_\theta[
  b_\theta(O_{\cap},g),
@@ -4464,7 +4464,7 @@ Use the analytically computable boundary speed to enumerate
 
 $$
  v^*(O_0)
- =
+ {}={}
  \arg\max_{v\in\mathcal V_{\rm safe}}
  \int_{\Gamma_{\rm target/occ}}
  \rho_\theta(u)[V_n(u;v)]_+\,d\mathcal H^1(u)
@@ -4500,14 +4500,14 @@ directly:
 
 $$
  \mathcal L
- =
+ {}={}
  \mathcal L_{\rm BCE}(Y,q_\theta)
  +\lambda_{\rm birth}\mathcal L_{\rm birth}
  +\lambda_{\rm weak}
  \sum_{\epsilon\in\mathcal E_{\rm micro}}
  \|
  \widehat z_{\epsilon}
- -
+ {}-{}
  z_v^{\rm oracle}
  \|_1.
 $$
@@ -4788,7 +4788,7 @@ with the foreground edge before motion separates from it after motion by
 
 $$
  \chi
- =
+ {}={}
  f_{\rm px}|\epsilon_\perp|
  \left|\frac1{z_f}-\frac1{z_b}\right|
  \quad\text{pixels}.
@@ -4986,7 +4986,7 @@ and conditional birth marks:
 
 $$
  \widehat z_k(g;v)
- =
+ {}={}
  \frac{1}{n\epsilon}
  \sum_{i=1}^{n}
  B_i\,\kappa_k(g^{-1}X_i),
@@ -5132,7 +5132,7 @@ through $R$, the local event response is described by the saltation matrix
 
 $$
  S
- =
+ {}={}
  D R+
  \frac{(f^+-D R f^-)\nabla h^\top}
       {\nabla h^\top f^-}.
@@ -5168,7 +5168,7 @@ force--displacement curve
 
 $$
  F_g(\delta)
- =
+ {}={}
  k_{\rm drive}i(\delta)-F_{\rm friction}(\dot\delta)
 $$
 
@@ -5256,7 +5256,7 @@ Approximate Le Cam deficiency,
 
 $$
  \delta(E_b,E_a)
- =
+ {}={}
  \inf_K\sup_z
  \mathrm{TV}\!\left(E_b(\cdot\mid z),
  K E_a(\cdot\mid z)\right),
@@ -5364,7 +5364,7 @@ An unstratified $K$-token auxiliary observation has law
 
 $$
  \mathbb P_{h,\epsilon}^{K}
- =
+ {}={}
  \left[(1-\alpha_\epsilon)Q+
        \alpha_\epsilon P_h\right]^{\otimes K},
  \qquad
@@ -5469,7 +5469,7 @@ Their positive birth measure is
 
 $$
  \nu_{\epsilon,v}^{+}
- =
+ {}={}
  \frac{1}{\epsilon}
  \mathsf M_{x+\epsilon v}
  \lfloor_{\mathcal B_{\epsilon,v}}.
@@ -5492,7 +5492,7 @@ For compact candidate-local kernels $\kappa_k$, define
 
 $$
  z_k(g;v)
- =
+ {}={}
  \int
  \kappa_k(g^{-1}X)\,d\nu_v^{+}(X).
 $$
@@ -5507,7 +5507,7 @@ The finite estimator is
 
 $$
  \widehat z_k(g;v)
- =
+ {}={}
  \frac{1}{n\epsilon}
  \sum_{i=1}^{n}
  w_i B_i\,
@@ -5519,7 +5519,7 @@ confidence/area weight.  The query model is
 
 $$
  \widehat q_\theta(g)
- =
+ {}={}
  h_\theta\!\left(
    e_\theta(O_0,g),\;
    r_\theta(O_0,O_1,g),\;
@@ -5548,7 +5548,7 @@ adaptation.  A minimal objective is
 
 $$
  \mathcal L
- =
+ {}={}
  \mathrm{BCE}(Y,\widehat q_\theta(g))
  +\lambda_{\rm birth}\mathcal L_{\rm birth}
  +\lambda_{\rm weak}

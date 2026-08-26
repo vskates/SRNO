@@ -48,7 +48,7 @@ $$
 $$
 \boxed{
 \text{successful grasp}
-=
+{}={}
 \text{contact-supported state retained under nonzero admissible loads}.
 }
 $$
@@ -163,7 +163,7 @@ $$
 $$
 \boxed{
 \hat x_N
-=
+{}={}
 R_\theta^{(N)}\circ\ldots\circ R_\theta^{(1)}(q_0,a_0).
 }
 $$
@@ -198,7 +198,7 @@ Gap field:
 $$
 \boxed{
 h_{\phi,q,a}(y_j)
-=
+{}={}
 \phi\!\left(R^\top(x_j^G(a)-p)\right).
 }
 $$
@@ -218,7 +218,7 @@ $$
 $$
 \boxed{
 \mathcal C_\phi
-=
+{}={}
 \{(q,a):h_{\phi,q,a}(y)\ge0\}.
 }
 $$
@@ -383,7 +383,7 @@ $$
 $$
 \boxed{
 \rho_*
-=
+{}={}
 \sup\left\{
 \rho:
 \text{object retained для всех }w\in\mathcal W_\rho
@@ -409,7 +409,7 @@ free configuration space при terminal aperture:
 
 $$
 \mathcal F_\phi(a_*)
-=
+{}={}
 \{q:h_{\phi,q,a_*}(y)\ge0\}.
 $$
 
@@ -423,7 +423,7 @@ terminal diameter, а
 $$
 \boxed{
 \kappa
-=
+{}={}
 \frac{\mathrm{diam}\{q_T^{(m)}\}}
 {\mathrm{diam}\{q_0^{(m)}\}}.
 }
@@ -482,7 +482,7 @@ $$
 
 $$
 x_{k+1}
-=
+{}={}
 F(q_k,a_k,\dot q_k,\dot a_k,\bar a_{k+1}).
 $$
 
@@ -531,7 +531,7 @@ targets. Но для диагностики simulator желательно со�
 
 $$
 m_k^{\rm kin}(g_0)
-=
+{}={}
 \min_j h_{\phi,g_0,\bar a_k}(y_j),
 $$
 
@@ -539,7 +539,7 @@ $$
 
 $$
 k_c
-=
+{}={}
 \min\{k:m_k^{\rm kin}\le0\}.
 $$
 
@@ -623,7 +623,7 @@ Neural network не должна учить известную free-space physic
 $$
 \boxed{
 \tilde x_{k+1}
-=
+{}={}
 (\tilde q_{k+1},\tilde a_{k+1}).
 }
 $$
@@ -645,7 +645,7 @@ $$
 
 $$
 \tilde a_{k+1}
-=
+{}={}
 A_{\rm free}(a_k,\bar a_{k+1}).
 $$
 
@@ -657,7 +657,7 @@ Gap вычисляется не в текущем состоянии, а в со
 $$
 \boxed{
 \tilde h_{k,j}
-=
+{}={}
 h_{\phi,q_k,\tilde a_{k+1}}(y_j).
 }
 $$
@@ -723,7 +723,7 @@ $$
 $$
 \boxed{
 z_{k,i}
-=
+{}={}
 \sigma\!\left(
 W_0e_{k,i}
 +\frac1M\sum_{j=1}^{M}
@@ -752,7 +752,7 @@ Head:
 $$
 \boxed{
 (\Delta\xi_k,\eta_k)
-=
+{}={}
 \rho_\theta\!\left(
 \bar z_k,
 \frac{a_k}{\ell},
@@ -774,7 +774,7 @@ Object update:
 $$
 \boxed{
 \hat q_{k+1}
-=
+{}={}
 \Exp(\widehat{\Delta\xi_k})q_k.
 }
 $$
@@ -789,7 +789,7 @@ $$
 $$
 \boxed{
 \hat a_{k+1}
-=
+{}={}
 \tilde a_{k+1}
 +\alpha_k(a_k-\tilde a_{k+1}).
 }
@@ -814,7 +814,7 @@ $$
 $$
 \boxed{
 x_{k+1}
-=
+{}={}
 \begin{cases}
 \tilde x_{k+1},
 &\min_j\tilde h_{k,j}>\delta_{\rm gate},\\[1mm]
@@ -832,7 +832,7 @@ Pose metric:
 
 $$
 d_{SE(3)}^2(q,q^*)
-=
+{}={}
 \frac{\|p-p^*\|_2^2}{\ell^2}
 +\lambda_R
 \|\Log(R^{*\top}R)\|_2^2.
@@ -843,7 +843,7 @@ State metric:
 $$
 \boxed{
 d_X^2(x,x^*)
-=
+{}={}
 d_{SE(3)}^2(q,q^*)
 +\lambda_a\frac{(a-a^*)^2}{\ell^2}.
 }
@@ -854,7 +854,7 @@ Trajectory/state loss:
 $$
 \boxed{
 \mathcal L_{\rm flow}
-=
+{}={}
 \frac1{BN}\sum_{b,k}
 d_X^2(\hat x_{b,k},x_{b,k}^*).
 }
@@ -864,7 +864,7 @@ $$
 
 $$
 \hat h_{b,k,j}
-=
+{}={}
 h_{\phi,\hat q_{b,k},\hat a_{b,k}}(y_j)
 $$
 
@@ -873,7 +873,7 @@ $$
 $$
 \boxed{
 \mathcal L_K
-=
+{}={}
 \frac1{BNM}
 \sum_{b,k,j}
 \left[
@@ -887,7 +887,7 @@ $$
 $$
 \boxed{
 \mathcal L
-=
+{}={}
 \mathcal L_{\rm flow}
 +\lambda_K\mathcal L_K.
 }
@@ -933,7 +933,7 @@ $$
 $$
 \boxed{
 \hat x_{k+1}
-=
+{}={}
 R_\theta[\phi,\bar a_{k+1}](\hat x_k).
 }
 $$
@@ -957,7 +957,7 @@ Translation:
 
 $$
 E_p
-=
+{}={}
 \frac1N\sum_k\frac{\|\hat p_k-p_k^*\|_2}{\ell}.
 $$
 
@@ -965,7 +965,7 @@ Rotation:
 
 $$
 E_R
-=
+{}={}
 \frac1N\sum_k
 \|\Log(R_k^{*\top}\hat R_k)\|_2.
 $$
@@ -974,7 +974,7 @@ Aperture:
 
 $$
 E_a
-=
+{}={}
 \frac1N\sum_k
 \frac{|\hat a_k-a_k^*|}{\ell}.
 $$

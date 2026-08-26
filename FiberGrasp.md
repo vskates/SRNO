@@ -98,7 +98,7 @@ $$
 
 $$
 \mathcal F_\varepsilon(o,c)
-=
+{}={}
 \left\{
 x\in\mathcal X_c:
 d_{\rm obs}\bigl(\mathcal R(x),o\bigr)\leq\varepsilon
@@ -111,7 +111,7 @@ Grasp:
 
 $$
 g\in\mathcal G
-=
+{}={}
 \bigl(SE(3)/C_2\bigr)\times[w_{\min},w_{\max}],
 $$
 
@@ -150,13 +150,13 @@ $$
 
 $$
 m_-(o,g)
-=
+{}={}
 \inf_{x\in\mathcal F_\varepsilon(o,c)}m(x,g),
 $$
 
 $$
 m_+(o,g)
-=
+{}={}
 \sup_{x\in\mathcal F_\varepsilon(o,c)}m(x,g).
 $$
 
@@ -164,17 +164,17 @@ $$
 
 $$
 \mathcal G_-(o)
-=
+{}={}
 \{g:m_-(o,g)\geq0\}
-=
+{}={}
 \bigcap_{x\in\mathcal F_\varepsilon(o,c)}\mathcal A(x),
 $$
 
 $$
 \mathcal G_+(o)
-=
+{}={}
 \{g:m_+(o,g)\geq0\}
-=
+{}={}
 \bigcup_{x\in\mathcal F_\varepsilon(o,c)}\mathcal A(x).
 $$
 
@@ -188,7 +188,7 @@ $$
 
 $$
 g^\star
-=
+{}={}
 \arg\max_{g\in\mathcal G}m_-(o,g).
 $$
 
@@ -200,7 +200,7 @@ $$
 
 $$
 p(g\text{ succeeds}\mid o)
-=
+{}={}
 \int\mathbf 1[m(x,g)\geq0]p(x\mid o)\,dx
 $$
 
@@ -210,7 +210,7 @@ FiberGrasp использует support:
 
 $$
 \mathcal F_\varepsilon(o,c)
-=
+{}={}
 \mathrm{supp}p(x\mid o,c)
 \quad\text{с сенсорным tolerance}.
 $$
@@ -263,11 +263,11 @@ $$
 
 $$
 \widehat m_-^{\,\rm cert}
-=
+{}={}
 \widehat m_- - (L_x\delta+\eta),
 \qquad
 \widehat m_+^{\,\rm cert}
-=
+{}={}
 \widehat m_+ + (L_x\delta+\eta).
 $$
 
@@ -309,7 +309,7 @@ $$
 
 $$
 \widehat m_+(o,g)
-=
+{}={}
 a_\theta(o,g)+\mathrm{softplus}b_\theta(o,g).
 $$
 
@@ -351,7 +351,7 @@ $$
 
 $$
 z^-
-=
+{}={}
 \arg\min_z m(S_\phi(z),g)
 $$
 
@@ -359,7 +359,7 @@ $$
 
 $$
 z^+
-=
+{}={}
 \arg\max_z m(S_\phi(z),g)
 $$
 
@@ -379,7 +379,7 @@ $$
 
 $$
 \mathcal L_{\rm contain}
-=
+{}={}
 \frac1K\sum_j
 \left[
 \mathrm{ReLU}(\widehat m_- - M_j)^2
@@ -390,7 +390,7 @@ $$
 
 $$
 \mathcal L_{\rm tight}
-=
+{}={}
 \left|\widehat m_--\min_jM_j\right|
 +
 \left|\widehat m_+-\max_jM_j\right|,
@@ -398,7 +398,7 @@ $$
 
 $$
 \mathcal L
-=
+{}={}
 \mathcal L_{\rm contain}
 +\lambda_{\rm tight}\mathcal L_{\rm tight}
 +\lambda_{\rm gap}(\widehat m_+-\widehat m_-)

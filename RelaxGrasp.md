@@ -35,7 +35,7 @@ $$
 
 $$
 \bar H(x,g,t)
-=
+{}={}
 \mathbb E\!\left[\exp(-tK_{S,g})\mid X=x\right]
 $$
 
@@ -58,7 +58,7 @@ $$
 
 $$
 \tfrac12e^{-tK_1}+\tfrac12e^{-tK_2}
-=
+{}={}
 \tfrac12(1+e^{-t})I
 $$
 
@@ -74,7 +74,7 @@ PSRN представляет её конечной положительной q
 
 $$
 \widehat H_\theta(t\mid x,g)
-=
+{}={}
 \sum_{k=0}^{r-1}
 A_k(x,g)e^{-t\alpha_k(x,g)},
 $$
@@ -381,7 +381,7 @@ $$
 
 $$
 d\Sigma_{Z,a}(\kappa)
-=
+{}={}
 B_a^T dE_{K(Z,a)}(\kappa)B_a.
 $$
 
@@ -393,7 +393,7 @@ $$
 
 $$
 \bar\Sigma_{x,a}(A)
-=
+{}={}
 \mathbb E[\Sigma_{Z,a}(A)\mid X=x]
 $$
 
@@ -403,9 +403,9 @@ $$
 
 $$
 \bar H(x,a,t)
-=
+{}={}
 \int e^{-t\kappa}\,d\bar\Sigma_{x,a}(\kappa)
-=
+{}={}
 \mathbb E[B_a^Te^{-tK(Z,a)}B_a\mid x].
 $$
 
@@ -451,7 +451,7 @@ $$
 A_0^\star(x,a)
 :=
 \lim_{t\to\infty}\bar H(x,a,t)
-=
+{}={}
 \mathbb E[P_{\ker K(Z,a)}\mid x].
 $$
 
@@ -461,7 +461,7 @@ $$
 
 $$
 r_0(x,a;Q)
-=
+{}={}
 \mathrm{tr}(QA_0^\star)
 $$
 
@@ -473,7 +473,7 @@ Zero-mode mass различает hard failure, но не positive near-zero mod
 
 $$
 C^\star(x,a)
-=
+{}={}
 \beta_0\mathrm{tr}(Q_0A_0^\star)
 {}+
 \int_{t_{min}}^{t_{max}}
@@ -496,7 +496,7 @@ $\bar\Sigma$ sufficient только для losses линейных по expecte
 
 $$
 L(a,Z)
-=
+{}={}
 \beta_0\mathrm{tr}(Q_0P_{\ker K(Z,a)})
 {}+
 \int w(t)\mathrm{tr}(Q(t)e^{-tK(Z,a)})dt.
@@ -562,7 +562,7 @@ $$
 
 $$
 K_{S,g}
-=
+{}={}
 (\widetilde H_{S,g}-\tau I)_+.
 $$
 
@@ -624,7 +624,7 @@ Its transform:
 
 $$
 \widehat H_\theta(t\mid x,g)
-=
+{}={}
 \int e^{-t\kappa}d\widehat\Sigma_\theta(\kappa\mid x,g).
 $$
 
@@ -640,7 +640,7 @@ oracle spectral measure is
 
 $$
 \Sigma_{S,g}
-=
+{}={}
 \sum_{j=1}^{p}v_jv_j^T\delta_{\kappa_j},
 $$
 
@@ -658,7 +658,7 @@ Let $\nu_t$ have positive density on $[t_{min},t_{max}]$, preferably log-uniform
 
 $$
 \mathcal L_{\mathrm{CSLS}}(\theta)
-=
+{}={}
 \mathbb E_{X,S,g}
 \mathbb E_{t\sim\nu_t,u\sim\nu_u}
 \left[
@@ -689,7 +689,7 @@ For scalar measures $\mu,\eta$, integrated transform distance expands into an MM
 
 $$
 k_\nu(\kappa,\kappa')
-=
+{}={}
 \int e^{-t(\kappa+\kappa')}d\nu_t(t).
 $$
 
@@ -703,7 +703,7 @@ Conditioned on $X=x,g$, squared-loss decomposition gives
 
 $$
 \mathbb E\|\widehat H(t)u-H_{S,g}(t)u\|^2
-=
+{}={}
 \|\widehat H(t)u-\bar H(t)u\|^2
 {}+\mathrm{Var}(H_{S,g}(t)u\mid x,g).
 $$
@@ -724,7 +724,7 @@ Use $t\sim\mathrm{LogUniform}(t_{min},t_{max})$ with normalized spectrum $\kappa
 
 $$
 \mathcal L_0
-=
+{}={}
 \left\|A_0-P_{\ker K_{S,g}}\right\|_F^2
 $$
 
@@ -734,7 +734,7 @@ Total objective:
 
 $$
 \mathcal L
-=
+{}={}
 \mathcal L_{\mathrm{CSLS}}
 {}+\lambda_0\mathcal L_0
 {}+\lambda_{rank}\mathcal L_{decision},
@@ -819,7 +819,7 @@ $$
 \alpha_0=0,
 \qquad
 \alpha_k
-=
+{}={}
 \alpha_{min}
 {}+(\alpha_{max}-\alpha_{min})\sigma(b_k),\quad k>0.
 $$
@@ -864,7 +864,7 @@ For $6\times6$ matrices eigendecomposition/Cholesky of $S$ is cheap and stable.
 
 $$
 \widehat H_\theta(t\mid x,g)
-=
+{}={}
 A_0
 {}+\sum_{k=1}^{r-1}A_ke^{-t\alpha_k}
 {}+A_{res}e^{-t\alpha_{max}}.
@@ -878,7 +878,7 @@ $$
 
 $$
 (-1)^n\frac{d^n}{dt^n}\widehat H(t)
-=
+{}={}
 \sum_{k>0}A_k\alpha_k^ne^{-t\alpha_k}
 \succeq0,
 $$
@@ -903,7 +903,7 @@ The model should report **semigroup defect**
 
 $$
 D_{sg}(x,g)
-=
+{}={}
 \mathbb E_{t,s}
 \left\|
 \widehat H(t+s)-\widehat H(t)\widehat H(s)
@@ -918,7 +918,7 @@ Compute analytically
 
 $$
 \widehat C(x,g)
-=
+{}={}
 \beta_0\mathrm{tr}(Q_0A_0)
 {}+\sum_k
 \mathrm{tr}(Q_kA_k)
@@ -977,7 +977,7 @@ which fail under nonzero operator variance.
 
 $$
 \lim_{t\to\infty}\bar H(x,a,t)
-=
+{}={}
 \mathbb E[B^TP_{\ker K}B\mid x,a].
 $$
 
@@ -1065,9 +1065,9 @@ It declares that every direction eventually relaxes.
 
 $$
 \bar H(t)
-=
+{}={}
 \tfrac12e^{-tK_1}+\tfrac12e^{-tK_2}
-=
+{}={}
 \tfrac12(1+e^{-t})I.
 $$
 
@@ -1084,7 +1084,7 @@ For $t,s>0$:
 $$
 \bar H(t+s)
 -\bar H(t)\bar H(s)
-=
+{}={}
 \tfrac14(1-e^{-t})(1-e^{-s})I\succ0.
 $$
 

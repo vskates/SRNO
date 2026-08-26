@@ -106,7 +106,7 @@ objects и grasps могут задавать разные Bayes targets:
 
 $$
 f_{\gamma,k}(o,g)
-=
+{}={}
 \mathbb E\!\left[
 Y_{\mathcal M,\gamma,k}(Z,g,\xi)\mid o,g
 \right].
@@ -167,7 +167,7 @@ collision mesh и compliant-pad discretization.
 
 $$
 q_{\gamma,k}(z,g)
-=
+{}={}
 \Pr_{\xi\sim\Xi}
 \left[
 Y_{\mathcal M,\gamma,k}(z,g,\xi)=1
@@ -181,7 +181,7 @@ Monte Carlo ошибочно выглядит как numerical non-convergence.
 
 $$
 S_{\gamma,k}(z;\tau)
-=
+{}={}
 \overline{
 \{g\in\mathcal G:q_{\gamma,k}(z,g)\ge\tau\}
 }.
@@ -197,7 +197,7 @@ quotient. Для path $\gamma$ определим
 
 $$
 \mathrm{Li}S_{\gamma,k}
-=
+{}={}
 \left\{
 g:
 \limsup_{k\to\infty}
@@ -207,7 +207,7 @@ $$
 
 $$
 \mathrm{Ls}S_{\gamma,k}
-=
+{}={}
 \left\{
 g:
 \liminf_{k\to\infty}
@@ -223,14 +223,14 @@ Inner limit содержит actions, которые можно приблизи
 
 $$
 S_{\mathrm{core}}(z;\tau)
-=
+{}={}
 \bigcap_{\gamma\in\Gamma}
 \mathrm{Li}S_{\gamma,k}(z;\tau),
 $$
 
 $$
 S_{\mathrm{possible}}(z;\tau)
-=
+{}={}
 \overline{
 \bigcup_{\gamma\in\Gamma}
 \mathrm{Ls}S_{\gamma,k}(z;\tau)
@@ -246,7 +246,7 @@ $S_{\mathrm{possible}}$ содержит всё, что может остава�
 
 $$
 B_{\mathrm{num}}(z;\tau)
-=
+{}={}
 S_{\mathrm{possible}}(z;\tau)
 \setminus
 S_{\mathrm{core}}(z;\tau)
@@ -265,7 +265,7 @@ Model не получает $z$. Она учит две action fields:
 
 $$
 L(o,g)
-=
+{}={}
 \Pr_{Z\mid o}
 \left[
 g\in S_{\mathrm{core}}(Z;\tau)
@@ -274,7 +274,7 @@ $$
 
 $$
 U(o,g)
-=
+{}={}
 \Pr_{Z\mid o}
 \left[
 g\in S_{\mathrm{possible}}(Z;\tau)
@@ -359,7 +359,7 @@ asymptotic expansion signed distance:
 
 $$
 d_{\mathcal G}(g,S_{\gamma,k})_{\mathrm{signed}}
-=
+{}={}
 d_{\gamma,\infty}(g)
 +c_\gamma(g)\eta_{\gamma,k}^{p_\gamma(g)}
 +o(\eta_{\gamma,k}^{p_\gamma(g)}),
@@ -465,7 +465,7 @@ $$
 
 $$
 \ell_\theta(o,g,\eta)
-=
+{}={}
 \sigma\left(
 a_\theta-b^-_\theta-c^-_\theta\eta^{p^-_\theta}
 \right),
@@ -473,7 +473,7 @@ $$
 
 $$
 u_\theta(o,g,\eta)
-=
+{}={}
 \sigma\left(
 a_\theta+b^+_\theta+c^+_\theta\eta^{p^+_\theta}
 \right).
@@ -544,14 +544,14 @@ Empirical tail envelopes:
 
 $$
 \widehat\ell_k(z,g)
-=
+{}={}
 \min_{\gamma,\;j\ge k}
 \mathrm{LCB}_{\gamma,j}(z,g),
 $$
 
 $$
 \widehat u_k(z,g)
-=
+{}={}
 \max_{\gamma,\;j\ge k}
 \mathrm{UCB}_{\gamma,j}(z,g).
 $$
@@ -593,7 +593,7 @@ Training item должен сохранять identity полного scene/gras
 
 $$
 \mathcal D_{b,m}
-=
+{}={}
 \left(
 o_b,g_m,
 \{Y_{b,m,\gamma,k,n}\}_{\gamma,k,n}

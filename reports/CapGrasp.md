@@ -147,7 +147,7 @@ uncertainty in a latent and generate grasps.”  It learns
 
 $$
  p_\theta(g\mid x)
- =
+ {}={}
  \int p_\theta(g\mid x,z)p_\theta(z\mid x)\,dz
 $$
 
@@ -265,7 +265,7 @@ proper ray likelihood is
 
 $$
  \ell(\theta)
- =
+ {}={}
  -\delta\log f_\theta(Y\mid X)
  -(1-\delta)\log S_\theta(Y\mid X),
 $$

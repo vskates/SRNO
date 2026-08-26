@@ -324,7 +324,7 @@ $$
 $$
 \boxed{
 \mathcal L_{APES}
-=
+{}={}
 \sum_{k=1}^{K} w_k d_G(\hat y_G^{(k)},y_G)
 -\frac12\sum_{k=1}^{K}\sum_{\ell=1}^{K}
 w_kw_\ell d_G(\hat y_G^{(k)},\hat y_G^{(\ell)})

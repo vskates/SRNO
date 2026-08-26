@@ -267,7 +267,7 @@ define a soft tube kernel $k_\sigma$ with radius tied to pad resolution. The occ
 
 $$
 d\mu^{\mathrm{occ}}_{S,g,j}(s)
-=
+{}={}
 \left[
 \int_{e_c^\perp}
 k_\sigma(y-\xi_j)
@@ -281,7 +281,7 @@ For contact orientation, define positive left/right normal-flux measures on the 
 
 $$
 d\mu^{\pm}_{S,g,j}(s)
-=
+{}={}
 \int_{\partial S}
 k_\sigma(P_\perp R_g^\top(x-t_g)-\xi_j)
 [\pm n(x)^\top R_g e_c]_+
@@ -296,7 +296,7 @@ For frequencies $\omega_m=2\pi m/W$, $m=-M,\ldots,M$, define
 
 $$
 z^{c}_{S,g,j,m}
-=
+{}={}
 \int_I e^{-i\omega_m s}\,d\mu^{c}_{S,g,j}(s),
 \qquad
 c\in\{\mathrm{occ},+,-\}.
@@ -421,7 +421,7 @@ Let $\widehat z_\theta(X,g,j,c)$ be the predicted moment sequence after projecti
 
 $$
 \mathcal L_{\mathrm{cone}}
-=
+{}={}
 \mathbb E
 \left[
 \sum_{g\in G}\sum_{j,c}
@@ -451,7 +451,7 @@ Training includes
 
 $$
 \mathcal L_{\mathrm{proj}}
-=
+{}={}
 \|\widetilde z-\widehat z\|_2^2,
 $$
 
@@ -469,7 +469,7 @@ For random refinement tree $\mathcal P$,
 
 $$
 \mathcal L_{\mathrm{ref}}
-=
+{}={}
 \sum_{(p,\mathrm{ch}(p))\in\mathcal P}
 \left\|
 \widehat z_p-
@@ -491,7 +491,7 @@ where $\Delta$ is the known origin shift. Let $P_{\ell\to\ell'}$ denote this ana
 
 $$
 \mathcal L_{\mathrm{same}}
-=
+{}={}
 \sum_{\ell\sim\ell'}
 \|\widehat z_{\ell'}-P_{\ell\to\ell'}\widehat z_\ell\|_2^2.
 $$
@@ -522,7 +522,7 @@ A listwise decision loss is
 
 $$
 \mathcal L_{\mathrm{dec}}
-=
+{}={}
 -\sum_{g\in G}
 \pi_g^\star
 \log
@@ -530,7 +530,7 @@ $$
 {\sum_{h\in G}\exp(\widehat q_h/\tau_q)},
 \qquad
 \pi_g^\star
-=
+{}={}
 \frac{\exp(q_g^\star/\tau_y)}
 {\sum_h\exp(q_h^\star/\tau_y)}.
 $$
@@ -542,7 +542,7 @@ The decision term is deliberately secondary. If an unconstrained direct critic w
 $$
 \boxed{
 \mathcal L_{\mathrm{RBCS}}
-=
+{}={}
 \mathcal L_{\mathrm{cone}}
 +\lambda_p\mathcal L_{\mathrm{proj}}
 +\lambda_r\mathcal L_{\mathrm{ref}}
@@ -628,7 +628,7 @@ The learned update is a sparse neural operator
 
 $$
 \widetilde Z^{(k+1)}
-=
+{}={}
 Z^{(k)}
 +\mathcal O_{\theta_k}
 \left(
@@ -654,7 +654,7 @@ The learned state is the residual moment sequence, not the total sequence. After
 
 $$
 Z_{\mathrm{res}}^{(k+1/3)}
-=
+{}={}
 \Pi_{\mathcal K_{M,I_{\mathrm{admissible}}}}
 \!\left(\widetilde Z_{\mathrm{res}}^{(k+1)}\right),
 \qquad
@@ -692,7 +692,7 @@ Candidate score:
 
 $$
 \widehat q_g
-=
+{}={}
 D_\psi
 \left(
 \widehat Z_g,
@@ -785,7 +785,7 @@ If the oracle best candidate has margin
 
 $$
 \gamma
-=
+{}={}
 q_{g^*}-\max_{g\ne g^*}q_g,
 $$
 

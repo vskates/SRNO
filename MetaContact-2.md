@@ -905,7 +905,7 @@ $$
 
 $$
 \mathcal F_\varepsilon(o,c)
-=
+{}={}
 \left\{
 x\in\mathcal X_c:
 d_{\rm obs}\bigl(\mathcal R(x),o\bigr)\leq\varepsilon
@@ -918,7 +918,7 @@ Grasp:
 
 $$
 g\in\mathcal G
-=
+{}={}
 \bigl(SE(3)/C_2\bigr)\times[w_{\min},w_{\max}],
 $$
 
@@ -957,13 +957,13 @@ $$
 
 $$
 m_-(o,g)
-=
+{}={}
 \inf_{x\in\mathcal F_\varepsilon(o,c)}m(x,g),
 $$
 
 $$
 m_+(o,g)
-=
+{}={}
 \sup_{x\in\mathcal F_\varepsilon(o,c)}m(x,g).
 $$
 
@@ -971,17 +971,17 @@ $$
 
 $$
 \mathcal G_-(o)
-=
+{}={}
 \{g:m_-(o,g)\geq0\}
-=
+{}={}
 \bigcap_{x\in\mathcal F_\varepsilon(o,c)}\mathcal A(x),
 $$
 
 $$
 \mathcal G_+(o)
-=
+{}={}
 \{g:m_+(o,g)\geq0\}
-=
+{}={}
 \bigcup_{x\in\mathcal F_\varepsilon(o,c)}\mathcal A(x).
 $$
 
@@ -995,7 +995,7 @@ $$
 
 $$
 g^\star
-=
+{}={}
 \arg\max_{g\in\mathcal G}m_-(o,g).
 $$
 
@@ -1007,7 +1007,7 @@ $$
 
 $$
 p(g\text{ succeeds}\mid o)
-=
+{}={}
 \int\mathbf 1[m(x,g)\geq0]p(x\mid o)\,dx
 $$
 
@@ -1017,7 +1017,7 @@ FiberGrasp использует support:
 
 $$
 \mathcal F_\varepsilon(o,c)
-=
+{}={}
 \mathrm{supp}p(x\mid o,c)
 \quad\text{с сенсорным tolerance}.
 $$
@@ -1070,11 +1070,11 @@ $$
 
 $$
 \widehat m_-^{\,\rm cert}
-=
+{}={}
 \widehat m_- - (L_x\delta+\eta),
 \qquad
 \widehat m_+^{\,\rm cert}
-=
+{}={}
 \widehat m_+ + (L_x\delta+\eta).
 $$
 
@@ -1116,7 +1116,7 @@ $$
 
 $$
 \widehat m_+(o,g)
-=
+{}={}
 a_\theta(o,g)+\mathrm{softplus}b_\theta(o,g).
 $$
 
@@ -1158,7 +1158,7 @@ $$
 
 $$
 z^-
-=
+{}={}
 \arg\min_z m(S_\phi(z),g)
 $$
 
@@ -1166,7 +1166,7 @@ $$
 
 $$
 z^+
-=
+{}={}
 \arg\max_z m(S_\phi(z),g)
 $$
 
@@ -1186,7 +1186,7 @@ $$
 
 $$
 \mathcal L_{\rm contain}
-=
+{}={}
 \frac1K\sum_j
 \left[
 \mathrm{ReLU}(\widehat m_- - M_j)^2
@@ -1197,7 +1197,7 @@ $$
 
 $$
 \mathcal L_{\rm tight}
-=
+{}={}
 \left|\widehat m_--\min_jM_j\right|
 +
 \left|\widehat m_+-\max_jM_j\right|,
@@ -1205,7 +1205,7 @@ $$
 
 $$
 \mathcal L
-=
+{}={}
 \mathcal L_{\rm contain}
 +\lambda_{\rm tight}\mathcal L_{\rm tight}
 +\lambda_{\rm gap}(\widehat m_+-\widehat m_-)
@@ -1799,7 +1799,7 @@ be the gravitational wrench under a declared density assumption. A clean definit
 
 $$
 \eta_{\rm lift}(g,S)
-=
+{}={}
 \mathrm{sd}
 \left(
 -w_{\rm grav}(S),\partial\mathcal W_g(S)
@@ -1853,7 +1853,7 @@ The actual inference target is the posterior pushforward
 
 $$
 \Pi_O
-=
+{}={}
 (M_\cdot)_{\mathrm{push}} p_{\rm train}(S\mid O),
 $$
 
@@ -1928,7 +1928,7 @@ Draw a base random seed $\omega$ once per posterior function sample and define
 
 $$
 \widehat M_{\theta,\omega}(g)
-=
+{}={}
 F_\theta\big(E_\phi(O),q(g),z_\omega,\xi_\omega(g)\big).
 $$
 
@@ -1963,9 +1963,9 @@ A likelihood-free proper kernel/energy score can train implicit samples:
 
 $$
 \mathcal L_{\rm joint}
-=
+{}={}
 \mathbb E\,k(\widehat Y,\widehat Y')
--
+{}-{}
 2\mathbb E\,k(\widehat Y,Y),
 $$
 

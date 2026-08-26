@@ -11,7 +11,7 @@
 
 $$
 \Pi_y
-=
+{}={}
 \mathrm{Law}\!\left(C_X(\cdot)\mid Y=y\right),
 \qquad
 C_X:\mathcal G\to\mathbb R,
@@ -149,7 +149,7 @@ $$
 
 $$
 g^*(y)
-=
+{}={}
 \arg\max_{g\in\mathcal C(y)}
 Q_\alpha\!\left[C_X(g)\mid Y=y\right],
 $$
@@ -178,7 +178,7 @@ conditional Bayes risk равен
 
 $$
 \mathbb E[L(g,X)\mid Y=y]
-=
+{}={}
 \int \widetilde L(g,c(g))\,d\Pi_y(c).
 $$
 
@@ -215,7 +215,7 @@ RJPN берёт shared noise $e^{(s)}\sim\mathcal N(0,I)$ и выдаёт sample
 
 $$
 \widehat{\mathbf c}^{(s)}
-=
+{}={}
 \left(
 f_\theta(y,g_1,e^{(s)}),\ldots,
 f_\theta(y,g_B,e^{(s)})
@@ -231,7 +231,7 @@ $$
 
 $$
 h_\gamma(c)
-=
+{}={}
 c-\gamma\tau\mathrm{softplus}(-c/\tau),
 \qquad \gamma>0,\;\tau>0.
 $$
@@ -246,10 +246,10 @@ Monte Carlo training loss:
 
 $$
 \mathcal L_{\mathrm{ES}}
-=
+{}={}
 \frac1S\sum_{s=1}^{S}
 \left\|H(\widehat{\mathbf c}^{(s)})-H(\mathbf c)\right\|_2
--
+{}-{}
 \frac{1}{2S(S-1)}
 \sum_{s\ne r}
 \left\|H(\widehat{\mathbf c}^{(s)})-H(\widehat{\mathbf c}^{(r)})\right\|_2.
@@ -263,11 +263,11 @@ Energy score может быть относительно нечувствите
 
 $$
 \mathcal L_{\mathrm{VS}}
-=
+{}={}
 \sum_{j<k} a_{jk}
 \left(
 |h_\gamma(c_j)-h_\gamma(c_k)|^p
--
+{}-{}
 \frac1S\sum_s
 |h_\gamma(\hat c_j^{(s)})-h_\gamma(\hat c_k^{(s)})|^p
 \right)^2,
@@ -280,7 +280,7 @@ $$
 $$
 \boxed{
 \mathcal L_{\mathrm{process}}
-=
+{}={}
 \mathbb E_{X,Y,G}
 \left[
 \mathcal L_{\mathrm{ES}}
@@ -398,7 +398,7 @@ $$
 
 $$
 \widehat C(g;z,y)
-=
+{}={}
 D_\theta\bigl(e_y,e_{inc}(g,y),e_g,z\bigr).
 $$
 
@@ -424,7 +424,7 @@ $$
 
 $$
 \widehat C_{final}(g;z,y)
-=
+{}={}
 \min\{\widehat C_{hidden}(g;z,y),c_{obs}(y,g)/s_d\}.
 $$
 
@@ -442,7 +442,7 @@ $$
 
 $$
 \widehat q_\alpha(g)
-=
+{}={}
 \mathrm{Quantile}_\alpha
 \{\widehat C(g;z_s,y)\}_{s=1}^{S}.
 $$
@@ -527,7 +527,7 @@ Loss, например,
 
 $$
 \ell_\lambda(y,X)
-=
+{}={}
 \mathbf 1[\pi_\lambda(y)\ne\texttt{abstain}]
 \mathbf 1[C_X(\pi_\lambda(y))\le0].
 $$

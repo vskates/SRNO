@@ -156,7 +156,7 @@ Convexification — не удобная hallucination. Для любого rando
 
 $$
 \min_{u\in\mathcal Y_G(x)}p^\top u
-=
+{}={}
 \min_{u\in\mathcal P_G(x)}p^\top u.
 $$
 

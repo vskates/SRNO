@@ -159,7 +159,7 @@ $$
 
 $$
 \widehat{\mathcal S}_{k_0}
-=
+{}={}
 \frac{1}{S(S-1)}\sum_{s\ne t}
 k_0(\hat{\mathbf u}^{(s)},\hat{\mathbf u}^{(t)})
 -\frac{2}{S}\sum_s k_0(\hat{\mathbf u}^{(s)},\mathbf u).

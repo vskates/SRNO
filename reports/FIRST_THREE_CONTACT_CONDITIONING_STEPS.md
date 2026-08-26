@@ -33,7 +33,7 @@ $$
 
 $$
 h_i^{\rm geo}(q,r)
-=
+{}={}
 \phi\!\left(R^\top(y_i^G(r)-p)\right).
 $$
 
@@ -273,7 +273,7 @@ $$
 
 $$
 c_k^{\rm aperture}
-=
+{}={}
 \left[A(r_k)/L,\;\bar a_{k+1}/L\right]\in\mathbb R^2.
 $$
 

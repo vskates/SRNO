@@ -20,7 +20,7 @@
 
 $$
 A^\star(K\mid x)
-=
+{}={}
 \Pr\!\left(\mathcal B(S)\cap K=\varnothing\mid X=x\right).
 $$
 
@@ -30,7 +30,7 @@ $$
 
 $$
 g^\star
-=
+{}={}
 \arg\max_{g\in\mathcal C(x)}
 \widehat A_\theta(K_{\rho_{\rm hw}}(g)\mid x),
 $$
@@ -110,7 +110,7 @@ $$
 
 $$
 d_{\mathcal G}(g,h)^2
-=
+{}={}
 \frac{\|t_g-t_h\|_2^2}{\sigma_t^2}
 +
 \frac{\|\log(R_g^\top R_h)\|_2^2}{\sigma_R^2}
@@ -136,7 +136,7 @@ $Y(S,g)=1$, если при известной полной target geometry:
 
 $$
 \mathcal B(S)
-=
+{}={}
 \{g\in\mathcal G:q(S,g)\le 0\}.
 $$
 
@@ -152,15 +152,15 @@ $$
 
 $$
 T^\star(K\mid x)
-=
+{}={}
 \Pr(\mathcal B_x\cap K\ne\varnothing\mid x),
 $$
 
 $$
 A^\star(K\mid x)
-=
+{}={}
 1-T^\star(K\mid x)
-=
+{}={}
 \Pr(\mathcal B_x\cap K=\varnothing\mid x).
 $$
 
@@ -178,7 +178,7 @@ $$
 
 $$
 \widetilde K_{\rho,L}(g)
-=
+{}={}
 \{g\circ\Delta_\ell\}_{\ell=1}^{L},
 $$
 
@@ -204,7 +204,7 @@ $$
 
 $$
 \mathcal L_{\rm avoid}(\theta)
-=
+{}={}
 \mathbb E_{S,X}
 \mathbb E_{K\sim\nu}
 \left[
@@ -222,7 +222,7 @@ $\nu$ — заранее определённое распределение com
 
 $$
 \mathbb E[(a-Z_K)^2\mid x,K]
-=
+{}={}
 (a-A^\star(K\mid x))^2
 +
 A^\star(K\mid x)(1-A^\star(K\mid x)).
@@ -298,7 +298,7 @@ $$
 
 $$
 \mathcal B_{\theta,m}(x)
-=
+{}={}
 \{g:s_{\theta,m}(x,g)\le0\},
 $$
 
@@ -362,7 +362,7 @@ $$
 
 $$
 r_m(K,x)
-=
+{}={}
 \min_{\ell}s_{\theta,m}(x,g_\ell).
 $$
 
@@ -370,7 +370,7 @@ Hard avoidance prediction:
 
 $$
 \widehat A_\theta^{\rm hard}(K\mid x)
-=
+{}={}
 \sum_{m=1}^{M}
 \pi_m(x)\,
 \mathbf 1\{r_m(K,x)>0\}.
@@ -388,13 +388,13 @@ $$
 
 $$
 \mathrm{softmin}_{\tau_q}\{s_\ell\}
-=
+{}={}
 -\tau_q\log\sum_{\ell=1}^{L}\exp(-s_\ell/\tau_q),
 $$
 
 $$
 \widehat A_\theta(K\mid x)
-=
+{}={}
 \sum_m\pi_m(x)\,
 \sigma\!\left(
 \mathrm{softmin}_{\tau_q}
@@ -411,7 +411,7 @@ $$
 $$
 \left|
 \min_{g\in K}s_{\theta,m}(x,g)
--
+{}-{}
 \min_{g\in\widetilde K}s_{\theta,m}(x,g)
 \right|
 \le L_s\epsilon.
@@ -501,7 +501,7 @@ Continuous-ball claim допустим только после adaptive refineme
 
 $$
 \mathcal L
-=
+{}={}
 \mathcal L_{\rm avoid}
 +
 \lambda_{\rm eq}\mathcal L_{\rm equiv}

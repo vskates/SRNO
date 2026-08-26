@@ -20,7 +20,7 @@
 
 $$
 \mathcal L_{\mathrm{cap}}
-=
+{}={}
 -\mathbb E\log p_\theta
 \!\left(h_g(S)\mid X,g\right),
 $$
@@ -31,7 +31,7 @@ $$
 
 $$
 p_\theta(h\mid X,g)
-=
+{}={}
 \sum_{k=1}^{K}\pi_k(X,g)
 \prod_{j=1}^{m}
 a_{kj}(X,g)^{h_j}
@@ -79,7 +79,7 @@ Candidate generator намеренно не является вкладом. Д�
 
 $$
 \mathrm{score}_\alpha(g)
-=
+{}={}
 \sup\bigl\{\tau:
 \Pr_\theta(C_g=0,\ M_g\ge \tau\mid X,g)\ge 1-\alpha
 \bigr\}.
@@ -255,7 +255,7 @@ Grasping — наглядный special case, но тот же objective при�
 
 $$
 \mathcal E_g
-=
+{}={}
 \mathcal E_g^{\mathrm{pair}}
 \;\sqcup\;
 \mathcal E_g^{\mathrm{forbid}}.
@@ -276,7 +276,7 @@ $$
 
 $$
 h_{g,j}(S)
-=
+{}={}
 \mathbf 1\!\left[W_g(S)\cap K_j(g)\ne\varnothing\right],
 \qquad j=1,\dots,m.
 $$
@@ -291,12 +291,12 @@ $$
 
 $$
 Q^*_{X,g}(A)
-=
+{}={}
 \Pr\!\left(
 W_g\cap\bigcup_{j\in A}K_j=\varnothing
 \mid X,g
 \right)
-=
+{}={}
 \sum_{h:\,h_j=0\ \forall j\in A}p^*(h\mid X,g),
 $$
 
@@ -308,7 +308,7 @@ $$
 
 $$
 \Phi_{g,\tau}(h)
-=
+{}={}
 \neg h_0
 \;\wedge\;
 \bigvee_{j\in R_\tau}h_j.
@@ -320,7 +320,7 @@ $$
 
 $$
 P_{\theta,\tau}(g\mid X)
-=
+{}={}
 \Pr_\theta(\Phi_{g,\tau}=1\mid X,g).
 $$
 
@@ -328,7 +328,7 @@ $$
 
 $$
 g^*
-=
+{}={}
 \arg\max_{g\in G(X)}
 \sup\{\tau:P_{\theta,\tau}(g\mid X)\ge1-\alpha\}.
 $$
@@ -345,7 +345,7 @@ Joint probability tensor $p(h\mid X,g)$ имеет $2^m$ cells. InterCap исп�
 
 $$
 p_\theta(h\mid X,g)
-=
+{}={}
 \sum_{k=1}^{K}\pi_{\theta k}(X,g)
 \prod_{j=1}^{m}
 a_{\theta kj}(X,g)^{h_j}
@@ -358,7 +358,7 @@ $\pi_k\ge0$, $\sum_k\pi_k=1$, $a_{kj}\in(0,1)$. Shared component $k$ — не sh
 
 $$
 P_{\theta,\tau}(g\mid X)
-=
+{}={}
 \sum_{k=1}^{K}\pi_k
 (1-a_{k0})
 \left[1-\prod_{j\in R_\tau}(1-a_{kj})\right].
@@ -373,7 +373,7 @@ $$
 $$
 \boxed{
 \mathcal L_{\mathrm{CapLog}}(\theta)
-=
+{}={}
 -\mathbb E_{S,X,g}
 \log\left[
 \sum_{k=1}^{K}\pi_{\theta k}(X,g)
@@ -439,7 +439,7 @@ $$
 
 $$
 \mathbb E[u(S,g)\mid X]
-=
+{}={}
 \sum_h \tilde u(h,g)p(h\mid X,g).
 $$
 

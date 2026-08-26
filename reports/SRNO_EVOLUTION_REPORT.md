@@ -2395,7 +2395,7 @@ Runner проверил hashes, stages, horizon и sample ordering. Никако
 
 $$
 e_k^{TF}(\theta)
-=
+{}={}
 \Log\!\left[
 (q_{k+1}^{*})^{-1}
 R_\theta(x_k^*,\bar a_{k+1})_q

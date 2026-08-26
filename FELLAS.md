@@ -1067,7 +1067,7 @@ $$
 
 $$
 \mathcal R(Q_x;P_x)-\mathcal R(P_x;P_x)
-=
+{}={}
 \mathbb E_{K\sim\nu_x}
 \left(T_{Q_x}(K)-T_{P_x}(K)\right)^2\ge 0.
 $$
@@ -1086,7 +1086,7 @@ $$
 
 $$
 \mathbb P(Y_Z=0,Y_O=1)
-=
+{}={}
 \sum_{B\subseteq O}(-1)^{|B|}
 \left[1-T(Z\cup B)\right].
 $$
@@ -1196,7 +1196,7 @@ $$
 $$
 \mathbb P(F\cap H_j\neq\varnothing\ \forall j,
 F\cap K_0=\varnothing\mid x,m)
-=
+{}={}
 \left[G(a_m)-G(b_m)\right]_+.
 $$
 
