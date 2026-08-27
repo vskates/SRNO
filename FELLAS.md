@@ -1649,7 +1649,171 @@ $$
 
 ---
 
-## 43. Headline для fixed-SKU warehouse-задачи
+## 43. Как быстро собрать сцены объектов — предложение модели
+
+Не делать миллионы full-scene рендеров в Blender/Isaac. Для information-only постановки оптимальный pipeline — **target world рендерится один раз, а foreground occlusion генерируется отдельным GPU rasterizer-ом как depth-consistent 2.5D layer**.
+
+### Что выбрать
+
+| Protocol | Target | Occluder | Зачем |
+|---|---|---|---|
+| **FELLAS controlled** | **GSO** | **Objaverse-LVIS** | основной training + scientific experiments |
+
+GSO targets делить по object identity без leakage между splits:
+
+$$
+\boxed{650\!-\!700\ \mathrm{train}+100\!-\!150\ \mathrm{val}+180\!-\!220\ \mathrm{test}}.
+$$
+
+Первый pilot-запуск:
+
+$$
+\boxed{64\ \mathrm{train}+16\ \mathrm{val}+32\ \mathrm{test}}.
+$$
+
+### Сам pipeline
+
+1. Для каждого target world $S_i$ из GSO один раз получить target-only:
+
+   $$
+   (I_T,D_T,M_T,K)
+   $$
+
+   и отдельно physics labels $F_{S_i}$. После этого **100–1000 разных occlusions используют тот же $F_{S_i}$**.
+
+2. Загрузить occluder meshes из Objaverse-LVIS и один раз упростить их до silhouette-preserving meshes. Для encoder-а texture occluder-а почти не нужна — нужны прежде всего geometry/depth.
+
+3. Для каждого нового observation выбрать occluder mesh и произвольные
+
+   $$
+   R_O,\quad (u_O,v_O),\quad z_O.
+   $$
+
+   Из желаемой точки изображения сразу получить 3D translation:
+
+   $$
+   t_x=(u_O-c_x)z_O/f_x,
+   \qquad
+   t_y=(v_O-c_y)z_O/f_y.
+   $$
+
+   Физически ставить object на полку не требуется: он может быть arbitrary foreground object в camera space.
+
+4. Растеризовать только
+
+   $$
+   (M_O,D_O).
+   $$
+
+   Первым использовать **PyTorch3D**: rasterizer поддерживает batching и напрямую возвращает `zbuf` и face correspondence ([документация][SC1]). Если это станет bottleneck — заменить только renderer на **nvdiffrast**, CUDA-accelerated low-level rasterizer с поддержкой minibatches ([документация][SC2]).
+
+5. Выполнить композицию обычным z-buffer:
+
+   $$
+   M_{\rm hidden}(u)=
+   M_T(u)M_O(u)
+   \mathbf1[D_O(u)<D_T(u)-\epsilon].
+   $$
+
+   Visible target:
+
+   $$
+   M_T^{vis}=M_T\setminus M_{\rm hidden}.
+   $$
+
+   Observed depth:
+
+   $$
+   D_{\rm obs}(u)=\min(D_T(u),D_O(u),D_{\rm scene}(u)).
+   $$
+
+   В отличие от простого binary paste, это автоматически даёт правильный depth ordering на boundary.
+
+6. Для нужного occlusion ratio не делать медленный rejection по одной сцене. Одновременно сэмплировать **32–64** разных $(R,u,v,z)$ для одного target, rasterize batch и считать
+
+   $$
+   \rho=\frac{|M_{\rm hidden}|}{|M_T|}.
+   $$
+
+   Оставлять вариант, попавший в нужный bin.
+
+7. После композиции применить **sensor corruption**: depth noise, holes, flying-edge corruption, mask erosion/dilation/jitter. Это делается после occlusion composition, чтобы шум возникал именно на новой depth discontinuity.
+
+8. Из $(D_{obs},M_T^{vis})$ построить фактический вход $x$:
+
+   $$
+   \boxed{
+   P_{\rm target}^{vis}
+   +
+   \text{boundary/ray tokens}
+   }.
+   $$
+
+   Полный $D_O$ после этого модели не нужен.
+
+9. Не сохранять миллион RGB-D файлов. Сохранять
+
+   $$
+   (\text{target world id},
+   \text{occluder id},
+   R_O,t_O,
+   seed,\rho)
+   $$
+
+   плюс master target render. Такая scene specification занимает байты/килобайты, а observation воспроизводится детерминированно.
+
+### Почему не pre-rendered sprites
+
+Банк $(mask,depth)$ sprites и их перемещение в 2D ещё дешевле, но arbitrary scaling/translation слегка нарушает perspective geometry. При
+
+$$
+\boxed{\text{mesh}\rightarrow\text{GPU rasterizer}}
+$$
+
+для каждой sampled pose получаются точная перспективная проекция и depth без physics, lighting, shadows, Cycles и material simulation. Это лучший compromise.
+
+### Что оставить BlenderProc-у
+
+Не training corpus. Сделать отдельные **5–20k validation scenes**, где foreground objects реально находятся в одной 3D scene, с PBR и корректным освещением.
+
+BlenderProc умеет автоматически выдавать RGB, depth и segmentation; его BOP pipeline использовался для генерации synthetic training images и параллелится по GPU ([код][SC3]). Тогда эксперимент:
+
+$$
+\boxed{
+\text{train: cheap arbitrary GPU-projected occluders}
+\rightarrow
+\text{test: true BlenderProc/TARGO-style 3D clutter}
+}.
+$$
+
+Если перенос работает, это подтверждает, что сеть учит **visibility/hidden-information geometry**, а не физические шаблоны размещения blocker-ов.
+
+### Что реализовать первым
+
+$$
+\boxed{\textbf{GSO targets + Objaverse-LVIS occluders + PyTorch3D + z-buffer compositor}}
+$$
+
+с интерфейсом renderer-а:
+
+```text
+render_occluders(
+    mesh_ids,
+    R,
+    t,
+    camera_K
+) -> masks, depths
+```
+
+FELLAS не должна зависеть от происхождения occluder-а. Полезные исходники: [PyTorch3D renderer][SC1] · [nvdiffrast][SC2] · [BlenderProc][SC3]. Этот pipeline отделяет дорогую physics-разметку $F$ от дешёвого генератора практически неограниченного количества $x$.
+
+[SC1]: https://pytorch3d.org/docs/renderer_getting_started
+[SC2]: https://nvlabs.github.io/nvdiffrast/
+[SC3]: https://github.com/DLR-RM/BlenderProc/blob/main/examples/datasets/bop_challenge/README.md
+
+---
+
+## 44. Headline для fixed-SKU warehouse-задачи
 
 Основной источник uncertainty формулировать как
 
@@ -1682,7 +1846,7 @@ Dataset должен содержать группы `same/near-same observation
 
 ---
 
-## 44. Откуда семплировать candidates и global $K$
+## 45. Откуда семплировать candidates и global $K$
 
 Training должен повторять inference pipeline:
 
@@ -1723,9 +1887,9 @@ $$
 
 ---
 
-## 45. Топ-2 способа кодировать наблюдение для FELLAS
+## 46. Топ-2 способа кодировать наблюдение для FELLAS
 
-### 45.1 Boundary-Ray Query Transformer — основной вариант
+### 46.1 Boundary-Ray Query Transformer — основной вариант
 
 **Мотивация.** Стоит кодировать не полную форму occluder-а, а границу того, что observation сообщает о target: видимую поверхность, depth discontinuities и censored camera rays. Это переносит идею occupied + neighboring empty evidence из [ME-PCN (ICCV 2021)](https://arxiv.org/abs/2108.08187) в query-conditioned grasp encoder и добавляет сочетание local query geometry с global context, мотивированное [Local Occupancy-Enhanced Grasping](https://arxiv.org/abs/2407.15771). Знак depth discontinuity как cue порядка foreground/background используется в [RGB-D Edge Detection](https://ece.umn.edu/~cchoi/pub/Choi13iros_edge.pdf).
 
@@ -1801,7 +1965,7 @@ $$
 
 Так $\pi_m(x)$ получает глобальную информацию о hidden modes, а $f_m(x,g)$ выбирает локальные target/ray evidence, релевантные конкретному grasp.
 
-### 45.2 ME-PCN-style two-branch encoder — безопасный baseline
+### 46.2 ME-PCN-style two-branch encoder — безопасный baseline
 
 **Мотивация.** Это более простой вариант с опубликованной [реализацией ME-PCN](https://github.com/Wenri/ME-PCN): отдельно кодировать observed target points и ближайшие informative empty rays, затем глобально слить признаки. Он дешевле в реализации, но хуже сохраняет query-local evidence для конкретного $g$.
 
@@ -1854,7 +2018,7 @@ $$
 
 ---
 
-## 46. Рекомендуемое распределение $K$-queries
+## 47. Рекомендуемое распределение $K$-queries
 
 Training distribution по $K$ должно сочетать три масштаба информации:
 
@@ -1863,6 +2027,8 @@ Training distribution по $K$ должно сочетать три масшта
 | Singleton $K=\{g\}$ | **20%** | $|K|=1$ | Marginal feasibility и warm start discriminator |
 | Local perturbation $K_g=g\oplus E_g$ | **45%** | **7–20 grasпов** | Robust inclusion и локальная граница feasible region |
 | Global cross-anchor subset | **35%** | преимущественно **2–4 граспа/anchor-а** | Зависимости между удалёнными grasp-регионами и согласованность latent modes |
+
+Рабочий прогон: $\approx700$ train objects $\times$ $256$ grasp anchors/object $\times$ $12$ perturbations/anchor $\approx2.15$ млн perturbed-grasp evaluations.
 
 Последние 35% следует разделить на:
 
@@ -1877,7 +2043,7 @@ Local stencil не должен быть сверхплотным. Практи�
 
 ---
 
-## 47. Does CEN actually recover modes?
+## 48. Does CEN actually recover modes?
 
 На synthetic finite-bank задаче, где истинные latent modes и их posterior weights известны, нужно отдельно проверить, восстанавливает ли CEN мультимодальную структуру, а не только усреднённые event probabilities.
 
@@ -1890,7 +2056,7 @@ Local stencil не должен быть сверхплотным. Практи�
 
 ---
 
-## 48. Центральный beyond-ToleranceNet experiment
+## 49. Центральный beyond-ToleranceNet experiment
 
 Создать две группы сцен с одинаковыми per-grasp marginals и всеми local-tolerance statistics вокруг двух удалённых grasпов $g_A,g_B$, но разными дальними зависимостями:
 
