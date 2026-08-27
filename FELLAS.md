@@ -1282,16 +1282,6 @@ CEN оценивает соответствующие max/min своих mode fi
 
 Не добавлять reconstruction loss: он разрушит чистоту тезиса и создаст очевидный shortcut через hidden geometry.
 
-### 28.5 Калибровка скорости закрытия gripper для label oracle
-
-Цель — не минимальная скорость сама по себе, а **quasi-static regime, в котором label практически не меняется при дальнейшем замедлении**. Для фиксированного набора сцен и grasps выполнить sweep $v_1>v_2>\ldots>v_k$ и измерить
-
-$$
-\Delta_i=\Pr\left[Y_{v_i}(S,g)\neq Y_{v_{i+1}}(S,g)\right].
-$$
-
-Выбрать максимальную, то есть наиболее быструю, скорость $v^*$, после которой disagreement остаётся ниже заранее заданного $\varepsilon$ для всех меньших скоростей. Дополнительно проверить стабильность contact count, penetration/impulse и positive-label rate. Затем зафиксировать $v^*$ для всей генерации dataset; высокие скорости вне plateau не использовать, поскольку они превращают oracle label в артефакт динамики.
-
 ---
 
 ## 29. Inference и связь с физическим grasp
@@ -1435,17 +1425,6 @@ Matched-coverage сравнение обязательно: success rate CEN и 
 - explicit gripper point query против pose vector;
 - mode diversity term;
 - soft vs exact max/min на inference.
-
-### Does CEN actually recover modes?
-
-На synthetic finite-bank задаче, где истинные latent modes и их posterior weights известны, нужно отдельно проверить, восстанавливает ли CEN мультимодальную структуру, а не только усреднённые event probabilities.
-
-- сопоставить learned и true modes через Hungarian matching по induced feasible patterns;
-- измерить per-mode Hamming/IoU, ошибку posterior weights и долю collapsed/duplicate modes;
-- одновременно измерить TV joint law и capacity/inclusion error, поскольку нумерация и конкретная mixture-декомпозиция мод не идентифицируемы;
-- повторить для correctly specified, under-specified и over-specified числа modes $M$, нескольких seeds и разных query distributions.
-
-Главным критерием остаётся восстановление закона random feasible set и downstream robust regret. Семантическое совпадение отдельных $m$ — диагностическая метрика: разные наборы latent modes могут задавать один и тот же наблюдаемый закон.
 
 ---
 
@@ -1658,54 +1637,95 @@ FiRe имеет самый сильный единый paper claim:
 
 ---
 
-## 42. Рекомендуемое распределение $K$-queries
+## 42. Калибровка скорости закрытия gripper для label oracle
 
-Training distribution по $K$ должно сочетать три масштаба информации:
+Цель — не минимальная скорость сама по себе, а **quasi-static regime, в котором label практически не меняется при дальнейшем замедлении**. Для фиксированного набора сцен и grasps выполнить sweep $v_1>v_2>\ldots>v_k$ и измерить
 
-| Тип $K$ | Доля всех queries | Рекомендуемый размер | Назначение |
-|---|---:|---:|---|
-| Singleton $K=\{g\}$ | **20%** | $|K|=1$ | Marginal feasibility и warm start discriminator |
-| Local perturbation $K_g=g\oplus E_g$ | **45%** | **7–20 grasпов** | Robust inclusion и локальная граница feasible region |
-| Global cross-anchor subset | **35%** | преимущественно **2–4 граспа/anchor-а** | Зависимости между удалёнными grasp-регионами и согласованность latent modes |
+$$
+\Delta_i=\Pr\left[Y_{v_i}(S,g)\neq Y_{v_{i+1}}(S,g)\right].
+$$
 
-Последние 35% следует разделить на:
-
-- **25 процентных пунктов** — геометрически различные distant pairs, triples или quadruples;
-- **10 процентных пунктов** — disconnected unions $K_{g_1}\cup K_{g_2}$ вокруг двух удалённых anchors для наиболее сложной проверки mode stitching.
-
-Local stencil не должен быть сверхплотным. Практический состав: центр, $\pm$ главные направления translation, $\pm$ наиболее важные rotation directions и несколько случайных boundary points. Stencil следует пересэмплировать между эпохами.
-
-Большие случайные global subsets не использовать: уже при $|K|\approx10$ inclusion почти всегда равен нулю, а hit — единице, поэтому targets насыщаются. Cross-anchor grasps нужно выбирать по геометрическому разнообразию и observed candidate bank, но **не по скрытым меткам $Y$**, иначе изменяется elicited target.
-
-Обязательная ablation: `local-only` против `global-subset-only` против `mixed`; отдельно измерять robust top-1 regret и Brier на high-order/disconnected queries.
+Выбрать максимальную, то есть наиболее быструю, скорость $v^*$, после которой disagreement остаётся ниже заранее заданного $\varepsilon$ для всех меньших скоростей. Дополнительно проверить стабильность contact count, penetration/impulse и positive-label rate. Затем зафиксировать $v^*$ для всей генерации dataset; высокие скорости вне plateau не использовать, поскольку они превращают oracle label в артефакт динамики.
 
 ---
 
-## 43. Центральный beyond-ToleranceNet experiment
+## 43. Headline для fixed-SKU warehouse-задачи
 
-Создать две группы сцен с одинаковыми per-grasp marginals и всеми local-tolerance statistics вокруг двух удалённых grasпов $g_A,g_B$, но разными дальними зависимостями:
+Основной источник uncertainty формулировать как
 
 $$
-P_1:\ 0.5(1,1)+0.5(0,0),
+\boxed{\textbf{observation-equivalent rigid worlds induced primarily by pose/view ambiguity}.}
+$$
+
+Для известного SKU $S_0$ определить sensor-equivalent pose fiber
+
+$$
+\mathcal T_\varepsilon(x)=
+\{T\in SE(3):d_x(\mathcal R(TS_0),x)<\varepsilon\}.
+$$
+
+Разные $T_k\in\mathcal T_\varepsilon(x)$ дают почти одинаковое RGB-D observation, но разные hidden poses детали вроде ручки и поэтому разные feasible sets:
+
+$$
+S_k=T_kS_0,
 \qquad
-P_2:\ 0.5(1,0)+0.5(0,1).
-$$
-
-Обе группы неразличимы для scalar critic, ToleranceNet и local-only FELLAS, однако
-
-$$
-I(\{g_A,g_B\})=0.5\ \text{vs}\ 0,
+d_x(x_i,x_j)<\varepsilon,
 \qquad
-T(\{g_A,g_B\})=0.5\ \text{vs}\ 1.
+F_{S_i}\neq F_{S_j}.
 $$
 
-Downstream-задача: выбрать пару backup grasps, максимизирующую $T(\{g_1,g_2\})$, то есть вероятность успеха хотя бы одного grasp. Главный результат — FELLAS выбирает комплементарную пару и повышает empirical backup success относительно ToleranceNet/scalar/local-only baselines; high-order Brier является вторичной диагностикой.
+Dataset должен содержать группы `same/near-same observation × different plausible poses × different feasible sets`; метрики $d_x$ считать по visible depth, contour и boundary/ray evidence с sensor tolerance. Pose ambiguity одного SKU — главный эксперимент, instance ambiguity и combined instance+pose — вторичные.
+
+Это естественная non-identifiability single-view perception для partially symmetric rigid objects, а не искусственная генерация разных hidden backsides; прямой precedent — [Humt et al., Shape Completion with Prediction of Uncertain Regions (IROS 2023)](https://elib.dlr.de/195724/1/Humt_etal_IROS23.pdf).
+
+Обязательный сильный baseline — **pose-posterior / symmetry-aware CAD** с несколькими pose hypotheses: если SKU известен, можно хранить его CAD вместо обучения random feasible set. FELLAS должна либо превзойти этот baseline по compute/data efficiency при сопоставимом decision quality, либо показать преимущество generalization на unknown/new objects, для которых CAD недоступен.
 
 ---
 
-## 44. Топ-2 способа кодировать наблюдение для FELLAS
+## 44. Откуда семплировать candidates и global $K$
 
-### 44.1 Boundary-Ray Query Transformer — основной вариант
+Training должен повторять inference pipeline:
+
+$$
+S\rightarrow x_{\mathrm{occ}}
+\xrightarrow{\text{frozen GraspGen}}
+C(x_{\mathrm{occ}})=\{g_1,\ldots,g_N\},
+\qquad
+K\sim\nu(\cdot\mid C(x_{\mathrm{occ}})).
+$$
+
+**GraspGen видит только occluded observation $x$; GT/full mesh $S$ используется исключительно label oracle-ом:**
+
+$$
+Y_j=Y(S,g_j).
+$$
+
+Нельзя выбирать candidates или $K$ по $Y/F$ либо из full-shape grasp distribution: это создаёт selection bias и меняет elicited target CQS.
+
+Global $K$ выбирать label-free по геометрическому разнообразию в candidate bank — distant pairs/quadruples, farthest-point или stratified sampling — используя
+
+$$
+d(g_i,g_j)^2=
+\frac{\|t_i-t_j\|^2}{\sigma_t^2}+
+\frac{d_{SO(3)}(R_i,R_j)^2}{\sigma_R^2}+
+\frac{|w_i-w_j|^2}{\sigma_w^2}.
+$$
+
+Если GraspGen даёт слишком узкий support, для training anchors использовать label-free смесь
+
+$$
+q_{\mathrm{train}}(g\mid x)=
+0.8q_{\mathrm{GraspGen}}(g\mid x)+
+0.2q_{\mathrm{broad}}(g\mid x),
+$$
+
+где $q_{\mathrm{broad}}$ семплирует вокруг видимого target/bounding volume. На inference остаются только GraspGen candidates. Обязательно отдельно измерять `oracle success@GraspGen pool`: FELLAS не может выбрать хороший grasp, которого нет в candidate bank.
+
+---
+
+## 45. Топ-2 способа кодировать наблюдение для FELLAS
+
+### 45.1 Boundary-Ray Query Transformer — основной вариант
 
 **Мотивация.** Стоит кодировать не полную форму occluder-а, а границу того, что observation сообщает о target: видимую поверхность, depth discontinuities и censored camera rays. Это переносит идею occupied + neighboring empty evidence из [ME-PCN (ICCV 2021)](https://arxiv.org/abs/2108.08187) в query-conditioned grasp encoder и добавляет сочетание local query geometry с global context, мотивированное [Local Occupancy-Enhanced Grasping](https://arxiv.org/abs/2407.15771). Знак depth discontinuity как cue порядка foreground/background используется в [RGB-D Edge Detection](https://ece.umn.edu/~cchoi/pub/Choi13iros_edge.pdf).
 
@@ -1781,7 +1801,7 @@ $$
 
 Так $\pi_m(x)$ получает глобальную информацию о hidden modes, а $f_m(x,g)$ выбирает локальные target/ray evidence, релевантные конкретному grasp.
 
-### 44.2 ME-PCN-style two-branch encoder — безопасный baseline
+### 45.2 ME-PCN-style two-branch encoder — безопасный baseline
 
 **Мотивация.** Это более простой вариант с опубликованной [реализацией ME-PCN](https://github.com/Wenri/ME-PCN): отдельно кодировать observed target points и ближайшие informative empty rays, затем глобально слить признаки. Он дешевле в реализации, но хуже сохраняет query-local evidence для конкретного $g$.
 
@@ -1834,74 +1854,58 @@ $$
 
 ---
 
-## 45. Откуда семплировать candidates и global $K$
+## 46. Рекомендуемое распределение $K$-queries
 
-Training должен повторять inference pipeline:
+Training distribution по $K$ должно сочетать три масштаба информации:
 
-$$
-S\rightarrow x_{\mathrm{occ}}
-\xrightarrow{\text{frozen GraspGen}}
-C(x_{\mathrm{occ}})=\{g_1,\ldots,g_N\},
-\qquad
-K\sim\nu(\cdot\mid C(x_{\mathrm{occ}})).
-$$
+| Тип $K$ | Доля всех queries | Рекомендуемый размер | Назначение |
+|---|---:|---:|---|
+| Singleton $K=\{g\}$ | **20%** | $|K|=1$ | Marginal feasibility и warm start discriminator |
+| Local perturbation $K_g=g\oplus E_g$ | **45%** | **7–20 grasпов** | Robust inclusion и локальная граница feasible region |
+| Global cross-anchor subset | **35%** | преимущественно **2–4 граспа/anchor-а** | Зависимости между удалёнными grasp-регионами и согласованность latent modes |
 
-**GraspGen видит только occluded observation $x$; GT/full mesh $S$ используется исключительно label oracle-ом:**
+Последние 35% следует разделить на:
 
-$$
-Y_j=Y(S,g_j).
-$$
+- **25 процентных пунктов** — геометрически различные distant pairs, triples или quadruples;
+- **10 процентных пунктов** — disconnected unions $K_{g_1}\cup K_{g_2}$ вокруг двух удалённых anchors для наиболее сложной проверки mode stitching.
 
-Нельзя выбирать candidates или $K$ по $Y/F$ либо из full-shape grasp distribution: это создаёт selection bias и меняет elicited target CQS.
+Local stencil не должен быть сверхплотным. Практический состав: центр, $\pm$ главные направления translation, $\pm$ наиболее важные rotation directions и несколько случайных boundary points. Stencil следует пересэмплировать между эпохами.
 
-Global $K$ выбирать label-free по геометрическому разнообразию в candidate bank — distant pairs/quadruples, farthest-point или stratified sampling — используя
+Большие случайные global subsets не использовать: уже при $|K|\approx10$ inclusion почти всегда равен нулю, а hit — единице, поэтому targets насыщаются. Cross-anchor grasps нужно выбирать по геометрическому разнообразию и observed candidate bank, но **не по скрытым меткам $Y$**, иначе изменяется elicited target.
 
-$$
-d(g_i,g_j)^2=
-\frac{\|t_i-t_j\|^2}{\sigma_t^2}+
-\frac{d_{SO(3)}(R_i,R_j)^2}{\sigma_R^2}+
-\frac{|w_i-w_j|^2}{\sigma_w^2}.
-$$
-
-Если GraspGen даёт слишком узкий support, для training anchors использовать label-free смесь
-
-$$
-q_{\mathrm{train}}(g\mid x)=
-0.8q_{\mathrm{GraspGen}}(g\mid x)+
-0.2q_{\mathrm{broad}}(g\mid x),
-$$
-
-где $q_{\mathrm{broad}}$ семплирует вокруг видимого target/bounding volume. На inference остаются только GraspGen candidates. Обязательно отдельно измерять `oracle success@GraspGen pool`: FELLAS не может выбрать хороший grasp, которого нет в candidate bank.
+Обязательная ablation: `local-only` против `global-subset-only` против `mixed`; отдельно измерять robust top-1 regret и Brier на high-order/disconnected queries.
 
 ---
 
-## 46. Headline для fixed-SKU warehouse-задачи
+## 47. Does CEN actually recover modes?
 
-Основной источник uncertainty формулировать как
+На synthetic finite-bank задаче, где истинные latent modes и их posterior weights известны, нужно отдельно проверить, восстанавливает ли CEN мультимодальную структуру, а не только усреднённые event probabilities.
+
+- сопоставить learned и true modes через Hungarian matching по induced feasible patterns;
+- измерить per-mode Hamming/IoU, ошибку posterior weights и долю collapsed/duplicate modes;
+- одновременно измерить TV joint law и capacity/inclusion error, поскольку нумерация и конкретная mixture-декомпозиция мод не идентифицируемы;
+- повторить для correctly specified, under-specified и over-specified числа modes $M$, нескольких seeds и разных query distributions.
+
+Главным критерием остаётся восстановление закона random feasible set и downstream robust regret. Семантическое совпадение отдельных $m$ — диагностическая метрика: разные наборы latent modes могут задавать один и тот же наблюдаемый закон.
+
+---
+
+## 48. Центральный beyond-ToleranceNet experiment
+
+Создать две группы сцен с одинаковыми per-grasp marginals и всеми local-tolerance statistics вокруг двух удалённых grasпов $g_A,g_B$, но разными дальними зависимостями:
 
 $$
-\boxed{\textbf{observation-equivalent rigid worlds induced primarily by pose/view ambiguity}.}
-$$
-
-Для известного SKU $S_0$ определить sensor-equivalent pose fiber
-
-$$
-\mathcal T_\varepsilon(x)=
-\{T\in SE(3):d_x(\mathcal R(TS_0),x)<\varepsilon\}.
-$$
-
-Разные $T_k\in\mathcal T_\varepsilon(x)$ дают почти одинаковое RGB-D observation, но разные hidden poses детали вроде ручки и поэтому разные feasible sets:
-
-$$
-S_k=T_kS_0,
+P_1:\ 0.5(1,1)+0.5(0,0),
 \qquad
-d_x(x_i,x_j)<\varepsilon,
-\qquad
-F_{S_i}\neq F_{S_j}.
+P_2:\ 0.5(1,0)+0.5(0,1).
 $$
 
-Dataset должен содержать группы `same/near-same observation × different plausible poses × different feasible sets`; метрики $d_x$ считать по visible depth, contour и boundary/ray evidence с sensor tolerance. Pose ambiguity одного SKU — главный эксперимент, instance ambiguity и combined instance+pose — вторичные.
+Обе группы неразличимы для scalar critic, ToleranceNet и local-only FELLAS, однако
 
-Это естественная non-identifiability single-view perception для partially symmetric rigid objects, а не искусственная генерация разных hidden backsides; прямой precedent — [Humt et al., Shape Completion with Prediction of Uncertain Regions (IROS 2023)](https://elib.dlr.de/195724/1/Humt_etal_IROS23.pdf).
+$$
+I(\{g_A,g_B\})=0.5\ \text{vs}\ 0,
+\qquad
+T(\{g_A,g_B\})=0.5\ \text{vs}\ 1.
+$$
 
-Обязательный сильный baseline — **pose-posterior / symmetry-aware CAD** с несколькими pose hypotheses: если SKU известен, можно хранить его CAD вместо обучения random feasible set. FELLAS должна либо превзойти этот baseline по compute/data efficiency при сопоставимом decision quality, либо показать преимущество generalization на unknown/new objects, для которых CAD недоступен.
+Downstream-задача: выбрать пару backup grasps, максимизирующую $T(\{g_1,g_2\})$, то есть вероятность успеха хотя бы одного grasp. Главный результат — FELLAS выбирает комплементарную пару и повышает empirical backup success относительно ToleranceNet/scalar/local-only baselines; high-order Brier является вторичной диагностикой.
